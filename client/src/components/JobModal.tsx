@@ -202,6 +202,25 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     queryKey: ["/api/job-statuses"],
   });
 
+  // Fetch job creation quota policy
+  type SystemSetting = {
+    key: string;
+    value: string;
+  };
+
+  const { data: quotaPolicy } = useQuery<SystemSetting>({
+    queryKey: ["/api/settings", "job_creation_quota_policy"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings/job_creation_quota_policy", {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        return { key: "job_creation_quota_policy", value: "require_approval" };
+      }
+      return res.json();
+    },
+  });
+
   const { data: jobData } = useQuery<JobWithDetails>({
     queryKey: ["/api/jobs", jobId],
     enabled: isEditing,
@@ -485,23 +504,37 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   });
 
   const onSubmit = (data: JobFormData) => {
-    // Security check: prevent job creation when client has no positions and user hasn't acknowledged
-    if (!isEditing && clientHasNoPositions && !userAwareOfIrregularity) {
-      toast({
-        title: "Ação Bloqueada",
-        description: "Você precisa confirmar estar ciente da situação irregular antes de criar esta vaga.",
-        variant: "destructive",
-      });
-      return;
+    const policy = quotaPolicy?.value || "require_approval";
+
+    // Check quota policy when client has no available positions
+    if (!isEditing && clientHasNoPositions) {
+      if (policy === "block") {
+        // Block: Completely prevent job creation
+        toast({
+          title: "Criação Bloqueada",
+          description: "O cliente atingiu o limite de vagas. A criação de novas vagas está bloqueada pela política do sistema.",
+          variant: "destructive",
+        });
+        return;
+      } else if (policy === "require_approval" && !userAwareOfIrregularity) {
+        // Require approval: User must acknowledge before creating
+        toast({
+          title: "Confirmação Necessária",
+          description: "Você precisa confirmar estar ciente da situação irregular antes de criar esta vaga.",
+          variant: "destructive",
+        });
+        return;
+      }
+      // If policy === "allow", no checks needed - proceed normally
     }
 
     if (isEditing) {
       updateJobMutation.mutate(data);
     } else {
-      // Mark job as created with irregularity if user acknowledged it
+      // Mark job as created with irregularity if user acknowledged it (only for require_approval policy)
       const jobData = {
         ...data,
-        createdWithIrregularity: clientHasNoPositions && userAwareOfIrregularity
+        createdWithIrregularity: policy === "require_approval" && clientHasNoPositions && userAwareOfIrregularity
       };
       createJobMutation.mutate(jobData);
     }
@@ -739,63 +772,125 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
               </div>
 
               {/* Warning when client has no available positions */}
-              {clientHasNoPositions && !userAwareOfIrregularity && (
-                <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      <i className="fas fa-ban text-red-600 dark:text-red-400 text-lg"></i>
+              {clientHasNoPositions && (() => {
+                const policy = quotaPolicy?.value || "require_approval";
+                
+                // Policy: BLOCK - Show blocking message with no option to proceed
+                if (policy === "block") {
+                  return (
+                    <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <i className="fas fa-ban text-red-600 dark:text-red-400 text-lg"></i>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-red-900 dark:text-red-200 mb-1">
+                            🚫 Criação de Vaga Bloqueada
+                          </h4>
+                          <p className="text-sm text-red-800 dark:text-red-300">
+                            O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
+                          </p>
+                          <p className="text-sm text-red-800 dark:text-red-300 mt-2">
+                            A <strong>política do sistema</strong> impede a criação de novas vagas quando o limite é atingido. 
+                            Para prosseguir, é necessário <strong>aumentar o limite no contrato do cliente</strong> ou <strong>selecionar outro cliente</strong>.
+                          </p>
+                          <p className="text-xs text-red-700 dark:text-red-400 mt-3 italic">
+                            💡 Para alterar esta política, acesse Configurações → Política de Criação de Vagas
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-red-900 dark:text-red-200 mb-1">
-                        🚫 Não é Possível Criar Vaga
-                      </h4>
-                      <p className="text-sm text-red-800 dark:text-red-300">
-                        O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
-                      </p>
-                      <p className="text-sm text-red-800 dark:text-red-300 mt-2">
-                        Para criar uma nova vaga para este cliente, é necessário <strong>aumentar o limite de vagas no contrato</strong> ou 
-                        <strong> selecionar outro cliente</strong>.
-                      </p>
+                  );
+                }
+                
+                // Policy: REQUIRE_APPROVAL - Show warning with acknowledgment button
+                if (policy === "require_approval") {
+                  if (!userAwareOfIrregularity) {
+                    return (
+                      <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <i className="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-lg"></i>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-red-900 dark:text-red-200 mb-1">
+                              ⚠️ Cliente Atingiu Limite de Vagas
+                            </h4>
+                            <p className="text-sm text-red-800 dark:text-red-300">
+                              O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
+                            </p>
+                            <p className="text-sm text-red-800 dark:text-red-300 mt-2">
+                              Você pode criar esta vaga, mas ela será marcada como <strong>pré-reprovada</strong> e 
+                              exigirá aprovação do gestor do contrato.
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-2 border-t border-red-200 dark:border-red-800">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50"
+                            onClick={() => setUserAwareOfIrregularity(true)}
+                            data-testid="button-aware-irregularity"
+                          >
+                            <i className="fas fa-check-circle mr-2"></i>
+                            Estou Ciente e Desejo Criar Vaga Mesmo Assim
+                          </Button>
+                          <p className="text-xs text-red-700 dark:text-red-400 mt-2 text-center">
+                            A vaga será criada como <strong>pré-reprovada</strong> para aprovação do gestor
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <i className="fas fa-check-circle text-amber-600 dark:text-amber-400 text-lg"></i>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
+                              ✓ Confirmação Registrada
+                            </h4>
+                            <p className="text-sm text-amber-800 dark:text-amber-300">
+                              Você confirmou estar ciente de que esta vaga excede o limite contratual. 
+                              A vaga será marcada como <strong>pré-reprovada</strong> e o gestor receberá uma notificação automática.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+                
+                // Policy: ALLOW - Show informational message only (no blocking)
+                if (policy === "allow") {
+                  return (
+                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <i className="fas fa-info-circle text-blue-600 dark:text-blue-400 text-lg"></i>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                            ℹ️ Informação sobre Limite de Vagas
+                          </h4>
+                          <p className="text-sm text-blue-800 dark:text-blue-300">
+                            O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
+                          </p>
+                          <p className="text-sm text-blue-800 dark:text-blue-300 mt-2">
+                            A vaga pode ser criada normalmente de acordo com a política do sistema.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-red-200 dark:border-red-800">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50"
-                      onClick={() => setUserAwareOfIrregularity(true)}
-                      data-testid="button-aware-irregularity"
-                    >
-                      <i className="fas fa-check-circle mr-2"></i>
-                      Estou Ciente e Desejo Criar Vaga Mesmo Assim
-                    </Button>
-                    <p className="text-xs text-red-700 dark:text-red-400 mt-2 text-center">
-                      ⚠️ A vaga será criada como <strong>pré-reprovada</strong> e o gestor do contrato será notificado sobre esta irregularidade.
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {/* Confirmation message after user acknowledges */}
-              {clientHasNoPositions && userAwareOfIrregularity && (
-                <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      <i className="fas fa-exclamation-triangle text-amber-600 dark:text-amber-400 text-lg"></i>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
-                        ⚠️ Criação de Vaga em Situação Irregular
-                      </h4>
-                      <p className="text-sm text-amber-800 dark:text-amber-300">
-                        Você confirmou estar ciente de que esta vaga excede o limite contratual. 
-                        A vaga será marcada como <strong>pré-reprovada</strong> e o gestor receberá uma notificação automática.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+                  );
+                }
+                
+                return null;
+              })()}
             </div>
 
             <Separator />
@@ -1537,7 +1632,22 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                 </Button>
                 <Button
                   type="submit"
-                  disabled={createJobMutation.isPending || updateJobMutation.isPending || (!isEditing && clientHasNoPositions && !userAwareOfIrregularity)}
+                  disabled={(() => {
+                    if (createJobMutation.isPending || updateJobMutation.isPending) return true;
+                    if (isEditing) return false;
+                    
+                    const policy = quotaPolicy?.value || "require_approval";
+                    if (!clientHasNoPositions) return false;
+                    
+                    // Block policy: always disabled when quota exceeded
+                    if (policy === "block") return true;
+                    
+                    // Require approval: disabled until user acknowledges
+                    if (policy === "require_approval" && !userAwareOfIrregularity) return true;
+                    
+                    // Allow policy: never disabled
+                    return false;
+                  })()}
                   data-testid="button-save"
                 >
                   {(createJobMutation.isPending || updateJobMutation.isPending) && (
