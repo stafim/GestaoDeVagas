@@ -627,7 +627,7 @@ export default function Workflow() {
                                 <SelectItem value="dual">
                                   <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
-                                    Dupla Alçada (2 aprovações)
+                                    Dupla Alçada (2 Usuários)
                                   </div>
                                 </SelectItem>
                               </SelectContent>
@@ -687,139 +687,49 @@ export default function Workflow() {
                           {step.approvalType === "dual" && (
                             <div className="space-y-3">
                               <div className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                                <strong>Dupla Alçada:</strong> Requer aprovação de dois usuários/aprovadores diferentes
+                                <strong>Dupla Alçada:</strong> Requer aprovação de dois usuários diferentes
                               </div>
                               
                               <div>
-                                <Label className="text-sm">Critério de Aprovação *</Label>
-                                <Select
-                                  value={step.dualApprovalSubtype}
-                                  onValueChange={(value: "user" | "role") => {
-                                    updateStep(index, "dualApprovalSubtype", value);
-                                    if (value === "user") {
-                                      updateStep(index, "requiredRole", undefined);
-                                      updateStep(index, "requiredRole2", undefined);
-                                    } else {
-                                      updateStep(index, "approverId", undefined);
-                                      updateStep(index, "approverId2", undefined);
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger data-testid={`select-dual-subtype-${index}`} className="mt-1">
-                                    <SelectValue placeholder="Selecione o critério" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="user">
-                                      <div className="flex items-center gap-2">
-                                        <UserCheck className="h-4 w-4" />
-                                        Usuário Específico
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="role">
-                                      <div className="flex items-center gap-2">
-                                        <Shield className="h-4 w-4" />
-                                        Tipo de Usuário (Cargo)
-                                      </div>
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              {step.dualApprovalSubtype === "user" && (
-                                <div className="space-y-3">
-                                  <div>
-                                    <Label className="text-sm">Primeiro Aprovador *</Label>
+                                <Label className="text-sm">Primeiro Aprovador *</Label>
                                     <Select
                                       value={step.approverId}
                                       onValueChange={(value) => updateStep(index, "approverId", value)}
                                     >
-                                      <SelectTrigger data-testid={`select-dual-user-1-${index}`} className="mt-1">
-                                        <SelectValue placeholder="Selecione o primeiro aprovador" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {users?.map((user) => (
-                                          <SelectItem key={user.id} value={user.id}>
-                                            {user.firstName} {user.lastName} ({user.email})
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  
-                                  <div>
-                                    <Label className="text-sm">Segundo Aprovador *</Label>
-                                    <Select
-                                      value={step.approverId2}
-                                      onValueChange={(value) => updateStep(index, "approverId2", value)}
-                                    >
-                                      <SelectTrigger data-testid={`select-dual-user-2-${index}`} className="mt-1">
-                                        <SelectValue placeholder="Selecione o segundo aprovador" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {users?.filter(user => user.id !== step.approverId).map((user) => (
-                                          <SelectItem key={user.id} value={user.id}>
-                                            {user.firstName} {user.lastName} ({user.email})
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  
-                                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                                    Ambos os aprovadores selecionados acima precisarão aprovar esta etapa
-                                  </p>
-                                </div>
-                              )}
-
-                              {step.dualApprovalSubtype === "role" && (
-                                <div className="space-y-3">
-                                  <div>
-                                    <Label className="text-sm">Primeiro Tipo de Usuário (Cargo) *</Label>
-                                    <Select
-                                      value={step.requiredRole}
-                                      onValueChange={(value) => updateStep(index, "requiredRole", value)}
-                                    >
-                                      <SelectTrigger data-testid={`select-dual-role-1-${index}`} className="mt-1">
-                                        <SelectValue placeholder="Selecione o primeiro tipo de usuário" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="admin">Administrador</SelectItem>
-                                        <SelectItem value="hr_manager">Gerente de RH</SelectItem>
-                                        <SelectItem value="manager">Gerente</SelectItem>
-                                        <SelectItem value="approver">Aprovador</SelectItem>
-                                        <SelectItem value="recruiter">Recrutador</SelectItem>
-                                        <SelectItem value="interviewer">Entrevistador</SelectItem>
-                                        <SelectItem value="viewer">Visualizador</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  
-                                  <div>
-                                    <Label className="text-sm">Segundo Tipo de Usuário (Cargo) *</Label>
-                                    <Select
-                                      value={step.requiredRole2}
-                                      onValueChange={(value) => updateStep(index, "requiredRole2", value)}
-                                    >
-                                      <SelectTrigger data-testid={`select-dual-role-2-${index}`} className="mt-1">
-                                        <SelectValue placeholder="Selecione o segundo tipo de usuário" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="admin">Administrador</SelectItem>
-                                        <SelectItem value="hr_manager">Gerente de RH</SelectItem>
-                                        <SelectItem value="manager">Gerente</SelectItem>
-                                        <SelectItem value="approver">Aprovador</SelectItem>
-                                        <SelectItem value="recruiter">Recrutador</SelectItem>
-                                        <SelectItem value="interviewer">Entrevistador</SelectItem>
-                                        <SelectItem value="viewer">Visualizador</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  
-                                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                                    Um usuário de cada tipo selecionado acima precisará aprovar esta etapa
-                                  </p>
-                                </div>
-                              )}
+                                      <SelectTrigger data-testid={`select-approver1-${index}`} className="mt-1">
+                                    <SelectValue placeholder="Selecione o primeiro aprovador" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {users?.map((user) => (
+                                      <SelectItem key={user.id} value={user.id}>
+                                        {user.firstName} {user.lastName} ({user.email})
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              <div>
+                                <Label className="text-sm">Segundo Aprovador *</Label>
+                                <Select
+                                  value={step.approverId2}
+                                  onValueChange={(value) => updateStep(index, "approverId2", value)}
+                                >
+                                  <SelectTrigger data-testid={`select-approver2-${index}`} className="mt-1">
+                                    <SelectValue placeholder="Selecione o segundo aprovador" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {users?.filter(user => user.id !== step.approverId).map((user) => (
+                                      <SelectItem key={user.id} value={user.id}>
+                                        {user.firstName} {user.lastName} ({user.email})
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Ambos os aprovadores selecionados acima precisarão aprovar esta etapa
+                                </p>
+                              </div>
                             </div>
                           )}
                         </CardContent>
