@@ -16,9 +16,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor } from "lucide-react";
+import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban } from "lucide-react";
 import { z } from "zod";
 import { ClientDashboardSettings } from "@/components/ClientDashboardSettings";
+import { BlacklistManager } from "@/components/BlacklistManager";
 
 const workScaleFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -724,7 +725,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto">
           <TabsTrigger value="general" className="flex items-center gap-2" data-testid="tab-general">
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
@@ -744,6 +745,10 @@ export default function Settings() {
           <TabsTrigger value="dashboards" className="flex items-center gap-2" data-testid="tab-dashboards">
             <Monitor className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboards</span>
+          </TabsTrigger>
+          <TabsTrigger value="blacklist" className="flex items-center gap-2" data-testid="tab-blacklist">
+            <Ban className="h-4 w-4" />
+            <span className="hidden sm:inline">Blacklist</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1834,6 +1839,11 @@ export default function Settings() {
         {/* Aba Dashboards */}
         <TabsContent value="dashboards">
           <ClientDashboardSettings />
+        </TabsContent>
+
+        {/* Aba Blacklist */}
+        <TabsContent value="blacklist">
+          <BlacklistManager />
         </TabsContent>
       </Tabs>
     </div>
