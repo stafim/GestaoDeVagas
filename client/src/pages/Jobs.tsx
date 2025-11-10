@@ -42,8 +42,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  FileText,
-  UserPlus
+  FileText
 } from "lucide-react";
 import {
   Table,
@@ -106,9 +105,6 @@ export default function Jobs() {
   const [showCompleted, setShowCompleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 20;
-  const [showGenerateCandidatesDialog, setShowGenerateCandidatesDialog] = useState(false);
-  const [selectedJobIdForCandidates, setSelectedJobIdForCandidates] = useState<string | null>(null);
-  const [candidateCount, setCandidateCount] = useState(10);
 
   // Check for clientId in URL params (from RealTime dashboard)
   useEffect(() => {
@@ -185,30 +181,6 @@ export default function Jobs() {
       toast({
         title: "Erro",
         description: "Erro ao atribuir vaga. Tente novamente.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const generateCandidatesMutation = useMutation({
-    mutationFn: async ({ jobId, count }: { jobId: string; count: number }) => {
-      const response = await apiRequest("POST", `/api/jobs/${jobId}/generate-candidates`, { count });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-      queryClient.refetchQueries({ queryKey: ["/api/jobs"] });
-      toast({
-        title: "Sucesso",
-        description: `${data.candidatesCreated} candidatos criados e ${data.applicationsCreated} aplicações geradas com sucesso!`,
-      });
-      setShowGenerateCandidatesDialog(false);
-      setCandidateCount(10);
-    },
-    onError: () => {
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar candidatos. Tente novamente.",
         variant: "destructive",
       });
     },
@@ -430,20 +402,6 @@ export default function Jobs() {
 
   const handleGoToKanban = (jobId: string) => {
     setLocation(`/kanban?jobId=${jobId}`);
-  };
-
-  const handleOpenGenerateCandidates = (jobId: string) => {
-    setSelectedJobIdForCandidates(jobId);
-    setShowGenerateCandidatesDialog(true);
-  };
-
-  const handleGenerateCandidates = () => {
-    if (selectedJobIdForCandidates && candidateCount > 0 && candidateCount <= 100) {
-      generateCandidatesMutation.mutate({ 
-        jobId: selectedJobIdForCandidates, 
-        count: candidateCount 
-      });
-    }
   };
 
   return (
@@ -861,15 +819,6 @@ export default function Jobs() {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => handleOpenGenerateCandidates(job.id)}
-                              title="Gerar candidatos aleatórios"
-                              data-testid={`button-generate-candidates-${job.id}`}
-                            >
-                              <UserPlus className="h-4 w-4 text-orange-600" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
                               onClick={() => handleAssignToMe(job.id)}
                               title="Assumir esta vaga"
                               data-testid={`button-assign-${job.id}`}
@@ -933,51 +882,6 @@ export default function Jobs() {
         onClose={handleCloseDetailsModal}
         jobId={detailsJobId}
       />
-
-      {/* Generate Candidates Dialog */}
-      <Dialog open={showGenerateCandidatesDialog} onOpenChange={setShowGenerateCandidatesDialog}>
-        <DialogContent data-testid="dialog-generate-candidates">
-          <DialogHeader>
-            <DialogTitle>Gerar Candidatos Aleatórios</DialogTitle>
-            <DialogDescription>
-              Crie candidatos de teste com dados aleatórios para esta vaga. Útil para demonstrações e testes.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="candidate-count">Quantidade de Candidatos</Label>
-              <Input
-                id="candidate-count"
-                type="number"
-                min="1"
-                max="100"
-                value={candidateCount}
-                onChange={(e) => setCandidateCount(parseInt(e.target.value) || 10)}
-                data-testid="input-candidate-count"
-              />
-              <p className="text-sm text-muted-foreground">
-                Digite um número entre 1 e 100
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowGenerateCandidatesDialog(false)}
-              data-testid="button-cancel-generate"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleGenerateCandidates}
-              disabled={generateCandidatesMutation.isPending || candidateCount < 1 || candidateCount > 100}
-              data-testid="button-confirm-generate"
-            >
-              {generateCandidatesMutation.isPending ? "Gerando..." : "Gerar Candidatos"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
