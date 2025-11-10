@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { insertClientSchema, insertClientEmployeeSchema, type Client, type ClientEmployee } from "@shared/schema";
+import { insertClientSchema, insertClientEmployeeSchema, type Client, type ClientEmployee, type SelectClientProfessionLimit, type Profession } from "@shared/schema";
 import { getAllCities, BRAZILIAN_STATES } from "@shared/constants";
 import { FileText, Upload, Download, Trash2, UserPlus, Pencil, Users, Search } from "lucide-react";
 
@@ -31,7 +31,6 @@ const formSchema = insertClientSchema.extend({
   city: z.string().optional(),
   state: z.string().optional(),
   notes: z.string().optional(),
-  maxJobs: z.number().optional().or(z.literal("")),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -47,6 +46,8 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<ClientEmployee | null>(null);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
+  const [selectedProfession, setSelectedProfession] = useState<string>("");
+  const [maxJobsForProfession, setMaxJobsForProfession] = useState<number>(0);
 
   const { data: client } = useQuery<Client>({
     queryKey: ["/api/clients", clientId],
@@ -67,6 +68,15 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
     queryKey: ["/api/jobs"],
     enabled: isEditing && !!clientId,
     select: (jobs) => jobs.filter((job: any) => job.clientId === clientId),
+  });
+
+  const { data: professions = [] } = useQuery<Profession[]>({
+    queryKey: ["/api/professions"],
+  });
+
+  const { data: professionLimits = [] } = useQuery<SelectClientProfessionLimit[]>({
+    queryKey: ["/api/clients", clientId, "profession-limits"],
+    enabled: isEditing && !!clientId,
   });
 
   const form = useForm<FormData>({
@@ -94,7 +104,6 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
         city: client.city || "",
         state: client.state || "",
         notes: client.notes || "",
-        maxJobs: client.maxJobs || "",
       });
     }
   }, [client, form]);
@@ -275,6 +284,64 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
       });
     },
   });
+
+  const addProfessionLimitMutation = useMutation({
+    mutationFn: async (data: { professionId: string; maxJobs: number }) => {
+      return await apiRequest("POST", `/api/clients/${clientId}/profession-limits`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients", clientId, "profession-limits"] });
+      toast({
+        title: "Sucesso",
+        description: "Limite de profissão adicionado com sucesso!",
+      });
+      setSelectedProfession("");
+      setMaxJobsForProfession(0);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao adicionar limite de profissão",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProfessionLimitMutation = useMutation({
+    mutationFn: async (limitId: string) => {
+      return await apiRequest("DELETE", `/api/client-profession-limits/${limitId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients", clientId, "profession-limits"] });
+      toast({
+        title: "Sucesso",
+        description: "Limite de profissão removido com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao remover limite de profissão",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddProfessionLimit = () => {
+    if (!selectedProfession || maxJobsForProfession <= 0) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma profissão e defina um limite válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addProfessionLimitMutation.mutate({
+      professionId: selectedProfession,
+      maxJobs: maxJobsForProfession,
+    });
+  };
 
   const handleEditEmployee = (employee: ClientEmployee) => {
     setEditingEmployee(employee);
@@ -523,106 +590,137 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
               </div>
             </div>
 
+            {/* Limites por Profissão */}
+            {isEditing && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Limites de Vagas por Profissão
+                </h3>
+
+                {/* Formulário para adicionar limite */}
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <h4 className="text-sm font-medium mb-3">Adicionar Limite</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Select
+                      value={selectedProfession}
+                      onValueChange={setSelectedProfession}
+                    >
+                      <SelectTrigger data-testid="select-profession-limit">
+                        <SelectValue placeholder="Selecione a profissão" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {professions
+                          .filter((prof) => !professionLimits.some((limit) => limit.professionId === prof.id))
+                          .map((profession) => (
+                            <SelectItem key={profession.id} value={profession.id}>
+                              {profession.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Input
+                      type="number"
+                      placeholder="Máximo de vagas"
+                      value={maxJobsForProfession || ""}
+                      onChange={(e) => setMaxJobsForProfession(Number(e.target.value) || 0)}
+                      min={0}
+                      data-testid="input-profession-max-jobs"
+                    />
+
+                    <Button
+                      type="button"
+                      onClick={handleAddProfessionLimit}
+                      disabled={!selectedProfession || maxJobsForProfession <= 0 || addProfessionLimitMutation.isPending}
+                      data-testid="button-add-profession-limit"
+                    >
+                      {addProfessionLimitMutation.isPending ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin mr-2" />
+                          Adicionando...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-plus mr-2" />
+                          Adicionar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Tabela de limites existentes */}
+                {professionLimits.length > 0 ? (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Profissão</TableHead>
+                          <TableHead>Limite Máximo</TableHead>
+                          <TableHead>Vagas Abertas</TableHead>
+                          <TableHead>Disponíveis</TableHead>
+                          <TableHead className="w-[100px]">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {professionLimits.map((limit) => {
+                          const profession = professions.find((p) => p.id === limit.professionId);
+                          const jobsForProfession = clientJobs.filter(
+                            (job: any) => job.professionId === limit.professionId &&
+                            !['admitido', 'cancelada'].includes(job.status)
+                          ).length;
+                          const available = limit.maxJobs - jobsForProfession;
+
+                          return (
+                            <TableRow key={limit.id}>
+                              <TableCell className="font-medium">
+                                {profession?.name || "Profissão desconhecida"}
+                              </TableCell>
+                              <TableCell>{limit.maxJobs}</TableCell>
+                              <TableCell>{jobsForProfession}</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={available > 0 ? "default" : "destructive"}
+                                  data-testid={`badge-profession-available-${limit.id}`}
+                                >
+                                  {available >= 0 ? available : 0}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteProfessionLimitMutation.mutate(limit.id)}
+                                  disabled={deleteProfessionLimitMutation.isPending}
+                                  data-testid={`button-delete-profession-limit-${limit.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border border-dashed">
+                    <i className="fas fa-briefcase h-12 w-12 mx-auto mb-2 opacity-50"></i>
+                    <p className="text-sm">Nenhum limite de profissão configurado</p>
+                    <p className="text-xs mt-1">
+                      Configure limites específicos para cada profissão
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Contrato */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Contrato
               </h3>
-
-              {/* Campo de Número Máximo de Vagas */}
-              <FormField
-                control={form.control}
-                name="maxJobs"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número Máximo de Vagas Permitidas</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Ex: 10"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => {
-                          const value = e.target.value === "" ? "" : Number(e.target.value);
-                          field.onChange(value);
-                        }}
-                        data-testid="input-max-jobs"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Quadro de Resumo - 4 cards em grid */}
-              {isEditing && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card: Funcionários Ativos */}
-                  <div className="border rounded-lg p-4 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900 rounded">
-                          <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                        <p className="text-xs font-medium text-muted-foreground">Funcionários Ativos</p>
-                      </div>
-                      <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                        {employees.filter((e: any) => e.status === 'ativo').length}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Card: Posições Não Ativas */}
-                  <div className="border rounded-lg p-4 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-amber-100 dark:bg-amber-900 rounded">
-                          <i className="fas fa-user-clock text-amber-600 dark:text-amber-400"></i>
-                        </div>
-                        <p className="text-xs font-medium text-muted-foreground">Posições Não Ativas</p>
-                      </div>
-                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                        {employees.filter((e: any) => e.status !== 'ativo').length}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Card: Total de Vagas */}
-                  <div className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded">
-                          <i className="fas fa-briefcase text-blue-600 dark:text-blue-400"></i>
-                        </div>
-                        <p className="text-xs font-medium text-muted-foreground">Total de Vagas</p>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {form.watch('maxJobs') || 0}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Card: Vagas Disponíveis */}
-                  <div className="border rounded-lg p-4 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-green-100 dark:bg-green-900 rounded">
-                          <i className="fas fa-check-circle text-green-600 dark:text-green-400"></i>
-                        </div>
-                        <p className="text-xs font-medium text-muted-foreground">Vagas Disponíveis</p>
-                      </div>
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {(() => {
-                          const activeEmployees = employees.filter((e: any) => e.status === 'ativo').length;
-                          const maxJobs = form.watch('maxJobs') || 0;
-                          const remaining = maxJobs - activeEmployees;
-                          return remaining >= 0 ? remaining : 0;
-                        })()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Upload de Contrato */}
               {isEditing && (
