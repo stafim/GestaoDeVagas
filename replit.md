@@ -81,6 +81,13 @@ Preferred communication style: Simple, everyday language.
 ## Candidate Blacklist Management
 - **Purpose**: Manage candidates who cannot be hired by the organization.
 - **Manual Entry**: Add candidates directly through Settings > Blacklist tab with full name, CPF, and reason for blacklisting.
+- **CSV Import**: Batch import candidates via CSV file with automatic parsing and validation.
+  - CSV format: Three columns required - `nome`, `cpf`, `motivo`
+  - Template download available through "Baixar Modelo CSV" button
+  - Preview functionality shows first 10 candidates before import
+  - Batch processing with detailed results (success/duplicates/errors)
+  - Uses papaparse library for CSV parsing
+  - Backend endpoint: `POST /api/blacklist-candidates/batch`
 - **Data Fields**: Full name (required), CPF in format 000.000.000-00 (required), and detailed reason for blacklisting (required).
 - **CRUD Operations**: Full create, read, update, and delete capabilities.
 - **Multi-Tenant**: Blacklist entries are isolated by organization using `organizationId`.
