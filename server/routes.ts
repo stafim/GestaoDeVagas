@@ -3406,6 +3406,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/blacklist-candidates/batch', isAuthenticated, async (req, res) => {
+    try {
+      const { candidates } = req.body;
+      
+      if (!Array.isArray(candidates) || candidates.length === 0) {
+        return res.status(400).json({ message: "Lista de candidatos inválida ou vazia" });
+      }
+
+      const results = {
+        success: [] as any[],
+        errors: [] as any[],
+        duplicates: [] as any[],
+      };
+
+      for (const candidate of candidates) {
+        try {
+          // Validar dados
+          const validatedData = insertBlacklistCandidateSchema.parse(candidate);
+          
+          // Verificar duplicata
+          const existing = await storage.getBlacklistCandidateByCPF(validatedData.cpf);
+          if (existing) {
+            results.duplicates.push({
+              cpf: validatedData.cpf,
+              fullName: validatedData.fullName,
+              message: "Já existe na blacklist"
+            });
+            continue;
+          }
+          
+          // Criar candidato
+          const newCandidate = await storage.createBlacklistCandidate(validatedData);
+          results.success.push(newCandidate);
+        } catch (error) {
+          results.errors.push({
+            candidate,
+            error: error instanceof Error ? error.message : "Erro desconhecido"
+          });
+        }
+      }
+
+      res.json({
+        message: `Importação concluída: ${results.success.length} adicionados, ${results.duplicates.length} duplicados, ${results.errors.length} erros`,
+        results
+      });
+    } catch (error) {
+      console.error("Error batch creating blacklist candidates:", error);
+      res.status(500).json({ message: "Failed to batch create blacklist candidates" });
+    }
+  });
+
   // Approval Workflow routes
   app.get('/api/workflows', isAuthenticated, async (req, res) => {
     try {

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,8 +12,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Ban } from "lucide-react";
+import { Plus, Edit, Trash2, Ban, Upload, Download, FileText } from "lucide-react";
 import { z } from "zod";
+import Papa from "papaparse";
 
 const blacklistCandidateFormSchema = z.object({
   fullName: z.string().min(3, "Nome completo deve ter no mínimo 3 caracteres"),
@@ -36,8 +37,13 @@ type BlacklistCandidate = {
 
 export function BlacklistManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState<BlacklistCandidate | null>(null);
   const [deletingCandidateId, setDeletingCandidateId] = useState<string | undefined>();
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const form = useForm<BlacklistCandidateFormData>({
@@ -124,6 +130,95 @@ export function BlacklistManager() {
     },
   });
 
+  const batchImportMutation = useMutation({
+    mutationFn: async (candidates: any[]) => {
+      const response = await apiRequest("POST", "/api/blacklist-candidates/batch", { candidates });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/blacklist-candidates"] });
+      toast({
+        title: "Importação Concluída",
+        description: data.message,
+      });
+      setIsImportModalOpen(false);
+      setCsvFile(null);
+      setImportPreview([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao importar candidatos.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione um arquivo CSV válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCsvFile(file);
+    setIsProcessing(true);
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        setIsProcessing(false);
+        const parsed = results.data.map((row: any) => ({
+          fullName: row.nome || row.name || row.fullName || "",
+          cpf: formatCPF(row.cpf || ""),
+          reason: row.motivo || row.reason || "",
+          organizationId: "demo-org-id",
+        }));
+        setImportPreview(parsed);
+      },
+      error: (error) => {
+        setIsProcessing(false);
+        toast({
+          title: "Erro ao processar CSV",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
+  const handleImport = () => {
+    if (importPreview.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Nenhum candidato para importar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    batchImportMutation.mutate(importPreview);
+  };
+
+  const downloadTemplate = () => {
+    const csvContent = "nome,cpf,motivo\nJoão da Silva,123.456.789-00,Motivo do cadastro na blacklist";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'template_blacklist.csv';
+    link.click();
+  };
+
   const onSubmit = (data: BlacklistCandidateFormData) => {
     if (editingCandidate) {
       updateMutation.mutate({ id: editingCandidate.id, data });
@@ -177,13 +272,114 @@ export function BlacklistManager() {
             Gerencie candidatos que não podem ser contratados
           </CardDescription>
         </div>
-        <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-new-blacklist-candidate">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Candidato na Blacklist
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={downloadTemplate}
+            data-testid="button-download-template"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Baixar Modelo CSV
+          </Button>
+          <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" data-testid="button-import-csv">
+                <Upload className="mr-2 h-4 w-4" />
+                Importar CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Importar Candidatos via CSV</DialogTitle>
+                <DialogDescription>
+                  Carregue um arquivo CSV com as colunas: nome, cpf e motivo
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileChange}
+                    data-testid="input-csv-file"
+                  />
+                  {csvFile && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <FileText className="h-4 w-4" />
+                      {csvFile.name}
+                    </div>
+                  )}
+                </div>
+
+                {isProcessing && (
+                  <div className="text-center py-4">Processando arquivo...</div>
+                )}
+
+                {importPreview.length > 0 && !isProcessing && (
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Pré-visualização ({importPreview.length} candidatos)</h4>
+                    <div className="max-h-96 overflow-y-auto border rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>CPF</TableHead>
+                            <TableHead>Motivo</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {importPreview.slice(0, 10).map((candidate, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{candidate.fullName}</TableCell>
+                              <TableCell>{candidate.cpf}</TableCell>
+                              <TableCell className="max-w-xs truncate">{candidate.reason}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      {importPreview.length > 10 && (
+                        <div className="text-center py-2 text-sm text-muted-foreground">
+                          ... e mais {importPreview.length - 10} candidatos
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsImportModalOpen(false);
+                    setCsvFile(null);
+                    setImportPreview([]);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
+                  data-testid="button-cancel-import"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleImport}
+                  disabled={importPreview.length === 0 || batchImportMutation.isPending}
+                  data-testid="button-confirm-import"
+                >
+                  {batchImportMutation.isPending ? "Importando..." : `Importar ${importPreview.length} Candidatos`}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-new-blacklist-candidate">
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Candidato
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
