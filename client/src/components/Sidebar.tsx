@@ -18,7 +18,8 @@ import {
   Monitor,
   DollarSign,
   Package,
-  GitBranch
+  GitBranch,
+  CheckCircle
 } from "lucide-react";
 import logoImage from "@assets/Screenshot_20250930_142224_Chrome~2_1759253037075.jpg";
 
@@ -78,6 +79,12 @@ const clientNavigationItems = [
     href: "/workflow",
     icon: GitBranch,
     description: "Aprovação de vagas"
+  },
+  {
+    name: "Aprovações",
+    href: "/aprovacoes",
+    icon: CheckCircle,
+    description: "Aprovar ou rejeitar vagas"
   },
   {
     name: "Fechamento de Vagas",
