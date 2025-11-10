@@ -209,6 +209,7 @@ export interface IStorage {
   createCandidate(candidate: InsertCandidate): Promise<Candidate>;
   updateCandidate(id: string, candidate: Partial<InsertCandidate>): Promise<Candidate>;
   deleteCandidate(id: string): Promise<void>;
+  generateRandomCandidates(jobId: string, count: number): Promise<{ candidatesCreated: number; applicationsCreated: number }>;
 
   // Job operations
   getJobs(limit?: number, offset?: number, search?: string, status?: string, companyId?: string, professionId?: string, recruiterId?: string): Promise<JobWithDetails[]>;
@@ -1049,6 +1050,118 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCandidate(id: string): Promise<void> {
     await db.delete(candidates).where(eq(candidates.id, id));
+  }
+
+  async generateRandomCandidates(jobId: string, count: number): Promise<{ candidatesCreated: number; applicationsCreated: number }> {
+    // Verificar se a vaga existe
+    const job = await this.getJob(jobId);
+    if (!job) {
+      throw new Error("Job not found");
+    }
+
+    // Listas de dados brasileiros para gerar candidatos aleatórios
+    const firstNames = [
+      "João", "Maria", "Pedro", "Ana", "Lucas", "Juliana", "Carlos", "Fernanda", "Rafael", "Camila",
+      "Bruno", "Beatriz", "Gabriel", "Larissa", "Felipe", "Amanda", "Thiago", "Gabriela", "Rodrigo", "Patricia",
+      "Mateus", "Mariana", "Diego", "Aline", "Guilherme", "Renata", "Fernando", "Carolina", "André", "Letícia",
+      "Henrique", "Vanessa", "Leonardo", "Tatiana", "Vinícius", "Débora", "Marcelo", "Priscila", "Ricardo", "Cristina"
+    ];
+    
+    const lastNames = [
+      "Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes",
+      "Costa", "Ribeiro", "Martins", "Carvalho", "Rocha", "Almeida", "Nascimento", "Araújo", "Melo", "Barbosa",
+      "Cardoso", "Correia", "Dias", "Teixeira", "Mendes", "Moreira", "Cavalcanti", "Monteiro", "Freitas", "Campos"
+    ];
+
+    const skills = [
+      "Trabalho em equipe", "Comunicação eficaz", "Liderança", "Proatividade", "Organização",
+      "Resolução de problemas", "Gestão de tempo", "Adaptabilidade", "Criatividade", "Pensamento crítico",
+      "Atendimento ao cliente", "Negociação", "Microsoft Office", "Relacionamento interpessoal", "Flexibilidade"
+    ];
+
+    const experienceLevels = [
+      "1-2 anos de experiência na área",
+      "3-5 anos de experiência comprovada",
+      "Mais de 5 anos de experiência",
+      "Experiência inicial na área",
+      "Sólida experiência profissional"
+    ];
+
+    const educationLevels = [
+      "Ensino Médio Completo",
+      "Ensino Superior em andamento",
+      "Ensino Superior Completo",
+      "Pós-graduação",
+      "Técnico Completo"
+    ];
+
+    const statuses = ["applied", "under_review", "interview_scheduled", "interviewed"];
+
+    let candidatesCreated = 0;
+    let applicationsCreated = 0;
+
+    for (let i = 0; i < count; i++) {
+      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const fullName = `${firstName} ${lastName}`;
+      
+      // Gerar email único
+      const emailSuffix = Math.floor(Math.random() * 10000);
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${emailSuffix}@email.com`;
+
+      // Gerar telefone brasileiro
+      const ddd = Math.floor(Math.random() * 89) + 11; // 11-99
+      const phone = `(${ddd}) 9${Math.floor(Math.random() * 90000000) + 10000000}`;
+
+      // Gerar CPF (apenas formato, não validado)
+      const cpf = `${Math.floor(Math.random() * 900) + 100}.${Math.floor(Math.random() * 900) + 100}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
+
+      // Gerar data de nascimento (entre 18 e 60 anos)
+      const age = Math.floor(Math.random() * 42) + 18;
+      const birthDate = new Date();
+      birthDate.setFullYear(birthDate.getFullYear() - age);
+      birthDate.setMonth(Math.floor(Math.random() * 12));
+      birthDate.setDate(Math.floor(Math.random() * 28) + 1);
+
+      // Selecionar skills aleatórias (2-5 skills)
+      const numSkills = Math.floor(Math.random() * 4) + 2;
+      const selectedSkills = [];
+      const skillsCopy = [...skills];
+      for (let j = 0; j < numSkills && skillsCopy.length > 0; j++) {
+        const index = Math.floor(Math.random() * skillsCopy.length);
+        selectedSkills.push(skillsCopy.splice(index, 1)[0]);
+      }
+
+      const candidateData: InsertCandidate = {
+        name: fullName,
+        email: email,
+        phone: phone,
+        document: cpf,
+        birthDate: birthDate,
+        skills: selectedSkills.join(", "),
+        experience: experienceLevels[Math.floor(Math.random() * experienceLevels.length)],
+        education: educationLevels[Math.floor(Math.random() * educationLevels.length)],
+        notes: `Candidato gerado automaticamente para teste`
+      };
+
+      // Criar candidato
+      const candidate = await this.createCandidate(candidateData);
+      candidatesCreated++;
+
+      // Criar aplicação para a vaga
+      const applicationData: InsertApplication = {
+        jobId: jobId,
+        candidateId: candidate.id,
+        status: statuses[Math.floor(Math.random() * statuses.length)] as any,
+        overallScore: Math.floor(Math.random() * 40) + 60, // Score entre 60-100
+        notes: "Aplicação gerada automaticamente"
+      };
+
+      await this.createApplication(applicationData);
+      applicationsCreated++;
+    }
+
+    return { candidatesCreated, applicationsCreated };
   }
 
   // Job operations

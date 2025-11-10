@@ -2160,6 +2160,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate random candidates for a job
+  app.post('/api/jobs/:id/generate-candidates', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { count } = req.body;
+      
+      // Validate count
+      if (!count || count < 1 || count > 100) {
+        return res.status(400).json({ message: "Count deve estar entre 1 e 100" });
+      }
+      
+      // Check if job exists
+      const job = await storage.getJob(id);
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+      
+      // Generate random candidates
+      const result = await storage.generateRandomCandidates(id, count);
+      res.json(result);
+    } catch (error) {
+      console.error("Error generating random candidates:", error);
+      res.status(500).json({ message: "Falha ao gerar candidatos aleatórios" });
+    }
+  });
+
   app.patch('/api/jobs/:id/admission', isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
