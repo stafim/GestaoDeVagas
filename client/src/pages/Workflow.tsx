@@ -40,6 +40,7 @@ const workflowStepSchema = z.object({
   approverId: z.string().optional(),
   approverId2: z.string().optional(), // Segundo aprovador para dupla alçada
   requiredRole: z.string().optional(),
+  requiredRole2: z.string().optional(), // Segundo cargo para dupla alçada
 });
 
 const createWorkflowSchema = z.object({
@@ -59,6 +60,7 @@ interface WorkflowStep {
   approverId?: string;
   approverId2?: string; // Segundo aprovador para dupla alçada
   requiredRole?: string;
+  requiredRole2?: string; // Segundo cargo para dupla alçada
 }
 
 export default function Workflow() {
@@ -139,6 +141,7 @@ export default function Workflow() {
           userId: step.approverId,
           userId2: step.approverId2, // Segundo aprovador para dupla alçada
           role: step.requiredRole,
+          role2: step.requiredRole2, // Segundo cargo para dupla alçada
         };
         
         console.log("Creating step:", stepData);
@@ -691,6 +694,7 @@ export default function Workflow() {
                                     updateStep(index, "dualApprovalSubtype", value);
                                     if (value === "user") {
                                       updateStep(index, "requiredRole", undefined);
+                                      updateStep(index, "requiredRole2", undefined);
                                     } else {
                                       updateStep(index, "approverId", undefined);
                                       updateStep(index, "approverId2", undefined);
@@ -764,27 +768,51 @@ export default function Workflow() {
                               )}
 
                               {step.dualApprovalSubtype === "role" && (
-                                <div>
-                                  <Label className="text-sm">Tipo de Usuário (Cargo) *</Label>
-                                  <Select
-                                    value={step.requiredRole}
-                                    onValueChange={(value) => updateStep(index, "requiredRole", value)}
-                                  >
-                                    <SelectTrigger data-testid={`select-dual-role-${index}`} className="mt-1">
-                                      <SelectValue placeholder="Selecione um tipo de usuário" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="admin">Administrador</SelectItem>
-                                      <SelectItem value="hr_manager">Gerente de RH</SelectItem>
-                                      <SelectItem value="manager">Gerente</SelectItem>
-                                      <SelectItem value="approver">Aprovador</SelectItem>
-                                      <SelectItem value="recruiter">Recrutador</SelectItem>
-                                      <SelectItem value="interviewer">Entrevistador</SelectItem>
-                                      <SelectItem value="viewer">Visualizador</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Dois usuários diferentes com este cargo precisarão aprovar
+                                <div className="space-y-3">
+                                  <div>
+                                    <Label className="text-sm">Primeiro Tipo de Usuário (Cargo) *</Label>
+                                    <Select
+                                      value={step.requiredRole}
+                                      onValueChange={(value) => updateStep(index, "requiredRole", value)}
+                                    >
+                                      <SelectTrigger data-testid={`select-dual-role-1-${index}`} className="mt-1">
+                                        <SelectValue placeholder="Selecione o primeiro tipo de usuário" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="admin">Administrador</SelectItem>
+                                        <SelectItem value="hr_manager">Gerente de RH</SelectItem>
+                                        <SelectItem value="manager">Gerente</SelectItem>
+                                        <SelectItem value="approver">Aprovador</SelectItem>
+                                        <SelectItem value="recruiter">Recrutador</SelectItem>
+                                        <SelectItem value="interviewer">Entrevistador</SelectItem>
+                                        <SelectItem value="viewer">Visualizador</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <div>
+                                    <Label className="text-sm">Segundo Tipo de Usuário (Cargo) *</Label>
+                                    <Select
+                                      value={step.requiredRole2}
+                                      onValueChange={(value) => updateStep(index, "requiredRole2", value)}
+                                    >
+                                      <SelectTrigger data-testid={`select-dual-role-2-${index}`} className="mt-1">
+                                        <SelectValue placeholder="Selecione o segundo tipo de usuário" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="admin">Administrador</SelectItem>
+                                        <SelectItem value="hr_manager">Gerente de RH</SelectItem>
+                                        <SelectItem value="manager">Gerente</SelectItem>
+                                        <SelectItem value="approver">Aprovador</SelectItem>
+                                        <SelectItem value="recruiter">Recrutador</SelectItem>
+                                        <SelectItem value="interviewer">Entrevistador</SelectItem>
+                                        <SelectItem value="viewer">Visualizador</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                                    Um usuário de cada tipo selecionado acima precisará aprovar esta etapa
                                   </p>
                                 </div>
                               )}
