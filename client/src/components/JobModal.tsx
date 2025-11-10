@@ -3,7 +3,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertJobSchema, type InsertJob, type JobWithDetails, type CompaniesListResponse, type Profession, type Client, type WorkScale, type Employee } from "@shared/schema";
+import { insertJobSchema, type InsertJob, type JobWithDetails, type CompaniesListResponse, type Profession, type Client, type WorkScale, type Employee, type SelectClientProfessionLimit } from "@shared/schema";
 import { getAllCities } from "@shared/constants";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
@@ -332,24 +332,52 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     enabled: !!selectedClientId && !isEditing,
   });
 
+  // Get profession limits for selected client
+  const { data: professionLimits = [] } = useQuery<SelectClientProfessionLimit[]>({
+    queryKey: ["/api/clients", selectedClientId, "profession-limits"],
+    enabled: !!selectedClientId && !isEditing,
+  });
+
+  // Get jobs for selected client and profession
+  const { data: allJobs = [] } = useQuery<any[]>({
+    queryKey: ["/api/jobs"],
+    enabled: !!selectedClientId && !!selectedProfessionId && !isEditing,
+  });
+
   // Get selected profession
   const selectedProfession = professions?.find(p => p.id === selectedProfessionId);
 
-  // Check if selected client has available positions
+  // Check if selected profession has available positions for this client
   React.useEffect(() => {
-    if (!isEditing && selectedClient && Array.isArray(clientEmployees)) {
-      const maxJobs = selectedClient.maxJobs || 0;
-      const activeEmployees = clientEmployees.filter((e: any) => e.status === 'ativo').length;
-      const availablePositions = maxJobs - activeEmployees;
+    if (!isEditing && selectedClientId && selectedProfessionId && professionLimits && allJobs) {
+      // Find the limit for this specific profession
+      const professionLimit = professionLimits.find(
+        (limit) => limit.professionId === selectedProfessionId
+      );
+
+      if (professionLimit) {
+        // Count active jobs for this client and profession
+        const activeJobsCount = allJobs.filter(
+          (job: any) =>
+            job.clientId === selectedClientId &&
+            job.professionId === selectedProfessionId &&
+            !['admitido', 'cancelada'].includes(job.status)
+        ).length;
+
+        const availablePositions = professionLimit.maxJobs - activeJobsCount;
+        setClientHasNoPositions(availablePositions <= 0);
+      } else {
+        // No limit configured for this profession - allow creation
+        setClientHasNoPositions(false);
+      }
       
-      setClientHasNoPositions(availablePositions <= 0);
-      // Reset awareness when client changes
+      // Reset awareness when client or profession changes
       setUserAwareOfIrregularity(false);
     } else {
       setClientHasNoPositions(false);
       setUserAwareOfIrregularity(false);
     }
-  }, [isEditing, selectedClient, clientEmployees]);
+  }, [isEditing, selectedClientId, selectedProfessionId, professionLimits, allJobs]);
 
   // Auto-adjust vacancy quantity when opening reason is "substituicao"
   React.useEffect(() => {
@@ -788,11 +816,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                             🚫 Criação de Vaga Bloqueada
                           </h4>
                           <p className="text-sm text-red-800 dark:text-red-300">
-                            O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
+                            O cliente selecionado já atingiu o número máximo de vagas para a profissão <strong>{selectedProfession?.name}</strong>.
                           </p>
                           <p className="text-sm text-red-800 dark:text-red-300 mt-2">
                             A <strong>política do sistema</strong> impede a criação de novas vagas quando o limite é atingido. 
-                            Para prosseguir, é necessário <strong>aumentar o limite no contrato do cliente</strong> ou <strong>selecionar outro cliente</strong>.
+                            Para prosseguir, é necessário <strong>aumentar o limite desta profissão no contrato do cliente</strong> ou <strong>selecionar outro cliente/profissão</strong>.
                           </p>
                           <p className="text-xs text-red-700 dark:text-red-400 mt-3 italic">
                             💡 Para alterar esta política, acesse Configurações → Política de Criação de Vagas
@@ -814,10 +842,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                           </div>
                           <div className="flex-1">
                             <h4 className="font-semibold text-red-900 dark:text-red-200 mb-1">
-                              ⚠️ Cliente Atingiu Limite de Vagas
+                              ⚠️ Cliente Atingiu Limite para esta Profissão
                             </h4>
                             <p className="text-sm text-red-800 dark:text-red-300">
-                              O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
+                              O cliente selecionado já atingiu o número máximo de vagas para a profissão <strong>{selectedProfession?.name}</strong>.
                             </p>
                             <p className="text-sm text-red-800 dark:text-red-300 mt-2">
                               Você pode criar esta vaga, mas ela será marcada como <strong>pré-reprovada</strong> e 
@@ -878,7 +906,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                             ℹ️ Informação sobre Limite de Vagas
                           </h4>
                           <p className="text-sm text-blue-800 dark:text-blue-300">
-                            O cliente selecionado já atingiu o número máximo de vagas permitidas no contrato.
+                            O cliente selecionado já atingiu o número máximo de vagas para a profissão <strong>{selectedProfession?.name}</strong>.
                           </p>
                           <p className="text-sm text-blue-800 dark:text-blue-300 mt-2">
                             A vaga pode ser criada normalmente de acordo com a política do sistema.
