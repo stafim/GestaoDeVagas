@@ -138,7 +138,7 @@ export default function JobStatusSelect({ jobId, currentStatus, onStatusChange }
             .map((status) => (
               <SelectItem 
                 key={status.id} 
-                value={status.id} 
+                value={status.key} 
                 data-testid={`status-option-${status.key}`}
               >
                 {status.label}
