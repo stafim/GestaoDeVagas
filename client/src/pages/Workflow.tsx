@@ -600,9 +600,13 @@ export default function Workflow() {
                             <Label className="text-sm">Tipo de Aprovação *</Label>
                             <Select
                               value={step.approvalType}
-                              onValueChange={(value: "dual" | "user" | "role") =>
-                                updateStep(index, "approvalType", value)
-                              }
+                              onValueChange={(value: "dual" | "user" | "role") => {
+                                updateStep(index, "approvalType", value);
+                                // Quando seleciona "dual", define o subtipo padrão como "user"
+                                if (value === "dual" && !step.dualApprovalSubtype) {
+                                  updateStep(index, "dualApprovalSubtype", "user");
+                                }
+                              }}
                             >
                               <SelectTrigger data-testid={`select-approval-type-${index}`} className="mt-1">
                                 <SelectValue />
