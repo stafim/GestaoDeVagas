@@ -468,6 +468,7 @@ export function BlacklistManager() {
             </Form>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
