@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Ban, Upload, Download, FileText } from "lucide-react";
 import { z } from "zod";
 import Papa from "papaparse";
+import * as XLSX from "xlsx";
 
 const blacklistCandidateFormSchema = z.object({
   fullName: z.string().min(3, "Nome completo deve ter no mínimo 3 caracteres"),
@@ -161,10 +162,13 @@ export function BlacklistManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.csv')) {
+    const isCSV = file.name.endsWith('.csv');
+    const isXLSX = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+
+    if (!isCSV && !isXLSX) {
       toast({
         title: "Erro",
-        description: "Por favor, selecione um arquivo CSV válido",
+        description: "Por favor, selecione um arquivo CSV ou XLSX válido",
         variant: "destructive",
       });
       return;
@@ -173,28 +177,67 @@ export function BlacklistManager() {
     setCsvFile(file);
     setIsProcessing(true);
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        setIsProcessing(false);
-        const parsed = results.data.map((row: any) => ({
-          fullName: row.nome || row.name || row.fullName || "",
-          cpf: formatCPF(row.cpf || ""),
-          reason: row.motivo || row.reason || "",
-          organizationId: "demo-org-id",
-        }));
-        setImportPreview(parsed);
-      },
-      error: (error) => {
+    if (isCSV) {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          setIsProcessing(false);
+          const parsed = results.data.map((row: any) => ({
+            fullName: row.nome || row.name || row.fullName || "",
+            cpf: formatCPF(row.cpf || ""),
+            reason: row.motivo || row.reason || "",
+            organizationId: "demo-org-id",
+          }));
+          setImportPreview(parsed);
+        },
+        error: (error) => {
+          setIsProcessing(false);
+          toast({
+            title: "Erro ao processar CSV",
+            description: error.message,
+            variant: "destructive",
+          });
+        },
+      });
+    } else if (isXLSX) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          
+          const parsed = jsonData.map((row: any) => ({
+            fullName: row.nome || row.name || row.fullName || row.Nome || row.Name || "",
+            cpf: formatCPF(String(row.cpf || row.CPF || "")),
+            reason: row.motivo || row.reason || row.Motivo || row.Reason || "",
+            organizationId: "demo-org-id",
+          }));
+          
+          setImportPreview(parsed);
+          setIsProcessing(false);
+        } catch (error) {
+          setIsProcessing(false);
+          toast({
+            title: "Erro ao processar XLSX",
+            description: error instanceof Error ? error.message : "Erro desconhecido",
+            variant: "destructive",
+          });
+        }
+      };
+      reader.onerror = () => {
         setIsProcessing(false);
         toast({
-          title: "Erro ao processar CSV",
-          description: error.message,
+          title: "Erro ao ler arquivo",
+          description: "Não foi possível ler o arquivo XLSX",
           variant: "destructive",
         });
-      },
-    });
+      };
+      reader.readAsBinaryString(file);
+    }
   };
 
   const handleImport = () => {
@@ -285,14 +328,14 @@ export function BlacklistManager() {
             <DialogTrigger asChild>
               <Button variant="outline" data-testid="button-import-csv">
                 <Upload className="mr-2 h-4 w-4" />
-                Importar CSV
+                Importar Arquivo
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl">
               <DialogHeader>
-                <DialogTitle>Importar Candidatos via CSV</DialogTitle>
+                <DialogTitle>Importar Candidatos via CSV ou XLSX</DialogTitle>
                 <DialogDescription>
-                  Carregue um arquivo CSV com as colunas: nome, cpf e motivo
+                  Carregue um arquivo CSV ou Excel (XLSX) com as colunas: nome, cpf e motivo
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -300,7 +343,7 @@ export function BlacklistManager() {
                   <Input
                     ref={fileInputRef}
                     type="file"
-                    accept=".csv"
+                    accept=".csv,.xlsx,.xls"
                     onChange={handleFileChange}
                     data-testid="input-csv-file"
                   />
