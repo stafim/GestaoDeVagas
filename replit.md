@@ -55,10 +55,11 @@ Preferred communication style: Simple, everyday language.
 - **Flexibility**: Per-job Kanban selection, with fallback to default.
 
 ## Workflow Approval System
+- **Purpose**: Approves new job vacancies (transition from "Nova Vaga" to "Aprovada").
 - **Approval Types**: Supports dual authorization, approval by specific users, and approval by permission types.
-- **Multi-Step Workflows**: Configure sequential approval steps.
+- **Multi-Step Workflows**: Configure sequential approval steps for job approval.
 - **Status Management**: Active/inactive workflows with default workflow designation.
-- **Integration**: Seamlessly integrates with job vacancy approval process and quota validation.
+- **Integration**: Seamlessly integrates with job vacancy creation and quota validation.
 
 ## Sales Plan Management
 - **Plans**: CRUD for managing subscription plans with configurable features.

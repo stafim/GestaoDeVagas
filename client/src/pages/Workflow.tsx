@@ -69,7 +69,6 @@ export default function Workflow() {
   const [selectedWorkflow, setSelectedWorkflow] = useState<ApprovalWorkflow | null>(null);
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(new Set());
-  const [selectedStatusIds, setSelectedStatusIds] = useState<string[]>([]);
 
   const { data: workflows, isLoading } = useQuery<ApprovalWorkflow[]>({
     queryKey: ["/api/workflows"],
@@ -94,10 +93,6 @@ export default function Workflow() {
 
   const { data: users } = useQuery<User[]>({
     queryKey: ["/api/users"],
-  });
-
-  const { data: jobStatuses } = useQuery({
-    queryKey: ["/api/job-statuses"],
   });
 
   const form = useForm<CreateWorkflowForm>({
@@ -160,14 +155,6 @@ export default function Workflow() {
         }
       }
 
-      // Criar regras de status de vaga
-      for (const statusId of selectedStatusIds) {
-        await apiRequest("POST", "/api/workflow-status-rules", {
-          workflowId: workflow.id,
-          jobStatusId: statusId,
-        });
-      }
-
       return workflow;
     },
     onSuccess: () => {
@@ -180,7 +167,6 @@ export default function Workflow() {
       setIsCreateDialogOpen(false);
       form.reset();
       setWorkflowSteps([]);
-      setSelectedStatusIds([]);
     },
     onError: (error) => {
       console.error("Error in createWorkflowMutation:", error);
@@ -288,7 +274,7 @@ export default function Workflow() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Workflows de Aprovação</h1>
           <p className="text-muted-foreground mt-1">
-            Configure fluxos de aprovação para vagas com múltiplas etapas e alçadas
+            Configure fluxos de aprovação para vagas novas (Nova Vaga → Aprovada)
           </p>
         </div>
         <Button
@@ -468,7 +454,7 @@ export default function Workflow() {
           <DialogHeader>
             <DialogTitle>Criar Workflow de Aprovação</DialogTitle>
             <DialogDescription>
-              Configure um fluxo de aprovação para vagas com etapas customizadas
+              Configure um fluxo de aprovação para vagas novas (Nova Vaga → Aprovada)
             </DialogDescription>
           </DialogHeader>
           
@@ -556,38 +542,6 @@ export default function Workflow() {
                       </FormItem>
                     )}
                   />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4 mb-6">
-                <h3 className="text-base font-semibold">Status de Vagas Aplicáveis</h3>
-                <p className="text-sm text-muted-foreground">
-                  Selecione os status de vaga para os quais este workflow será aplicado
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {jobStatuses?.map((status: any) => (
-                    <div key={status.id} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`status-${status.id}`}
-                        checked={selectedStatusIds.includes(status.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedStatusIds([...selectedStatusIds, status.id]);
-                          } else {
-                            setSelectedStatusIds(selectedStatusIds.filter(id => id !== status.id));
-                          }
-                        }}
-                        className="h-4 w-4 rounded border-gray-300"
-                        data-testid={`checkbox-status-${status.key}`}
-                      />
-                      <label htmlFor={`status-${status.id}`} className="text-sm cursor-pointer">
-                        {status.label}
-                      </label>
-                    </div>
-                  ))}
                 </div>
               </div>
 
@@ -883,7 +837,6 @@ export default function Workflow() {
                     setIsCreateDialogOpen(false);
                     form.reset();
                     setWorkflowSteps([]);
-                    setSelectedStatusIds([]);
                   }}
                   data-testid="button-cancel"
                 >
