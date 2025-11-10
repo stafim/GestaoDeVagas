@@ -1709,14 +1709,18 @@ export class DatabaseStorage implements IStorage {
       totalJobsQuery = totalJobsQuery.where(and(...conditions));
     }
 
-    let activeJobsQuery = db.select({ count: count() }).from(jobs).where(eq(jobs.status, "active"));
+    // Vagas ativas: todos os status exceto admitido e cancelada
+    const activeStatuses = ["nova_vaga", "aprovada", "em_recrutamento", "em_dp", "em_admissao"];
+    let activeJobsQuery = db.select({ count: count() }).from(jobs).where(inArray(jobs.status, activeStatuses));
     if (conditions.length > 0) {
-      activeJobsQuery = activeJobsQuery.where(and(eq(jobs.status, "active"), ...conditions));
+      activeJobsQuery = activeJobsQuery.where(and(inArray(jobs.status, activeStatuses), ...conditions));
     }
 
-    let closedJobsQuery = db.select({ count: count() }).from(jobs).where(eq(jobs.status, "closed"));
+    // Vagas fechadas: admitido e cancelada
+    const closedStatuses = ["admitido", "cancelada"];
+    let closedJobsQuery = db.select({ count: count() }).from(jobs).where(inArray(jobs.status, closedStatuses));
     if (conditions.length > 0) {
-      closedJobsQuery = closedJobsQuery.where(and(eq(jobs.status, "closed"), ...conditions));
+      closedJobsQuery = closedJobsQuery.where(and(inArray(jobs.status, closedStatuses), ...conditions));
     }
     
     // Count open jobs (jobs without admission date)
@@ -1775,7 +1779,7 @@ export class DatabaseStorage implements IStorage {
         count: count(),
       })
       .from(jobs)
-      .leftJoin(jobStatuses, eq(jobs.status, jobStatuses.id));
+      .leftJoin(jobStatuses, eq(jobs.status, jobStatuses.key));
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions));

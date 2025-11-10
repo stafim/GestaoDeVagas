@@ -94,6 +94,24 @@ The system includes the following test companies:
 - **Solution**: Implemented direct SQL execution using `db.execute()` with raw SQL queries in `getRoleJobStatusPermissions()` method (`server/storage.ts`).
 - **Technical Details**: ORM was unable to properly match enum values in WHERE clauses. Direct SQL with column aliasing (snake_case → camelCase) provides reliable results.
 
+### Dashboard Status Mapping (Nov 2025)
+- **Issue**: Dashboard analytics showed "Sem Status" for all jobs despite having proper status assignments. Metrics for active/closed jobs always returned 0.
+- **Root Cause**: Two problems in `server/storage.ts`:
+  1. `getJobsByStatus()` was joining `jobs.status` (containing keys like "em_recrutamento") with `jobStatuses.id` (UUID) instead of `jobStatuses.key`
+  2. `getDashboardMetrics()` was filtering for hardcoded status values "active" and "closed" instead of using custom status keys
+- **Solution**: 
+  1. Changed join condition from `eq(jobs.status, jobStatuses.id)` to `eq(jobs.status, jobStatuses.key)` (line 1781)
+  2. Updated active/closed job queries to use arrays of custom status keys:
+     - Active: `["nova_vaga", "aprovada", "em_recrutamento", "em_dp", "em_admissao"]`
+     - Closed: `["admitido", "cancelada"]`
+- **Impact**: Dashboard now correctly displays job distribution by status and accurate active/closed metrics.
+
+### Job Status Update Frontend Bug (Nov 2025)
+- **Issue**: Updating job status via JobStatusSelect component returned 400 error "Invalid status provided".
+- **Root Cause**: Component was sending status UUID (`status.id`) instead of status key (`status.key`) to the backend API.
+- **Solution**: Changed SelectItem value from `status.id` to `status.key` in `client/src/components/JobStatusSelect.tsx` (line 144).
+- **Impact**: Job status updates now work correctly throughout the application.
+
 # External Dependencies
 
 ## Database Services
