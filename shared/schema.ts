@@ -417,7 +417,8 @@ export const approvalWorkflowSteps = pgTable("approval_workflow_steps", {
   stepName: varchar("step_name", { length: 255 }).notNull(), // Nome da etapa (ex: "Primeira Alçada", "Segunda Alçada")
   stepType: approvalWorkflowStepTypeEnum("step_type").notNull(), // Tipo: dual, user, role, ou permission
   dualApprovalSubtype: dualApprovalSubtypeEnum("dual_approval_subtype"), // Subtipo quando stepType = "dual" (user ou permission)
-  userId: varchar("user_id").references(() => users.id), // Usuário específico (quando type = "user" ou dual+user)
+  userId: varchar("user_id").references(() => users.id), // Primeiro usuário específico (quando type = "user" ou dual+user)
+  userId2: varchar("user_id2").references(() => users.id), // Segundo usuário específico (quando dual+user)
   role: roleTypeEnum("role"), // Role necessária (quando type = "role")
   permission: permissionTypeEnum("permission"), // Permissão necessária (quando type = "permission" ou dual+permission)
   isRequired: boolean("is_required").default(true), // Se a etapa é obrigatória

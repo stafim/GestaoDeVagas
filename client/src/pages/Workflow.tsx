@@ -38,6 +38,7 @@ const workflowStepSchema = z.object({
   approvalType: z.enum(["dual", "user", "role"]),
   dualApprovalSubtype: z.enum(["user", "role"]).optional(),
   approverId: z.string().optional(),
+  approverId2: z.string().optional(), // Segundo aprovador para dupla alçada
   requiredRole: z.string().optional(),
 });
 
@@ -56,6 +57,7 @@ interface WorkflowStep {
   approvalType: "dual" | "user" | "role";
   dualApprovalSubtype?: "user" | "role";
   approverId?: string;
+  approverId2?: string; // Segundo aprovador para dupla alçada
   requiredRole?: string;
 }
 
@@ -127,6 +129,7 @@ export default function Workflow() {
           stepType: step.approvalType,
           dualApprovalSubtype: step.dualApprovalSubtype,
           userId: step.approverId,
+          userId2: step.approverId2, // Segundo aprovador para dupla alçada
           role: step.requiredRole,
         });
       }
@@ -388,8 +391,21 @@ export default function Workflow() {
                                         {(step.stepType === "role" || step.stepType === "permission") && step.role && (
                                           <span>Cargo: {getRoleLabel(step.role)}</span>
                                         )}
-                                        {step.stepType === "dual" && step.dualApprovalSubtype === "user" && user && (
-                                          <span>2 aprovações de usuários diferentes</span>
+                                        {step.stepType === "dual" && step.dualApprovalSubtype === "user" && (
+                                          <>
+                                            {step.userId && (
+                                              <>
+                                                <span>Aprovador 1: {users?.find(u => u.id === step.userId)?.firstName} {users?.find(u => u.id === step.userId)?.lastName}</span>
+                                                {step.userId2 && (
+                                                  <>
+                                                    <br />
+                                                    <span>Aprovador 2: {users?.find(u => u.id === step.userId2)?.firstName} {users?.find(u => u.id === step.userId2)?.lastName}</span>
+                                                  </>
+                                                )}
+                                              </>
+                                            )}
+                                            {!step.userId && <span>2 aprovadores específicos</span>}
+                                          </>
                                         )}
                                         {step.stepType === "dual" && step.dualApprovalSubtype === "permission" && step.role && (
                                           <span>2 aprovações de usuários do tipo: {getRoleLabel(step.role)}</span>
@@ -658,6 +674,7 @@ export default function Workflow() {
                                       updateStep(index, "requiredRole", undefined);
                                     } else {
                                       updateStep(index, "approverId", undefined);
+                                      updateStep(index, "approverId2", undefined);
                                     }
                                   }}
                                 >
@@ -682,25 +699,47 @@ export default function Workflow() {
                               </div>
 
                               {step.dualApprovalSubtype === "user" && (
-                                <div>
-                                  <Label className="text-sm">Usuário Base *</Label>
-                                  <Select
-                                    value={step.approverId}
-                                    onValueChange={(value) => updateStep(index, "approverId", value)}
-                                  >
-                                    <SelectTrigger data-testid={`select-dual-user-${index}`} className="mt-1">
-                                      <SelectValue placeholder="Selecione um usuário" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {users?.map((user) => (
-                                        <SelectItem key={user.id} value={user.id}>
-                                          {user.firstName} {user.lastName} ({user.email})
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Dois usuários diferentes do sistema precisarão aprovar
+                                <div className="space-y-3">
+                                  <div>
+                                    <Label className="text-sm">Primeiro Aprovador *</Label>
+                                    <Select
+                                      value={step.approverId}
+                                      onValueChange={(value) => updateStep(index, "approverId", value)}
+                                    >
+                                      <SelectTrigger data-testid={`select-dual-user-1-${index}`} className="mt-1">
+                                        <SelectValue placeholder="Selecione o primeiro aprovador" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {users?.map((user) => (
+                                          <SelectItem key={user.id} value={user.id}>
+                                            {user.firstName} {user.lastName} ({user.email})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <div>
+                                    <Label className="text-sm">Segundo Aprovador *</Label>
+                                    <Select
+                                      value={step.approverId2}
+                                      onValueChange={(value) => updateStep(index, "approverId2", value)}
+                                    >
+                                      <SelectTrigger data-testid={`select-dual-user-2-${index}`} className="mt-1">
+                                        <SelectValue placeholder="Selecione o segundo aprovador" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {users?.filter(user => user.id !== step.approverId).map((user) => (
+                                          <SelectItem key={user.id} value={user.id}>
+                                            {user.firstName} {user.lastName} ({user.email})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                                    Ambos os aprovadores selecionados acima precisarão aprovar esta etapa
                                   </p>
                                 </div>
                               )}
