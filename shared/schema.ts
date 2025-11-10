@@ -1337,3 +1337,28 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit
   id: true,
   updatedAt: true,
 });
+
+// Blacklist Candidates table
+export const blacklistCandidates = pgTable("blacklist_candidates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  fullName: varchar("full_name", { length: 255 }).notNull(),
+  cpf: varchar("cpf", { length: 14 }).notNull(), // Format: 000.000.000-00
+  reason: text("reason").notNull(),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type BlacklistCandidate = typeof blacklistCandidates.$inferSelect;
+export type InsertBlacklistCandidate = z.infer<typeof insertBlacklistCandidateSchema>;
+
+export const insertBlacklistCandidateSchema = createInsertSchema(blacklistCandidates, {
+  fullName: z.string().min(3, "Nome completo deve ter no mínimo 3 caracteres"),
+  cpf: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF deve estar no formato 000.000.000-00"),
+  reason: z.string().min(10, "Motivo deve ter no mínimo 10 caracteres"),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
