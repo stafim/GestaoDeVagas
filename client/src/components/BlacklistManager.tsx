@@ -145,16 +145,18 @@ export function BlacklistManager() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingCandidate(null);
-    form.reset({
-      fullName: "",
-      cpf: "",
-      reason: "",
-      organizationId: "demo-org-id",
-      createdBy: "demo-user-bypass",
-    });
+  const handleOpenChange = (open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      setEditingCandidate(null);
+      form.reset({
+        fullName: "",
+        cpf: "",
+        reason: "",
+        organizationId: "demo-org-id",
+        createdBy: "demo-user-bypass",
+      });
+    }
   };
 
   const formatCPF = (value: string) => {
@@ -178,7 +180,7 @@ export function BlacklistManager() {
             Gerencie candidatos que não podem ser contratados
           </CardDescription>
         </div>
-        <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+        <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>
             <Button data-testid="button-new-blacklist-candidate">
               <Plus className="mr-2 h-4 w-4" />
@@ -252,7 +254,7 @@ export function BlacklistManager() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleCloseModal}
+                    onClick={() => handleOpenChange(false)}
                     data-testid="button-cancel"
                   >
                     Cancelar
