@@ -282,6 +282,12 @@ export interface IStorage {
   createJobApprovalHistory(history: InsertJobApprovalHistory): Promise<JobApprovalHistory>;
   updateJobApprovalHistory(id: string, history: Partial<InsertJobApprovalHistory>): Promise<JobApprovalHistory>;
   
+  // Approvals operations (for Approvals menu)
+  getPendingApprovalsForUser(userId: string): Promise<any[]>;
+  approveJob(jobId: string, userId: string, comments?: string): Promise<any>;
+  rejectJob(jobId: string, userId: string, reason: string): Promise<any>;
+  getAllApprovalHistory(): Promise<any[]>;
+  
   // Interview Criteria operations
   getInterviewCriteria(interviewId: string): Promise<InterviewCriteria[]>;
   createInterviewCriteria(criteria: InsertInterviewCriteria): Promise<InterviewCriteria>;
@@ -3217,6 +3223,190 @@ export class DatabaseStorage implements IStorage {
       .set({ ...historyData, updatedAt: new Date() })
       .where(eq(jobApprovalHistory.id, id))
       .returning();
+    return history;
+  }
+
+  // Approvals operations (for Approvals menu)
+  async getPendingApprovalsForUser(userId: string): Promise<any[]> {
+    // Get jobs that are pending approval and where the user is an approver
+    const pendingJobs = await db
+      .select({
+        job: jobs,
+        company: companies,
+        client: clients,
+        profession: professions,
+        workflow: approvalWorkflows,
+        currentStep: approvalWorkflowSteps,
+      })
+      .from(jobs)
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .leftJoin(clients, eq(jobs.clientId, clients.id))
+      .leftJoin(professions, eq(jobs.professionId, professions.id))
+      .leftJoin(approvalWorkflows, eq(jobs.approvalWorkflowId, approvalWorkflows.id))
+      .leftJoin(approvalWorkflowSteps, and(
+        eq(approvalWorkflowSteps.workflowId, jobs.approvalWorkflowId),
+        eq(approvalWorkflowSteps.stepOrder, jobs.currentApprovalStep)
+      ))
+      .where(and(
+        eq(jobs.approvalStatus, 'pending'),
+        or(
+          eq(approvalWorkflowSteps.approverId, userId),
+          eq(approvalWorkflowSteps.approverId2, userId)
+        )
+      ));
+    
+    return pendingJobs;
+  }
+
+  async approveJob(jobId: string, userId: string, comments?: string): Promise<any> {
+    // Get the job and current workflow step
+    const [job] = await db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.id, jobId));
+
+    if (!job) {
+      throw new Error('Job not found');
+    }
+
+    if (job.approvalStatus !== 'pending') {
+      throw new Error('Job is not pending approval');
+    }
+
+    // Get current workflow step
+    const [currentStep] = await db
+      .select()
+      .from(approvalWorkflowSteps)
+      .where(and(
+        eq(approvalWorkflowSteps.workflowId, job.approvalWorkflowId!),
+        eq(approvalWorkflowSteps.stepOrder, job.currentApprovalStep!)
+      ));
+
+    if (!currentStep) {
+      throw new Error('Workflow step not found');
+    }
+
+    // Record approval in history
+    await db.insert(jobApprovalHistory).values({
+      jobId,
+      workflowStepId: currentStep.id,
+      stepName: `Etapa ${currentStep.stepOrder}`,
+      stepOrder: currentStep.stepOrder,
+      status: 'approved',
+      approvedBy: userId,
+      comments: comments || null,
+      approvedAt: new Date(),
+    });
+
+    // Get all workflow steps for this workflow
+    const allSteps = await db
+      .select()
+      .from(approvalWorkflowSteps)
+      .where(eq(approvalWorkflowSteps.workflowId, job.approvalWorkflowId!))
+      .orderBy(approvalWorkflowSteps.stepOrder);
+
+    const isLastStep = currentStep.stepOrder === allSteps.length;
+
+    if (isLastStep) {
+      // All steps completed - approve the job and change status
+      await db
+        .update(jobs)
+        .set({
+          approvalStatus: 'approved',
+          approvedBy: userId,
+          approvedAt: new Date(),
+          status: 'aprovada', // Change status from "Nova Vaga" to "Aprovada"
+          updatedAt: new Date(),
+        })
+        .where(eq(jobs.id, jobId));
+
+      return { success: true, message: 'Job approved successfully', approved: true };
+    } else {
+      // Move to next step
+      await db
+        .update(jobs)
+        .set({
+          currentApprovalStep: currentStep.stepOrder + 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(jobs.id, jobId));
+
+      return { success: true, message: 'Approval recorded, moved to next step', approved: false };
+    }
+  }
+
+  async rejectJob(jobId: string, userId: string, reason: string): Promise<any> {
+    // Get the job and current workflow step
+    const [job] = await db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.id, jobId));
+
+    if (!job) {
+      throw new Error('Job not found');
+    }
+
+    if (job.approvalStatus !== 'pending') {
+      throw new Error('Job is not pending approval');
+    }
+
+    // Get current workflow step
+    const [currentStep] = await db
+      .select()
+      .from(approvalWorkflowSteps)
+      .where(and(
+        eq(approvalWorkflowSteps.workflowId, job.approvalWorkflowId!),
+        eq(approvalWorkflowSteps.stepOrder, job.currentApprovalStep!)
+      ));
+
+    if (!currentStep) {
+      throw new Error('Workflow step not found');
+    }
+
+    // Record rejection in history
+    await db.insert(jobApprovalHistory).values({
+      jobId,
+      workflowStepId: currentStep.id,
+      stepName: `Etapa ${currentStep.stepOrder}`,
+      stepOrder: currentStep.stepOrder,
+      status: 'rejected',
+      approvedBy: userId,
+      comments: reason,
+      approvedAt: new Date(),
+    });
+
+    // Reject the job
+    await db
+      .update(jobs)
+      .set({
+        approvalStatus: 'rejected',
+        approvedBy: userId,
+        approvedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(jobs.id, jobId));
+
+    return { success: true, message: 'Job rejected successfully' };
+  }
+
+  async getAllApprovalHistory(): Promise<any[]> {
+    const history = await db
+      .select({
+        history: jobApprovalHistory,
+        job: jobs,
+        approver: users,
+        company: companies,
+        client: clients,
+        profession: professions,
+      })
+      .from(jobApprovalHistory)
+      .leftJoin(jobs, eq(jobApprovalHistory.jobId, jobs.id))
+      .leftJoin(users, eq(jobApprovalHistory.approvedBy, users.id))
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .leftJoin(clients, eq(jobs.clientId, clients.id))
+      .leftJoin(professions, eq(jobs.professionId, professions.id))
+      .orderBy(desc(jobApprovalHistory.approvedAt));
+
     return history;
   }
 

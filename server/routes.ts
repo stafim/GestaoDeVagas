@@ -3620,6 +3620,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Approvals routes - For the Approvals menu
+  // Get pending approvals for the logged-in user
+  app.get('/api/approvals/pending', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+      const pendingApprovals = await storage.getPendingApprovalsForUser(userId);
+      res.json(pendingApprovals);
+    } catch (error) {
+      console.error("Error fetching pending approvals:", error);
+      res.status(500).json({ message: "Failed to fetch pending approvals" });
+    }
+  });
+
+  // Approve a job
+  app.post('/api/approvals/:jobId/approve', isAuthenticated, async (req, res) => {
+    try {
+      const { jobId } = req.params;
+      const userId = req.user?.id;
+      const { comments } = req.body;
+
+      if (!userId) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+
+      const result = await storage.approveJob(jobId, userId, comments);
+      res.json(result);
+    } catch (error) {
+      console.error("Error approving job:", error);
+      res.status(500).json({ message: "Failed to approve job", error });
+    }
+  });
+
+  // Reject a job
+  app.post('/api/approvals/:jobId/reject', isAuthenticated, async (req, res) => {
+    try {
+      const { jobId } = req.params;
+      const userId = req.user?.id;
+      const { reason } = req.body;
+
+      if (!userId) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+
+      if (!reason || reason.trim() === '') {
+        res.status(400).json({ message: "Rejection reason is required" });
+        return;
+      }
+
+      const result = await storage.rejectJob(jobId, userId, reason);
+      res.json(result);
+    } catch (error) {
+      console.error("Error rejecting job:", error);
+      res.status(500).json({ message: "Failed to reject job", error });
+    }
+  });
+
+  // Get approval history (all approvals)
+  app.get('/api/approvals/history', isAuthenticated, async (req, res) => {
+    try {
+      const history = await storage.getAllApprovalHistory();
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching approval history:", error);
+      res.status(500).json({ message: "Failed to fetch approval history" });
+    }
+  });
+
   app.patch('/api/job-approval-history/:id', isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
