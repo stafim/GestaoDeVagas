@@ -106,6 +106,8 @@ export default function Workflow() {
 
   const createWorkflowMutation = useMutation({
     mutationFn: async (data: CreateWorkflowForm) => {
+      console.log("Creating workflow with data:", data);
+      
       const workflowRes = await apiRequest("POST", "/api/workflows", {
         name: data.name,
         description: data.description,
@@ -113,7 +115,13 @@ export default function Workflow() {
         isDefault: data.isDefault,
       });
       
+      if (!workflowRes.ok) {
+        const errorData = await workflowRes.json();
+        throw new Error(errorData.message || "Falha ao criar workflow");
+      }
+      
       const workflow = await workflowRes.json();
+      console.log("Workflow created:", workflow);
 
       for (const step of data.steps) {
         const stepName = step.approvalType === "dual" 
@@ -122,7 +130,7 @@ export default function Workflow() {
           ? `Aprovação por Usuário - Etapa ${step.stepOrder}`
           : `Aprovação por Cargo - Etapa ${step.stepOrder}`;
 
-        await apiRequest("POST", "/api/workflow-steps", {
+        const stepData = {
           workflowId: workflow.id,
           stepOrder: step.stepOrder,
           stepName: stepName,
@@ -131,7 +139,17 @@ export default function Workflow() {
           userId: step.approverId,
           userId2: step.approverId2, // Segundo aprovador para dupla alçada
           role: step.requiredRole,
-        });
+        };
+        
+        console.log("Creating step:", stepData);
+        
+        const stepRes = await apiRequest("POST", "/api/workflow-steps", stepData);
+        
+        if (!stepRes.ok) {
+          const errorData = await stepRes.json();
+          console.error("Error creating step:", errorData);
+          throw new Error(errorData.message || "Falha ao criar etapa de workflow");
+        }
       }
 
       return workflow;
@@ -148,6 +166,7 @@ export default function Workflow() {
       setWorkflowSteps([]);
     },
     onError: (error) => {
+      console.error("Error in createWorkflowMutation:", error);
       toast({
         title: "Erro ao criar workflow",
         description: error instanceof Error ? error.message : "Ocorreu um erro ao criar o workflow",
