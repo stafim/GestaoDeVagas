@@ -3563,6 +3563,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Workflow Job Status Rules routes
+  app.get('/api/workflow-status-rules/:workflowId', isAuthenticated, async (req, res) => {
+    try {
+      const { workflowId } = req.params;
+      const rules = await storage.getWorkflowJobStatusRules(workflowId);
+      res.json(rules);
+    } catch (error) {
+      console.error("Error fetching workflow status rules:", error);
+      res.status(500).json({ message: "Failed to fetch workflow status rules" });
+    }
+  });
+
+  app.post('/api/workflow-status-rules', isAuthenticated, async (req, res) => {
+    try {
+      const ruleData = req.body;
+      const rule = await storage.createWorkflowJobStatusRule(ruleData);
+      res.status(201).json(rule);
+    } catch (error) {
+      console.error("Error creating workflow status rule:", error);
+      res.status(400).json({ message: "Failed to create workflow status rule" });
+    }
+  });
+
+  app.delete('/api/workflow-status-rules/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteWorkflowJobStatusRule(id);
+      res.json({ message: "Workflow status rule deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting workflow status rule:", error);
+      res.status(500).json({ message: "Failed to delete workflow status rule" });
+    }
+  });
+
   // Job Approval History routes
   app.get('/api/jobs/:jobId/approval-history', isAuthenticated, async (req, res) => {
     try {

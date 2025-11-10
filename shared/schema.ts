@@ -409,6 +409,15 @@ export const approvalWorkflows = pgTable("approval_workflows", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Workflow Job Status Rules - Vincula workflows a status de vagas específicos
+export const workflowJobStatusRules = pgTable("workflow_job_status_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workflowId: varchar("workflow_id").references(() => approvalWorkflows.id, { onDelete: "cascade" }).notNull(),
+  jobStatusId: varchar("job_status_id").references(() => jobStatuses.id, { onDelete: "cascade" }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Approval workflow steps - Etapas de cada workflow
 export const approvalWorkflowSteps = pgTable("approval_workflow_steps", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -440,6 +449,15 @@ export type ApprovalWorkflowStep = typeof approvalWorkflowSteps.$inferSelect;
 export type InsertApprovalWorkflowStep = z.infer<typeof insertApprovalWorkflowStepSchema>;
 
 export const insertApprovalWorkflowStepSchema = createInsertSchema(approvalWorkflowSteps).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type WorkflowJobStatusRule = typeof workflowJobStatusRules.$inferSelect;
+export type InsertWorkflowJobStatusRule = z.infer<typeof insertWorkflowJobStatusRuleSchema>;
+
+export const insertWorkflowJobStatusRuleSchema = createInsertSchema(workflowJobStatusRules).omit({
   id: true,
   createdAt: true,
   updatedAt: true,

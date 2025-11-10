@@ -35,6 +35,7 @@ import {
   jobStatusHistory,
   approvalWorkflows,
   approvalWorkflowSteps,
+  workflowJobStatusRules,
   jobApprovalHistory,
   blacklistCandidates,
   type Organization,
@@ -100,6 +101,8 @@ import {
   type InsertApprovalWorkflow,
   type ApprovalWorkflowStep,
   type InsertApprovalWorkflowStep,
+  type WorkflowJobStatusRule,
+  type InsertWorkflowJobStatusRule,
   type JobApprovalHistory,
   type InsertJobApprovalHistory,
   type BlacklistCandidate,
@@ -267,6 +270,12 @@ export interface IStorage {
   createWorkflowStep(step: InsertApprovalWorkflowStep): Promise<ApprovalWorkflowStep>;
   updateWorkflowStep(id: string, step: Partial<InsertApprovalWorkflowStep>): Promise<ApprovalWorkflowStep>;
   deleteWorkflowStep(id: string): Promise<void>;
+  
+  // Workflow Job Status Rules operations
+  getWorkflowJobStatusRules(workflowId: string): Promise<WorkflowJobStatusRule[]>;
+  createWorkflowJobStatusRule(ruleData: InsertWorkflowJobStatusRule): Promise<WorkflowJobStatusRule>;
+  deleteWorkflowJobStatusRule(id: string): Promise<void>;
+  deleteWorkflowJobStatusRulesByWorkflow(workflowId: string): Promise<void>;
   
   // Job Approval History operations
   getJobApprovalHistory(jobId: string): Promise<JobApprovalHistory[]>;
@@ -3163,6 +3172,28 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWorkflowStep(id: string): Promise<void> {
     await db.delete(approvalWorkflowSteps).where(eq(approvalWorkflowSteps.id, id));
+  }
+
+  // Workflow Job Status Rules operations
+  async getWorkflowJobStatusRules(workflowId: string): Promise<WorkflowJobStatusRule[]> {
+    const rules = await db
+      .select()
+      .from(workflowJobStatusRules)
+      .where(eq(workflowJobStatusRules.workflowId, workflowId));
+    return rules;
+  }
+
+  async createWorkflowJobStatusRule(ruleData: InsertWorkflowJobStatusRule): Promise<WorkflowJobStatusRule> {
+    const [rule] = await db.insert(workflowJobStatusRules).values(ruleData).returning();
+    return rule;
+  }
+
+  async deleteWorkflowJobStatusRule(id: string): Promise<void> {
+    await db.delete(workflowJobStatusRules).where(eq(workflowJobStatusRules.id, id));
+  }
+
+  async deleteWorkflowJobStatusRulesByWorkflow(workflowId: string): Promise<void> {
+    await db.delete(workflowJobStatusRules).where(eq(workflowJobStatusRules.workflowId, workflowId));
   }
 
   // Job Approval History operations
