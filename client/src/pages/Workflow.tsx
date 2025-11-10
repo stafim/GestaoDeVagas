@@ -35,10 +35,10 @@ import type { ApprovalWorkflow, ApprovalWorkflowStep, User } from "@shared/schem
 
 const workflowStepSchema = z.object({
   stepOrder: z.number().min(1),
-  approvalType: z.enum(["dual", "user", "permission"]),
-  dualApprovalSubtype: z.enum(["user", "permission"]).optional(),
+  approvalType: z.enum(["dual", "user", "role"]),
+  dualApprovalSubtype: z.enum(["user", "role"]).optional(),
   approverId: z.string().optional(),
-  requiredPermission: z.string().optional(),
+  requiredRole: z.string().optional(),
 });
 
 const createWorkflowSchema = z.object({
@@ -53,10 +53,10 @@ type CreateWorkflowForm = z.infer<typeof createWorkflowSchema>;
 
 interface WorkflowStep {
   stepOrder: number;
-  approvalType: "dual" | "user" | "permission";
-  dualApprovalSubtype?: "user" | "permission";
+  approvalType: "dual" | "user" | "role";
+  dualApprovalSubtype?: "user" | "role";
   approverId?: string;
-  requiredPermission?: string;
+  requiredRole?: string;
 }
 
 export default function Workflow() {
@@ -118,7 +118,7 @@ export default function Workflow() {
           ? `Dupla Alçada - Etapa ${step.stepOrder}`
           : step.approvalType === "user"
           ? `Aprovação por Usuário - Etapa ${step.stepOrder}`
-          : `Aprovação por Permissão - Etapa ${step.stepOrder}`;
+          : `Aprovação por Cargo - Etapa ${step.stepOrder}`;
 
         await apiRequest("POST", "/api/workflow-steps", {
           workflowId: workflow.id,
@@ -127,7 +127,7 @@ export default function Workflow() {
           stepType: step.approvalType,
           dualApprovalSubtype: step.dualApprovalSubtype,
           userId: step.approverId,
-          permission: step.requiredPermission,
+          role: step.requiredRole,
         });
       }
 
@@ -220,16 +220,17 @@ export default function Workflow() {
     setExpandedWorkflows(newExpanded);
   };
 
-  const getPermissionLabel = (permission: string) => {
+  const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
-      "approve_jobs": "Aprovar Vagas",
-      "manage_users": "Gerenciar Usuários",
-      "create_jobs": "Criar Vagas",
-      "edit_jobs": "Editar Vagas",
-      "delete_jobs": "Excluir Vagas",
-      "view_jobs": "Visualizar Vagas",
+      "admin": "Administrador",
+      "hr_manager": "Gerente de RH",
+      "recruiter": "Recrutador",
+      "interviewer": "Entrevistador",
+      "viewer": "Visualizador",
+      "approver": "Aprovador",
+      "manager": "Gerente",
     };
-    return labels[permission] || permission;
+    return labels[role] || role;
   };
 
   const getStepTypeLabel = (step: ApprovalWorkflowStep) => {
@@ -237,7 +238,8 @@ export default function Workflow() {
       return step.dualApprovalSubtype === "user" ? "Dupla Alçada (Usuários)" : "Dupla Alçada (Tipo de Usuário)";
     }
     if (step.stepType === "user") return "Usuário Específico";
-    if (step.stepType === "permission") return "Tipo de Usuário (Permissão)";
+    if (step.stepType === "role") return "Tipo de Usuário (Cargo)";
+    if (step.stepType === "permission") return "Tipo de Usuário (Cargo)";
     return step.stepType;
   };
 
@@ -383,14 +385,14 @@ export default function Workflow() {
                                         {step.stepType === "user" && user && (
                                           <span>Aprovador: {user.firstName} {user.lastName}</span>
                                         )}
-                                        {step.stepType === "permission" && step.permission && (
-                                          <span>Permissão: {getPermissionLabel(step.permission)}</span>
+                                        {(step.stepType === "role" || step.stepType === "permission") && step.role && (
+                                          <span>Cargo: {getRoleLabel(step.role)}</span>
                                         )}
                                         {step.stepType === "dual" && step.dualApprovalSubtype === "user" && user && (
                                           <span>2 aprovações de usuários diferentes</span>
                                         )}
-                                        {step.stepType === "dual" && step.dualApprovalSubtype === "permission" && step.permission && (
-                                          <span>2 aprovações de usuários com permissão: {getPermissionLabel(step.permission)}</span>
+                                        {step.stepType === "dual" && step.dualApprovalSubtype === "permission" && step.role && (
+                                          <span>2 aprovações de usuários do tipo: {getRoleLabel(step.role)}</span>
                                         )}
                                       </div>
                                     </div>
@@ -560,7 +562,7 @@ export default function Workflow() {
                             <Label className="text-sm">Tipo de Aprovação *</Label>
                             <Select
                               value={step.approvalType}
-                              onValueChange={(value: "dual" | "user" | "permission") =>
+                              onValueChange={(value: "dual" | "user" | "role") =>
                                 updateStep(index, "approvalType", value)
                               }
                             >
@@ -574,10 +576,10 @@ export default function Workflow() {
                                     Usuário Específico
                                   </div>
                                 </SelectItem>
-                                <SelectItem value="permission">
+                                <SelectItem value="role">
                                   <div className="flex items-center gap-2">
                                     <Shield className="h-4 w-4" />
-                                    Tipo de Usuário (Permissão)
+                                    Tipo de Usuário (Cargo)
                                   </div>
                                 </SelectItem>
                                 <SelectItem value="dual">
@@ -614,25 +616,28 @@ export default function Workflow() {
                             </div>
                           )}
 
-                          {step.approvalType === "permission" && (
+                          {step.approvalType === "role" && (
                             <div>
-                              <Label className="text-sm">Permissão Necessária *</Label>
+                              <Label className="text-sm">Tipo de Usuário (Cargo) *</Label>
                               <Select
-                                value={step.requiredPermission}
-                                onValueChange={(value) => updateStep(index, "requiredPermission", value)}
+                                value={step.requiredRole}
+                                onValueChange={(value) => updateStep(index, "requiredRole", value)}
                               >
-                                <SelectTrigger data-testid={`select-permission-${index}`} className="mt-1">
-                                  <SelectValue placeholder="Selecione uma permissão" />
+                                <SelectTrigger data-testid={`select-role-${index}`} className="mt-1">
+                                  <SelectValue placeholder="Selecione um tipo de usuário" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="approve_jobs">Aprovar Vagas</SelectItem>
-                                  <SelectItem value="manage_users">Gerenciar Usuários</SelectItem>
-                                  <SelectItem value="create_jobs">Criar Vagas</SelectItem>
-                                  <SelectItem value="edit_jobs">Editar Vagas</SelectItem>
+                                  <SelectItem value="admin">Administrador</SelectItem>
+                                  <SelectItem value="hr_manager">Gerente de RH</SelectItem>
+                                  <SelectItem value="manager">Gerente</SelectItem>
+                                  <SelectItem value="approver">Aprovador</SelectItem>
+                                  <SelectItem value="recruiter">Recrutador</SelectItem>
+                                  <SelectItem value="interviewer">Entrevistador</SelectItem>
+                                  <SelectItem value="viewer">Visualizador</SelectItem>
                                 </SelectContent>
                               </Select>
                               <p className="text-xs text-muted-foreground mt-1">
-                                Qualquer usuário com esta permissão poderá aprovar
+                                Qualquer usuário com este cargo poderá aprovar
                               </p>
                             </div>
                           )}
@@ -647,10 +652,10 @@ export default function Workflow() {
                                 <Label className="text-sm">Critério de Aprovação *</Label>
                                 <Select
                                   value={step.dualApprovalSubtype}
-                                  onValueChange={(value: "user" | "permission") => {
+                                  onValueChange={(value: "user" | "role") => {
                                     updateStep(index, "dualApprovalSubtype", value);
                                     if (value === "user") {
-                                      updateStep(index, "requiredPermission", undefined);
+                                      updateStep(index, "requiredRole", undefined);
                                     } else {
                                       updateStep(index, "approverId", undefined);
                                     }
@@ -666,10 +671,10 @@ export default function Workflow() {
                                         Usuário Específico
                                       </div>
                                     </SelectItem>
-                                    <SelectItem value="permission">
+                                    <SelectItem value="role">
                                       <div className="flex items-center gap-2">
                                         <Shield className="h-4 w-4" />
-                                        Tipo de Usuário (Permissão)
+                                        Tipo de Usuário (Cargo)
                                       </div>
                                     </SelectItem>
                                   </SelectContent>
@@ -700,25 +705,28 @@ export default function Workflow() {
                                 </div>
                               )}
 
-                              {step.dualApprovalSubtype === "permission" && (
+                              {step.dualApprovalSubtype === "role" && (
                                 <div>
-                                  <Label className="text-sm">Permissão Necessária *</Label>
+                                  <Label className="text-sm">Tipo de Usuário (Cargo) *</Label>
                                   <Select
-                                    value={step.requiredPermission}
-                                    onValueChange={(value) => updateStep(index, "requiredPermission", value)}
+                                    value={step.requiredRole}
+                                    onValueChange={(value) => updateStep(index, "requiredRole", value)}
                                   >
-                                    <SelectTrigger data-testid={`select-dual-permission-${index}`} className="mt-1">
-                                      <SelectValue placeholder="Selecione uma permissão" />
+                                    <SelectTrigger data-testid={`select-dual-role-${index}`} className="mt-1">
+                                      <SelectValue placeholder="Selecione um tipo de usuário" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="approve_jobs">Aprovar Vagas</SelectItem>
-                                      <SelectItem value="manage_users">Gerenciar Usuários</SelectItem>
-                                      <SelectItem value="create_jobs">Criar Vagas</SelectItem>
-                                      <SelectItem value="edit_jobs">Editar Vagas</SelectItem>
+                                      <SelectItem value="admin">Administrador</SelectItem>
+                                      <SelectItem value="hr_manager">Gerente de RH</SelectItem>
+                                      <SelectItem value="manager">Gerente</SelectItem>
+                                      <SelectItem value="approver">Aprovador</SelectItem>
+                                      <SelectItem value="recruiter">Recrutador</SelectItem>
+                                      <SelectItem value="interviewer">Entrevistador</SelectItem>
+                                      <SelectItem value="viewer">Visualizador</SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    Dois usuários diferentes com esta permissão precisarão aprovar
+                                    Dois usuários diferentes com este cargo precisarão aprovar
                                   </p>
                                 </div>
                               )}
