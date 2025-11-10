@@ -78,6 +78,15 @@ Preferred communication style: Simple, everyday language.
 - **Billing**: Links invoices to specific organizations.
 - **Access**: Super Admin only.
 
+## Candidate Blacklist Management
+- **Purpose**: Manage candidates who cannot be hired by the organization.
+- **Manual Entry**: Add candidates directly through Settings > Blacklist tab with full name, CPF, and reason for blacklisting.
+- **Data Fields**: Full name (required), CPF in format 000.000.000-00 (required), and detailed reason for blacklisting (required).
+- **CRUD Operations**: Full create, read, update, and delete capabilities.
+- **Multi-Tenant**: Blacklist entries are isolated by organization using `organizationId`.
+- **Location**: Accessible via Settings page, Blacklist tab.
+- **Implementation**: Uses `blacklist_candidates` table with Drizzle ORM, Zod validation, and shadcn/ui components.
+
 ## Development Workflow
 - **Build**: Separate client (Vite) and server (esbuild) builds.
 - **Code Quality**: TypeScript strict mode, ESLint.
