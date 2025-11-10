@@ -155,6 +155,11 @@ export default function Kanban() {
     queryKey: ["/api/candidates"],
   });
 
+  // Buscar blacklist de candidatos
+  const { data: blacklistCandidates = [] } = useQuery<any[]>({
+    queryKey: ["/api/blacklist-candidates"],
+  });
+
   // Set job filter from URL or default to first job
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -376,6 +381,28 @@ export default function Kanban() {
   };
 
   const onSubmit = (data: CandidateFormData) => {
+    // Se for um novo candidato, verificar se o CPF está na blacklist
+    if (data.candidateType === "new" && data.candidateDocument) {
+      // Normalizar CPF removendo pontos e traços para comparação
+      const normalizedCPF = data.candidateDocument.replace(/[.-]/g, '');
+      
+      // Verificar se existe na blacklist
+      const isBlacklisted = blacklistCandidates.some((blacklisted: any) => {
+        const blacklistedCPF = blacklisted.cpf.replace(/[.-]/g, '');
+        return blacklistedCPF === normalizedCPF;
+      });
+      
+      if (isBlacklisted) {
+        toast({
+          title: "Candidato Bloqueado",
+          description: "Este candidato não pode ser cadastrado pois está na lista de banimento (blacklist). Verifique o motivo na aba de Configurações > Blacklist.",
+          variant: "destructive",
+        });
+        return; // Bloquear o cadastro
+      }
+    }
+    
+    // Se não estiver na blacklist, prosseguir com o cadastro normalmente
     createCandidateMutation.mutate(data);
   };
 
