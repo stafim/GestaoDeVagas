@@ -80,12 +80,46 @@ Preferred communication style: Simple, everyday language.
 - **Code Quality**: TypeScript strict mode, ESLint.
 
 ## Test Data
+
+### Test Companies
 The system includes the following test companies:
-- **Opus Serviços** (CNPJ: 12.345.678/0001-90) - Serviços gerais e facilities
-- **Opus Logística** (CNPJ: 23.456.789/0001-01) - Logística e transporte
-- **Acelera IT** (CNPJ: 34.567.890/0001-12) - Tecnologia da informação
-- **Opus Manutenção** (CNPJ: 45.678.901/0001-23) - Manutenção industrial
-- **Opus EUA** (CNPJ: 56.789.012/0001-34) - Operações internacionais
+- **Opus Serviços** (CNPJ: 12.345.678/0001-90) - Serviços gerais e facilities (75 funcionários)
+- **Opus Logística** (CNPJ: 23.456.789/0001-01) - Logística e transporte (91 funcionários)
+- **Acelera IT** (CNPJ: 34.567.890/0001-12) - Tecnologia da informação (76 funcionários)
+- **Opus Manutenção** (CNPJ: 45.678.901/0001-23) - Manutenção industrial (91 funcionários)
+- **Opus EUA** (CNPJ: 56.789.012/0001-34) - Operações internacionais (10 funcionários)
+
+### Test Clients
+The system includes 4 test clients with configured profession-based job quotas:
+- **Grupo Boticário**: 12 profissões configuradas, 182 vagas totais permitidas
+- **Localiza S/A**: 12 profissões configuradas, 188 vagas totais permitidas
+- **Stellantis**: 12 profissões configuradas, 181 vagas totais permitidas
+- **Volvo S/A**: 12 profissões configuradas, 184 vagas totais permitidas
+
+### Test Employees
+**Total**: 343 funcionários distribuídos entre as empresas com:
+- Nomes brasileiros realistas
+- Códigos únicos (FUN-00001 a FUN-00343)
+- Departamentos variados: Operações, Administrativo, RH, Financeiro, Manutenção, Logística, TI, Comercial, Compras
+- Cargos diversos: Auxiliar, Assistente, Analista (Jr/Pleno/Sr), Coordenador, Supervisor, Gerente, Operador, Técnico
+
+### Test Professions (12 profissões)
+Distribuídas por categoria:
+- **Operacional**: Motorista, Operador de Empilhadeira
+- **Serviços Gerais**: Auxiliar de Limpeza
+- **Segurança**: Vigilante
+- **Logística**: Auxiliar de Logística
+- **Manutenção**: Eletricista, Mecânico
+- **Administrativo**: Recepcionista, Assistente Administrativo
+- **Tecnologia**: Desenvolvedor, Analista de QA
+- **Industrial**: Soldador
+
+### Test Candidates
+**Total**: 37 candidatos distribuídos entre 8 vagas ativas com:
+- Dados brasileiros realistas (CPF, telefone, cidades)
+- Distribuição aleatória nos 7 estágios do Kanban: Triagem Inicial (4), Entrevista RH (6), Teste Técnico (4), Entrevista Gestor (9), Proposta (6), Contratado (7), Recusado (1)
+- Scores variados (60-100 pontos)
+- Datas de aplicação nos últimos 30 dias
 
 ## Known Technical Issues & Solutions
 
