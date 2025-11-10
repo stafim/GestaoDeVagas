@@ -57,11 +57,13 @@ import {
 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
-  "Nova Vaga": '#5B9FED',
-  "Em Recrutamento": '#3bf751',
-  "Departamento Pessoal": '#bb3bf7',
-  "Concluída": '#3bf7bf',
-  "Cancelada": '#eb370a'
+  "Nova Vaga": '#3B82F6',
+  "Aprovada": '#10B981',
+  "Em Recrutamento": '#8B5CF6',
+  "Em DP": '#F59E0B',
+  "Em Admissão": '#EAB308',
+  "Admitido": '#22C55E',
+  "Cancelada": '#EF4444'
 };
 
 const statusLabels: Record<string, string> = {
