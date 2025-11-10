@@ -24,7 +24,10 @@ import {
   insertRoleJobStatusPermissionSchema,
   insertInvoiceSchema,
   insertPaymentHistorySchema,
-  insertPlanSchema
+  insertPlanSchema,
+  insertApprovalWorkflowSchema,
+  insertApprovalWorkflowStepSchema,
+  insertJobApprovalHistorySchema
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -3198,6 +3201,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting plan:", error);
       res.status(500).json({ message: "Failed to delete plan" });
+    }
+  });
+
+  // Approval Workflow routes
+  app.get('/api/workflows', isAuthenticated, async (req, res) => {
+    try {
+      const workflows = await storage.getApprovalWorkflows();
+      res.json(workflows);
+    } catch (error) {
+      console.error("Error fetching workflows:", error);
+      res.status(500).json({ message: "Failed to fetch workflows" });
+    }
+  });
+
+  app.get('/api/workflows/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const workflow = await storage.getApprovalWorkflow(id);
+      if (!workflow) {
+        res.status(404).json({ message: "Workflow not found" });
+        return;
+      }
+      res.json(workflow);
+    } catch (error) {
+      console.error("Error fetching workflow:", error);
+      res.status(500).json({ message: "Failed to fetch workflow" });
+    }
+  });
+
+  app.post('/api/workflows', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertApprovalWorkflowSchema.parse(req.body);
+      const newWorkflow = await storage.createApprovalWorkflow(validatedData);
+      res.status(201).json(newWorkflow);
+    } catch (error) {
+      console.error("Error creating workflow:", error);
+      res.status(400).json({ message: "Failed to create workflow", error });
+    }
+  });
+
+  app.patch('/api/workflows/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedWorkflow = await storage.updateApprovalWorkflow(id, updates);
+      res.json(updatedWorkflow);
+    } catch (error) {
+      console.error("Error updating workflow:", error);
+      res.status(500).json({ message: "Failed to update workflow" });
+    }
+  });
+
+  app.delete('/api/workflows/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteApprovalWorkflow(id);
+      res.json({ message: "Workflow deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting workflow:", error);
+      res.status(500).json({ message: "Failed to delete workflow" });
+    }
+  });
+
+  // Workflow Steps routes
+  app.get('/api/workflows/:workflowId/steps', isAuthenticated, async (req, res) => {
+    try {
+      const { workflowId } = req.params;
+      const steps = await storage.getWorkflowSteps(workflowId);
+      res.json(steps);
+    } catch (error) {
+      console.error("Error fetching workflow steps:", error);
+      res.status(500).json({ message: "Failed to fetch workflow steps" });
+    }
+  });
+
+  app.post('/api/workflow-steps', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertApprovalWorkflowStepSchema.parse(req.body);
+      const newStep = await storage.createWorkflowStep(validatedData);
+      res.status(201).json(newStep);
+    } catch (error) {
+      console.error("Error creating workflow step:", error);
+      res.status(400).json({ message: "Failed to create workflow step", error });
+    }
+  });
+
+  app.patch('/api/workflow-steps/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedStep = await storage.updateWorkflowStep(id, updates);
+      res.json(updatedStep);
+    } catch (error) {
+      console.error("Error updating workflow step:", error);
+      res.status(500).json({ message: "Failed to update workflow step" });
+    }
+  });
+
+  app.delete('/api/workflow-steps/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteWorkflowStep(id);
+      res.json({ message: "Workflow step deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting workflow step:", error);
+      res.status(500).json({ message: "Failed to delete workflow step" });
+    }
+  });
+
+  // Job Approval History routes
+  app.get('/api/jobs/:jobId/approval-history', isAuthenticated, async (req, res) => {
+    try {
+      const { jobId } = req.params;
+      const history = await storage.getJobApprovalHistory(jobId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching job approval history:", error);
+      res.status(500).json({ message: "Failed to fetch job approval history" });
+    }
+  });
+
+  app.post('/api/job-approval-history', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertJobApprovalHistorySchema.parse(req.body);
+      const newHistory = await storage.createJobApprovalHistory(validatedData);
+      res.status(201).json(newHistory);
+    } catch (error) {
+      console.error("Error creating job approval history:", error);
+      res.status(400).json({ message: "Failed to create job approval history", error });
+    }
+  });
+
+  app.patch('/api/job-approval-history/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedHistory = await storage.updateJobApprovalHistory(id, updates);
+      res.json(updatedHistory);
+    } catch (error) {
+      console.error("Error updating job approval history:", error);
+      res.status(500).json({ message: "Failed to update job approval history" });
     }
   });
 
