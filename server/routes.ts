@@ -28,7 +28,8 @@ import {
   insertPlanSchema,
   insertApprovalWorkflowSchema,
   insertApprovalWorkflowStepSchema,
-  insertJobApprovalHistorySchema
+  insertJobApprovalHistorySchema,
+  insertBlacklistCandidateSchema
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -3316,6 +3317,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting plan:", error);
       res.status(500).json({ message: "Failed to delete plan" });
+    }
+  });
+
+  // Blacklist Candidates routes
+  app.get('/api/blacklist-candidates', isAuthenticated, async (req, res) => {
+    try {
+      const candidates = await storage.getBlacklistCandidates();
+      res.json(candidates);
+    } catch (error) {
+      console.error("Error fetching blacklist candidates:", error);
+      res.status(500).json({ message: "Failed to fetch blacklist candidates" });
+    }
+  });
+
+  app.get('/api/blacklist-candidates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const candidate = await storage.getBlacklistCandidate(id);
+      if (!candidate) {
+        return res.status(404).json({ message: "Blacklist candidate not found" });
+      }
+      res.json(candidate);
+    } catch (error) {
+      console.error("Error fetching blacklist candidate:", error);
+      res.status(500).json({ message: "Failed to fetch blacklist candidate" });
+    }
+  });
+
+  app.get('/api/blacklist-candidates/check/:cpf', isAuthenticated, async (req, res) => {
+    try {
+      const { cpf } = req.params;
+      const candidate = await storage.getBlacklistCandidateByCPF(cpf);
+      res.json({ isBlacklisted: !!candidate, candidate });
+    } catch (error) {
+      console.error("Error checking blacklist:", error);
+      res.status(500).json({ message: "Failed to check blacklist" });
+    }
+  });
+
+  app.post('/api/blacklist-candidates', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertBlacklistCandidateSchema.parse(req.body);
+      
+      // Verificar se o CPF já está na blacklist
+      const existing = await storage.getBlacklistCandidateByCPF(validatedData.cpf);
+      if (existing) {
+        return res.status(409).json({ 
+          message: "Candidato já existe na blacklist",
+          candidate: existing 
+        });
+      }
+      
+      const newCandidate = await storage.createBlacklistCandidate(validatedData);
+      res.status(201).json(newCandidate);
+    } catch (error) {
+      console.error("Error creating blacklist candidate:", error);
+      if (error instanceof Error && 'issues' in error) {
+        return res.status(400).json({ 
+          message: "Dados inválidos", 
+          errors: (error as any).issues 
+        });
+      }
+      res.status(400).json({ message: "Failed to create blacklist candidate", error });
+    }
+  });
+
+  app.patch('/api/blacklist-candidates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedCandidate = await storage.updateBlacklistCandidate(id, updates);
+      res.json(updatedCandidate);
+    } catch (error) {
+      console.error("Error updating blacklist candidate:", error);
+      res.status(500).json({ message: "Failed to update blacklist candidate" });
+    }
+  });
+
+  app.delete('/api/blacklist-candidates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteBlacklistCandidate(id);
+      res.json({ message: "Blacklist candidate deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting blacklist candidate:", error);
+      res.status(500).json({ message: "Failed to delete blacklist candidate" });
     }
   });
 
