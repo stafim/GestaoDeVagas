@@ -112,6 +112,26 @@ The system includes the following test companies:
 - **Solution**: Changed SelectItem value from `status.id` to `status.key` in `client/src/components/JobStatusSelect.tsx` (line 144).
 - **Impact**: Job status updates now work correctly throughout the application.
 
+### Job Quota System Migration (Nov 2025)
+- **Major Change**: Migrated from total job quota per client to profession-based quotas.
+- **Previous System**: Clients had a single `max_jobs` field limiting total active jobs across all professions.
+- **New System**: 
+  - Created `client_profession_limits` table to store max jobs per client per profession
+  - Each limit is specific to a client-profession combination
+  - Allows fine-grained control over recruitment capacity by job type
+- **Implementation**:
+  - Database: New table `client_profession_limits` (client_id, profession_id, max_jobs)
+  - Backend: Full CRUD operations in `server/storage.ts` and API routes in `server/routes.ts`
+  - Frontend: 
+    - ClientModal: New section for managing profession-specific limits with table UI
+    - JobModal: Updated quota checking logic to verify profession-specific limits
+  - Quota policies (allow/block/require_approval) now apply per profession
+- **Migration Notes**:
+  - Legacy `max_jobs` field remains in `clients` table but is deprecated
+  - Four existing clients have `max_jobs` configured: Localiza S/A (3), Grupo Boticário (10), Stellantis (10), Volvo S/A (15)
+  - These clients should be manually configured with profession-specific limits through ClientModal
+- **Impact**: More flexible quota management allowing different limits for different job types per client.
+
 # External Dependencies
 
 ## Database Services
