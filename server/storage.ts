@@ -36,6 +36,7 @@ import {
   approvalWorkflows,
   approvalWorkflowSteps,
   jobApprovalHistory,
+  blacklistCandidates,
   type Organization,
   type InsertOrganization,
   type Invoice,
@@ -101,6 +102,8 @@ import {
   type InsertApprovalWorkflowStep,
   type JobApprovalHistory,
   type InsertJobApprovalHistory,
+  type BlacklistCandidate,
+  type InsertBlacklistCandidate,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, and, or, ilike, sql, inArray, isNull } from "drizzle-orm";
@@ -388,6 +391,14 @@ export interface IStorage {
   createPlan(plan: InsertPlan): Promise<Plan>;
   updatePlan(id: string, plan: Partial<InsertPlan>): Promise<Plan>;
   deletePlan(id: string): Promise<void>;
+  
+  // Blacklist Candidates operations
+  getBlacklistCandidates(): Promise<BlacklistCandidate[]>;
+  getBlacklistCandidate(id: string): Promise<BlacklistCandidate | undefined>;
+  getBlacklistCandidateByCPF(cpf: string): Promise<BlacklistCandidate | undefined>;
+  createBlacklistCandidate(candidate: InsertBlacklistCandidate): Promise<BlacklistCandidate>;
+  updateBlacklistCandidate(id: string, candidate: Partial<InsertBlacklistCandidate>): Promise<BlacklistCandidate>;
+  deleteBlacklistCandidate(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3304,6 +3315,52 @@ export class DatabaseStorage implements IStorage {
 
   async deletePlan(id: string): Promise<void> {
     await db.delete(plans).where(eq(plans.id, id));
+  }
+
+  // Blacklist Candidates operations
+  async getBlacklistCandidates(): Promise<BlacklistCandidate[]> {
+    const candidates = await db
+      .select()
+      .from(blacklistCandidates)
+      .orderBy(desc(blacklistCandidates.createdAt));
+    return candidates;
+  }
+
+  async getBlacklistCandidate(id: string): Promise<BlacklistCandidate | undefined> {
+    const [candidate] = await db
+      .select()
+      .from(blacklistCandidates)
+      .where(eq(blacklistCandidates.id, id));
+    return candidate;
+  }
+
+  async getBlacklistCandidateByCPF(cpf: string): Promise<BlacklistCandidate | undefined> {
+    const [candidate] = await db
+      .select()
+      .from(blacklistCandidates)
+      .where(eq(blacklistCandidates.cpf, cpf));
+    return candidate;
+  }
+
+  async createBlacklistCandidate(candidateData: InsertBlacklistCandidate): Promise<BlacklistCandidate> {
+    const [candidate] = await db
+      .insert(blacklistCandidates)
+      .values(candidateData)
+      .returning();
+    return candidate;
+  }
+
+  async updateBlacklistCandidate(id: string, candidateData: Partial<InsertBlacklistCandidate>): Promise<BlacklistCandidate> {
+    const [candidate] = await db
+      .update(blacklistCandidates)
+      .set({ ...candidateData, updatedAt: new Date() })
+      .where(eq(blacklistCandidates.id, id))
+      .returning();
+    return candidate;
+  }
+
+  async deleteBlacklistCandidate(id: string): Promise<void> {
+    await db.delete(blacklistCandidates).where(eq(blacklistCandidates.id, id));
   }
 }
 
