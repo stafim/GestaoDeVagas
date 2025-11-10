@@ -17,7 +17,8 @@ import {
   ClipboardCheck,
   Monitor,
   DollarSign,
-  Package
+  Package,
+  GitBranch
 } from "lucide-react";
 import logoImage from "@assets/Screenshot_20250930_142224_Chrome~2_1759253037075.jpg";
 
@@ -71,6 +72,12 @@ const clientNavigationItems = [
     href: "/permissions",
     icon: Shield,
     description: "Controle de acesso"
+  },
+  {
+    name: "Workflow",
+    href: "/workflow",
+    icon: GitBranch,
+    description: "Aprovação de vagas"
   },
   {
     name: "Fechamento de Vagas",

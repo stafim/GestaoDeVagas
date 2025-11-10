@@ -32,6 +32,9 @@ import {
   kanbanStages,
   systemSettings,
   jobStatusHistory,
+  approvalWorkflows,
+  approvalWorkflowSteps,
+  jobApprovalHistory,
   type Organization,
   type InsertOrganization,
   type Invoice,
@@ -89,6 +92,12 @@ import {
   type InsertSystemSetting,
   type IntegrationSetting,
   type InsertIntegrationSetting,
+  type ApprovalWorkflow,
+  type InsertApprovalWorkflow,
+  type ApprovalWorkflowStep,
+  type InsertApprovalWorkflowStep,
+  type JobApprovalHistory,
+  type InsertJobApprovalHistory,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, and, or, ilike, sql, inArray, isNull } from "drizzle-orm";
@@ -231,6 +240,24 @@ export interface IStorage {
   getSystemSetting(key: string): Promise<SystemSetting | undefined>;
   upsertSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
   updateSystemSettingValue(key: string, value: string): Promise<SystemSetting>;
+  
+  // Approval Workflow operations
+  getApprovalWorkflows(): Promise<ApprovalWorkflow[]>;
+  getApprovalWorkflow(id: string): Promise<ApprovalWorkflow | undefined>;
+  createApprovalWorkflow(workflow: InsertApprovalWorkflow): Promise<ApprovalWorkflow>;
+  updateApprovalWorkflow(id: string, workflow: Partial<InsertApprovalWorkflow>): Promise<ApprovalWorkflow>;
+  deleteApprovalWorkflow(id: string): Promise<void>;
+  
+  // Approval Workflow Steps operations
+  getWorkflowSteps(workflowId: string): Promise<ApprovalWorkflowStep[]>;
+  createWorkflowStep(step: InsertApprovalWorkflowStep): Promise<ApprovalWorkflowStep>;
+  updateWorkflowStep(id: string, step: Partial<InsertApprovalWorkflowStep>): Promise<ApprovalWorkflowStep>;
+  deleteWorkflowStep(id: string): Promise<void>;
+  
+  // Job Approval History operations
+  getJobApprovalHistory(jobId: string): Promise<JobApprovalHistory[]>;
+  createJobApprovalHistory(history: InsertJobApprovalHistory): Promise<JobApprovalHistory>;
+  updateJobApprovalHistory(id: string, history: Partial<InsertJobApprovalHistory>): Promise<JobApprovalHistory>;
   
   // Interview Criteria operations
   getInterviewCriteria(interviewId: string): Promise<InterviewCriteria[]>;
@@ -2969,6 +2996,87 @@ export class DatabaseStorage implements IStorage {
       .where(eq(systemSettings.key, key))
       .returning();
     return updated;
+  }
+
+  // Approval Workflow operations
+  async getApprovalWorkflows(): Promise<ApprovalWorkflow[]> {
+    const workflows = await db.select().from(approvalWorkflows).orderBy(desc(approvalWorkflows.createdAt));
+    return workflows;
+  }
+
+  async getApprovalWorkflow(id: string): Promise<ApprovalWorkflow | undefined> {
+    const [workflow] = await db.select().from(approvalWorkflows).where(eq(approvalWorkflows.id, id));
+    return workflow;
+  }
+
+  async createApprovalWorkflow(workflowData: InsertApprovalWorkflow): Promise<ApprovalWorkflow> {
+    const [workflow] = await db.insert(approvalWorkflows).values(workflowData).returning();
+    return workflow;
+  }
+
+  async updateApprovalWorkflow(id: string, workflowData: Partial<InsertApprovalWorkflow>): Promise<ApprovalWorkflow> {
+    const [workflow] = await db
+      .update(approvalWorkflows)
+      .set({ ...workflowData, updatedAt: new Date() })
+      .where(eq(approvalWorkflows.id, id))
+      .returning();
+    return workflow;
+  }
+
+  async deleteApprovalWorkflow(id: string): Promise<void> {
+    await db.delete(approvalWorkflows).where(eq(approvalWorkflows.id, id));
+  }
+
+  // Approval Workflow Steps operations
+  async getWorkflowSteps(workflowId: string): Promise<ApprovalWorkflowStep[]> {
+    const steps = await db
+      .select()
+      .from(approvalWorkflowSteps)
+      .where(eq(approvalWorkflowSteps.workflowId, workflowId))
+      .orderBy(approvalWorkflowSteps.stepOrder);
+    return steps;
+  }
+
+  async createWorkflowStep(stepData: InsertApprovalWorkflowStep): Promise<ApprovalWorkflowStep> {
+    const [step] = await db.insert(approvalWorkflowSteps).values(stepData).returning();
+    return step;
+  }
+
+  async updateWorkflowStep(id: string, stepData: Partial<InsertApprovalWorkflowStep>): Promise<ApprovalWorkflowStep> {
+    const [step] = await db
+      .update(approvalWorkflowSteps)
+      .set({ ...stepData, updatedAt: new Date() })
+      .where(eq(approvalWorkflowSteps.id, id))
+      .returning();
+    return step;
+  }
+
+  async deleteWorkflowStep(id: string): Promise<void> {
+    await db.delete(approvalWorkflowSteps).where(eq(approvalWorkflowSteps.id, id));
+  }
+
+  // Job Approval History operations
+  async getJobApprovalHistory(jobId: string): Promise<JobApprovalHistory[]> {
+    const history = await db
+      .select()
+      .from(jobApprovalHistory)
+      .where(eq(jobApprovalHistory.jobId, jobId))
+      .orderBy(jobApprovalHistory.stepOrder);
+    return history;
+  }
+
+  async createJobApprovalHistory(historyData: InsertJobApprovalHistory): Promise<JobApprovalHistory> {
+    const [history] = await db.insert(jobApprovalHistory).values(historyData).returning();
+    return history;
+  }
+
+  async updateJobApprovalHistory(id: string, historyData: Partial<InsertJobApprovalHistory>): Promise<JobApprovalHistory> {
+    const [history] = await db
+      .update(jobApprovalHistory)
+      .set({ ...historyData, updatedAt: new Date() })
+      .where(eq(jobApprovalHistory.id, id))
+      .returning();
+    return history;
   }
 
   // Organization operations (Multi-tenant support)
