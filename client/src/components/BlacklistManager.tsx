@@ -205,34 +205,60 @@ export function BlacklistManager() {
       reader.onload = (e) => {
         try {
           const data = e.target?.result;
+          
+          if (!data) {
+            throw new Error("Arquivo vazio ou inválido");
+          }
+          
           const workbook = XLSX.read(data, { type: 'binary' });
+          
+          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+            throw new Error("Arquivo Excel não contém planilhas");
+          }
+          
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          const parsed = jsonData.map((row: any) => ({
-            fullName: row.nome || row.name || row.fullName || row.Nome || row.Name || "",
-            cpf: formatCPF(String(row.cpf || row.CPF || "")),
-            reason: row.motivo || row.reason || row.Motivo || row.Reason || "",
-            organizationId: "demo-org-id",
-          }));
+          if (jsonData.length === 0) {
+            throw new Error("A planilha está vazia");
+          }
+          
+          const parsed = jsonData.map((row: any, index: number) => {
+            const fullName = row.nome || row.name || row.fullName || row.Nome || row.Name || "";
+            const cpf = String(row.cpf || row.CPF || "");
+            const reason = row.motivo || row.reason || row.Motivo || row.Reason || "";
+            
+            if (!fullName || !cpf || !reason) {
+              console.warn(`Linha ${index + 2}: dados incompletos`, row);
+            }
+            
+            return {
+              fullName,
+              cpf: formatCPF(cpf),
+              reason,
+              organizationId: "demo-org-id",
+            };
+          });
           
           setImportPreview(parsed);
           setIsProcessing(false);
         } catch (error) {
+          console.error("Erro ao processar XLSX:", error);
           setIsProcessing(false);
           toast({
             title: "Erro ao processar XLSX",
-            description: error instanceof Error ? error.message : "Erro desconhecido",
+            description: error instanceof Error ? error.message : "Erro desconhecido ao processar arquivo Excel",
             variant: "destructive",
           });
         }
       };
-      reader.onerror = () => {
+      reader.onerror = (error) => {
+        console.error("Erro ao ler arquivo:", error);
         setIsProcessing(false);
         toast({
           title: "Erro ao ler arquivo",
-          description: "Não foi possível ler o arquivo XLSX",
+          description: "Não foi possível ler o arquivo XLSX. Verifique se o arquivo não está corrompido.",
           variant: "destructive",
         });
       };
