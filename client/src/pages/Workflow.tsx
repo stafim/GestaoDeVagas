@@ -6,14 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, GitBranch, Edit, Trash2, Check, X, UserCheck, Users } from "lucide-react";
+import { Plus, GitBranch, Edit, Trash2, Check, X, UserCheck, Users, Shield, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import type { ApprovalWorkflow, ApprovalWorkflowStep, User } from "@shared/schema";
 
 const workflowStepSchema = z.object({
@@ -63,11 +63,28 @@ export default function Workflow() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<ApprovalWorkflow | null>(null);
-  const [isEditingWorkflow, setIsEditingWorkflow] = useState(false);
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
+  const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(new Set());
 
   const { data: workflows, isLoading } = useQuery<ApprovalWorkflow[]>({
     queryKey: ["/api/workflows"],
+  });
+
+  const { data: workflowStepsData } = useQuery<Record<string, ApprovalWorkflowStep[]>>({
+    queryKey: ["/api/workflow-steps/all"],
+    queryFn: async () => {
+      if (!workflows || workflows.length === 0) return {};
+      
+      const stepsMap: Record<string, ApprovalWorkflowStep[]> = {};
+      for (const workflow of workflows) {
+        const response = await fetch(`/api/workflow-steps/${workflow.id}`, { credentials: "include" });
+        if (response.ok) {
+          stepsMap[workflow.id] = await response.json();
+        }
+      }
+      return stepsMap;
+    },
+    enabled: !!workflows && workflows.length > 0,
   });
 
   const { data: users } = useQuery<User[]>({
@@ -118,6 +135,7 @@ export default function Workflow() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/workflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/workflow-steps/all"] });
       toast({
         title: "Workflow criado!",
         description: "O workflow de aprovação foi criado com sucesso.",
@@ -135,10 +153,31 @@ export default function Workflow() {
     },
   });
 
+  const deleteWorkflowMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/workflows/${id}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/workflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/workflow-steps/all"] });
+      toast({
+        title: "Workflow excluído",
+        description: "O workflow foi excluído com sucesso.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao excluir workflow",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao excluir o workflow",
+        variant: "destructive",
+      });
+    },
+  });
+
   const addStep = () => {
     const newStep: WorkflowStep = {
       stepOrder: workflowSteps.length + 1,
-      approvalType: "dual",
+      approvalType: "user",
     };
     setWorkflowSteps([...workflowSteps, newStep]);
   };
@@ -171,13 +210,44 @@ export default function Workflow() {
     });
   };
 
+  const toggleWorkflowExpand = (workflowId: string) => {
+    const newExpanded = new Set(expandedWorkflows);
+    if (newExpanded.has(workflowId)) {
+      newExpanded.delete(workflowId);
+    } else {
+      newExpanded.add(workflowId);
+    }
+    setExpandedWorkflows(newExpanded);
+  };
+
+  const getPermissionLabel = (permission: string) => {
+    const labels: Record<string, string> = {
+      "approve_jobs": "Aprovar Vagas",
+      "manage_users": "Gerenciar Usuários",
+      "create_jobs": "Criar Vagas",
+      "edit_jobs": "Editar Vagas",
+      "delete_jobs": "Excluir Vagas",
+      "view_jobs": "Visualizar Vagas",
+    };
+    return labels[permission] || permission;
+  };
+
+  const getStepTypeLabel = (step: ApprovalWorkflowStep) => {
+    if (step.stepType === "dual") {
+      return step.dualApprovalSubtype === "user" ? "Dupla Alçada (Usuários)" : "Dupla Alçada (Tipo de Usuário)";
+    }
+    if (step.stepType === "user") return "Usuário Específico";
+    if (step.stepType === "permission") return "Tipo de Usuário (Permissão)";
+    return step.stepType;
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Workflows de Aprovação</h1>
           <p className="text-muted-foreground mt-1">
-            Configure fluxos de aprovação para vagas com dupla alçada, aprovação por usuário ou permissão
+            Configure fluxos de aprovação para vagas com múltiplas etapas e alçadas
           </p>
         </div>
         <Button
@@ -201,7 +271,7 @@ export default function Workflow() {
               Nenhum workflow configurado
             </h3>
             <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
-              Crie seu primeiro workflow de aprovação para gerenciar a aprovação de vagas com múltiplas alçadas
+              Crie seu primeiro workflow de aprovação para gerenciar a aprovação de vagas
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-create-first-workflow">
               <Plus className="h-4 w-4 mr-2" />
@@ -210,80 +280,153 @@ export default function Workflow() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {workflows.map((workflow) => (
-            <Card key={workflow.id} className="hover-elevate">
-              <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <GitBranch className="h-5 w-5 text-primary" />
-                    <span className="truncate">{workflow.name}</span>
-                  </CardTitle>
-                  {workflow.description && (
-                    <CardDescription className="mt-1 text-sm line-clamp-2">
-                      {workflow.description}
-                    </CardDescription>
-                  )}
-                </div>
-                <div className="flex gap-1 flex-wrap">
-                  {workflow.isDefault && (
-                    <Badge variant="default" className="text-xs">
-                      Padrão
-                    </Badge>
-                  )}
-                  {workflow.isActive ? (
-                    <Badge variant="outline" className="text-xs">
-                      <Check className="h-3 w-3 mr-1" />
-                      Ativo
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-xs">
-                      <X className="h-3 w-3 mr-1" />
-                      Inativo
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedWorkflow(workflow);
-                      setIsEditingWorkflow(true);
-                    }}
-                    data-testid={`button-edit-workflow-${workflow.id}`}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-4">
+          {workflows.map((workflow) => {
+            const steps = workflowStepsData?.[workflow.id] || [];
+            const isExpanded = expandedWorkflows.has(workflow.id);
+            
+            return (
+              <Card key={workflow.id} className="hover-elevate">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <GitBranch className="h-5 w-5 text-primary flex-shrink-0" />
+                        <CardTitle className="text-lg">{workflow.name}</CardTitle>
+                        <div className="flex gap-2 flex-wrap">
+                          {workflow.isDefault && (
+                            <Badge variant="default" className="text-xs">
+                              Padrão
+                            </Badge>
+                          )}
+                          {workflow.isActive ? (
+                            <Badge variant="outline" className="text-xs">
+                              <Check className="h-3 w-3 mr-1" />
+                              Ativo
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-xs">
+                              <X className="h-3 w-3 mr-1" />
+                              Inativo
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {workflow.description && (
+                        <CardDescription className="text-sm">
+                          {workflow.description}
+                        </CardDescription>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleWorkflowExpand(workflow.id)}
+                        data-testid={`button-toggle-${workflow.id}`}
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteWorkflowMutation.mutate(workflow.id)}
+                        data-testid={`button-delete-${workflow.id}`}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                {isExpanded && (
+                  <CardContent className="pt-0">
+                    <Separator className="mb-4" />
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Shield className="h-4 w-4" />
+                        Etapas de Aprovação ({steps.length})
+                      </div>
+                      
+                      {steps.length === 0 ? (
+                        <p className="text-sm text-muted-foreground italic">
+                          Nenhuma etapa configurada
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {steps
+                            .sort((a, b) => a.stepOrder - b.stepOrder)
+                            .map((step, index) => {
+                              const user = step.userId ? users?.find(u => u.id === step.userId) : null;
+                              
+                              return (
+                                <div
+                                  key={step.id}
+                                  className="flex items-center justify-between p-3 rounded-md border bg-card"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Badge variant="outline" className="text-xs font-mono">
+                                      #{step.stepOrder}
+                                    </Badge>
+                                    <div>
+                                      <div className="text-sm font-medium flex items-center gap-2">
+                                        {step.stepType === "dual" && <Users className="h-4 w-4 text-primary" />}
+                                        {step.stepType === "user" && <UserCheck className="h-4 w-4 text-primary" />}
+                                        {step.stepType === "permission" && <Shield className="h-4 w-4 text-primary" />}
+                                        {getStepTypeLabel(step)}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        {step.stepType === "user" && user && (
+                                          <span>Aprovador: {user.firstName} {user.lastName}</span>
+                                        )}
+                                        {step.stepType === "permission" && step.permission && (
+                                          <span>Permissão: {getPermissionLabel(step.permission)}</span>
+                                        )}
+                                        {step.stepType === "dual" && step.dualApprovalSubtype === "user" && user && (
+                                          <span>2 aprovações de usuários diferentes</span>
+                                        )}
+                                        {step.stepType === "dual" && step.dualApprovalSubtype === "permission" && step.permission && (
+                                          <span>2 aprovações de usuários com permissão: {getPermissionLabel(step.permission)}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Criar Novo Workflow</DialogTitle>
+            <DialogTitle>Criar Workflow de Aprovação</DialogTitle>
             <DialogDescription>
-              Configure um fluxo de aprovação para vagas com múltiplas etapas e alçadas
+              Configure um fluxo de aprovação para vagas com etapas customizadas
             </DialogDescription>
           </DialogHeader>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <div className="grid gap-4">
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome do Workflow</FormLabel>
+                      <FormLabel>Nome do Workflow *</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -301,11 +444,12 @@ export default function Workflow() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Descrição (opcional)</FormLabel>
+                      <FormLabel>Descrição</FormLabel>
                       <FormControl>
                         <Textarea
                           {...field}
                           placeholder="Descreva o propósito deste workflow..."
+                          rows={2}
                           data-testid="input-workflow-description"
                         />
                       </FormControl>
@@ -321,9 +465,9 @@ export default function Workflow() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-md border p-3">
                         <div className="space-y-0.5">
-                          <FormLabel>Workflow Ativo</FormLabel>
+                          <FormLabel className="text-sm">Workflow Ativo</FormLabel>
                           <FormDescription className="text-xs">
-                            Pode ser usado em novas vagas
+                            Disponível para uso
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -343,7 +487,7 @@ export default function Workflow() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-md border p-3">
                         <div className="space-y-0.5">
-                          <FormLabel>Workflow Padrão</FormLabel>
+                          <FormLabel className="text-sm">Workflow Padrão</FormLabel>
                           <FormDescription className="text-xs">
                             Selecionado automaticamente
                           </FormDescription>
@@ -361,12 +505,14 @@ export default function Workflow() {
                 </div>
               </div>
 
+              <Separator />
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold">Etapas de Aprovação</h3>
+                    <h3 className="text-base font-semibold">Etapas de Aprovação</h3>
                     <p className="text-sm text-muted-foreground">
-                      Configure as etapas do fluxo de aprovação
+                      Adicione as etapas do fluxo de aprovação
                     </p>
                   </div>
                   <Button
@@ -382,49 +528,46 @@ export default function Workflow() {
                 </div>
 
                 {workflowSteps.length === 0 ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-8">
-                      <GitBranch className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Nenhuma etapa adicionada. Clique em "Adicionar Etapa" para começar.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md">
+                    <GitBranch className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Nenhuma etapa adicionada. Clique em "Adicionar Etapa" para começar.
+                    </p>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {workflowSteps.map((step, index) => (
                       <Card key={index}>
-                        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-3">
-                          <CardTitle className="text-base">Etapa {step.stepOrder}</CardTitle>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeStep(index)}
-                            data-testid={`button-remove-step-${index}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="font-mono">#{step.stepOrder}</Badge>
+                              <CardTitle className="text-sm">Etapa {step.stepOrder}</CardTitle>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeStep(index)}
+                              data-testid={`button-remove-step-${index}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </CardHeader>
                         <CardContent className="space-y-3">
                           <div>
-                            <Label>Tipo de Aprovação</Label>
+                            <Label className="text-sm">Tipo de Aprovação *</Label>
                             <Select
                               value={step.approvalType}
                               onValueChange={(value: "dual" | "user" | "permission") =>
                                 updateStep(index, "approvalType", value)
                               }
                             >
-                              <SelectTrigger data-testid={`select-approval-type-${index}`}>
+                              <SelectTrigger data-testid={`select-approval-type-${index}`} className="mt-1">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="dual">
-                                  <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" />
-                                    Dupla Alçada (2 aprovações)
-                                  </div>
-                                </SelectItem>
                                 <SelectItem value="user">
                                   <div className="flex items-center gap-2">
                                     <UserCheck className="h-4 w-4" />
@@ -433,8 +576,14 @@ export default function Workflow() {
                                 </SelectItem>
                                 <SelectItem value="permission">
                                   <div className="flex items-center gap-2">
-                                    <Check className="h-4 w-4" />
-                                    Por Permissão/Cargo
+                                    <Shield className="h-4 w-4" />
+                                    Tipo de Usuário (Permissão)
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="dual">
+                                  <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Dupla Alçada (2 aprovações)
                                   </div>
                                 </SelectItem>
                               </SelectContent>
@@ -443,12 +592,12 @@ export default function Workflow() {
 
                           {step.approvalType === "user" && (
                             <div>
-                              <Label>Aprovador</Label>
+                              <Label className="text-sm">Usuário Aprovador *</Label>
                               <Select
                                 value={step.approverId}
                                 onValueChange={(value) => updateStep(index, "approverId", value)}
                               >
-                                <SelectTrigger data-testid={`select-approver-${index}`}>
+                                <SelectTrigger data-testid={`select-approver-${index}`} className="mt-1">
                                   <SelectValue placeholder="Selecione um usuário" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -459,42 +608,47 @@ export default function Workflow() {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Este usuário específico precisará aprovar a vaga
+                              </p>
                             </div>
                           )}
 
                           {step.approvalType === "permission" && (
                             <div>
-                              <Label>Permissão/Cargo Necessário</Label>
+                              <Label className="text-sm">Permissão Necessária *</Label>
                               <Select
                                 value={step.requiredPermission}
                                 onValueChange={(value) => updateStep(index, "requiredPermission", value)}
                               >
-                                <SelectTrigger data-testid={`select-permission-${index}`}>
+                                <SelectTrigger data-testid={`select-permission-${index}`} className="mt-1">
                                   <SelectValue placeholder="Selecione uma permissão" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">Administrador</SelectItem>
-                                  <SelectItem value="manager">Gerente</SelectItem>
-                                  <SelectItem value="hr_manager">Gerente de RH</SelectItem>
-                                  <SelectItem value="approver">Aprovador</SelectItem>
+                                  <SelectItem value="approve_jobs">Aprovar Vagas</SelectItem>
+                                  <SelectItem value="manage_users">Gerenciar Usuários</SelectItem>
+                                  <SelectItem value="create_jobs">Criar Vagas</SelectItem>
+                                  <SelectItem value="edit_jobs">Editar Vagas</SelectItem>
                                 </SelectContent>
                               </Select>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Qualquer usuário com esta permissão poderá aprovar
+                              </p>
                             </div>
                           )}
 
                           {step.approvalType === "dual" && (
-                            <div className="space-y-4">
-                              <div className="text-sm text-muted-foreground">
-                                Esta etapa requer aprovação de dois usuários/aprovadores diferentes.
+                            <div className="space-y-3">
+                              <div className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                                <strong>Dupla Alçada:</strong> Requer aprovação de dois usuários/aprovadores diferentes
                               </div>
                               
                               <div>
-                                <Label>Tipo de Aprovação</Label>
+                                <Label className="text-sm">Critério de Aprovação *</Label>
                                 <Select
                                   value={step.dualApprovalSubtype}
                                   onValueChange={(value: "user" | "permission") => {
                                     updateStep(index, "dualApprovalSubtype", value);
-                                    // Limpar campos relacionados ao tipo anterior
                                     if (value === "user") {
                                       updateStep(index, "requiredPermission", undefined);
                                     } else {
@@ -502,24 +656,34 @@ export default function Workflow() {
                                     }
                                   }}
                                 >
-                                  <SelectTrigger data-testid={`select-dual-subtype-${index}`}>
-                                    <SelectValue placeholder="Selecione o tipo de aprovação" />
+                                  <SelectTrigger data-testid={`select-dual-subtype-${index}`} className="mt-1">
+                                    <SelectValue placeholder="Selecione o critério" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="user">Usuário Específico</SelectItem>
-                                    <SelectItem value="permission">Tipo de Usuário (Permissão)</SelectItem>
+                                    <SelectItem value="user">
+                                      <div className="flex items-center gap-2">
+                                        <UserCheck className="h-4 w-4" />
+                                        Usuário Específico
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="permission">
+                                      <div className="flex items-center gap-2">
+                                        <Shield className="h-4 w-4" />
+                                        Tipo de Usuário (Permissão)
+                                      </div>
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
 
                               {step.dualApprovalSubtype === "user" && (
                                 <div>
-                                  <Label>Usuário Aprovador</Label>
+                                  <Label className="text-sm">Usuário Base *</Label>
                                   <Select
                                     value={step.approverId}
                                     onValueChange={(value) => updateStep(index, "approverId", value)}
                                   >
-                                    <SelectTrigger data-testid={`select-dual-user-${index}`}>
+                                    <SelectTrigger data-testid={`select-dual-user-${index}`} className="mt-1">
                                       <SelectValue placeholder="Selecione um usuário" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -531,30 +695,30 @@ export default function Workflow() {
                                     </SelectContent>
                                   </Select>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    Dois usuários diferentes precisarão aprovar
+                                    Dois usuários diferentes do sistema precisarão aprovar
                                   </p>
                                 </div>
                               )}
 
                               {step.dualApprovalSubtype === "permission" && (
                                 <div>
-                                  <Label>Permissão/Cargo Necessário</Label>
+                                  <Label className="text-sm">Permissão Necessária *</Label>
                                   <Select
                                     value={step.requiredPermission}
                                     onValueChange={(value) => updateStep(index, "requiredPermission", value)}
                                   >
-                                    <SelectTrigger data-testid={`select-dual-permission-${index}`}>
+                                    <SelectTrigger data-testid={`select-dual-permission-${index}`} className="mt-1">
                                       <SelectValue placeholder="Selecione uma permissão" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="admin">Administrador</SelectItem>
-                                      <SelectItem value="manager">Gerente</SelectItem>
-                                      <SelectItem value="hr_manager">Gerente de RH</SelectItem>
-                                      <SelectItem value="approver">Aprovador</SelectItem>
+                                      <SelectItem value="approve_jobs">Aprovar Vagas</SelectItem>
+                                      <SelectItem value="manage_users">Gerenciar Usuários</SelectItem>
+                                      <SelectItem value="create_jobs">Criar Vagas</SelectItem>
+                                      <SelectItem value="edit_jobs">Editar Vagas</SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    Dois usuários com esta permissão precisarão aprovar
+                                    Dois usuários diferentes com esta permissão precisarão aprovar
                                   </p>
                                 </div>
                               )}
@@ -567,7 +731,7 @@ export default function Workflow() {
                 )}
               </div>
 
-              <DialogFooter>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <Button
                   type="button"
                   variant="outline"
@@ -582,12 +746,19 @@ export default function Workflow() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={createWorkflowMutation.isPending}
+                  disabled={createWorkflowMutation.isPending || workflowSteps.length === 0}
                   data-testid="button-save-workflow"
                 >
-                  {createWorkflowMutation.isPending ? "Criando..." : "Criar Workflow"}
+                  {createWorkflowMutation.isPending ? (
+                    <>Criando...</>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Criar Workflow
+                    </>
+                  )}
                 </Button>
-              </DialogFooter>
+              </div>
             </form>
           </Form>
         </DialogContent>
