@@ -301,6 +301,20 @@ export const permissionTypeEnum = pgEnum("permission_type", [
   "manage_permissions"
 ]);
 
+// Approval workflow enums
+export const approvalWorkflowStepTypeEnum = pgEnum("approval_workflow_step_type", [
+  "user", // Aprovação por usuário específico
+  "role", // Aprovação por qualquer usuário com a role especificada
+  "permission", // Aprovação por qualquer usuário com a permissão especificada
+]);
+
+export const approvalWorkflowStepStatusEnum = pgEnum("approval_workflow_step_status", [
+  "pending", // Aguardando aprovação
+  "approved", // Aprovado
+  "rejected", // Rejeitado
+  "skipped", // Pulado (quando step anterior foi rejeitado)
+]);
+
 // Professions table
 export const professions = pgTable("professions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -368,6 +382,50 @@ export const integrationSettings = pgTable("integration_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Approval workflows - Define workflows de aprovação de vagas
+export const approvalWorkflows = pgTable("approval_workflows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(), // Nome do workflow (ex: "Aprovação Dupla Alçada")
+  description: text("description"), // Descrição do workflow
+  isActive: boolean("is_active").default(true), // Se o workflow está ativo
+  isDefault: boolean("is_default").default(false), // Se é o workflow padrão para novas vagas
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Approval workflow steps - Etapas de cada workflow
+export const approvalWorkflowSteps = pgTable("approval_workflow_steps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workflowId: varchar("workflow_id").references(() => approvalWorkflows.id, { onDelete: "cascade" }).notNull(),
+  stepOrder: integer("step_order").notNull(), // Ordem da etapa (1, 2, 3...)
+  stepName: varchar("step_name", { length: 255 }).notNull(), // Nome da etapa (ex: "Primeira Alçada", "Segunda Alçada")
+  stepType: approvalWorkflowStepTypeEnum("step_type").notNull(), // Tipo: user, role, ou permission
+  userId: varchar("user_id").references(() => users.id), // Usuário específico (quando type = "user")
+  role: roleTypeEnum("role"), // Role necessária (quando type = "role")
+  permission: permissionTypeEnum("permission"), // Permissão necessária (quando type = "permission")
+  isRequired: boolean("is_required").default(true), // Se a etapa é obrigatória
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type ApprovalWorkflow = typeof approvalWorkflows.$inferSelect;
+export type InsertApprovalWorkflow = z.infer<typeof insertApprovalWorkflowSchema>;
+
+export const insertApprovalWorkflowSchema = createInsertSchema(approvalWorkflows).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type ApprovalWorkflowStep = typeof approvalWorkflowSteps.$inferSelect;
+export type InsertApprovalWorkflowStep = z.infer<typeof insertApprovalWorkflowStepSchema>;
+
+export const insertApprovalWorkflowStepSchema = createInsertSchema(approvalWorkflowSteps).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Jobs table - temporarily keeping both title and professionId for migration
 export const jobs = pgTable("jobs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -415,6 +473,9 @@ export const jobs = pgTable("jobs", {
   completedAt: timestamp("completed_at"), // Data de conclusão da vaga
   admissionDate: timestamp("admission_date"), // Data de admissão do candidato contratado
   hiredCandidateId: varchar("hired_candidate_id").references(() => candidates.id), // Candidato contratado
+  approvalWorkflowId: varchar("approval_workflow_id").references(() => approvalWorkflows.id), // Workflow de aprovação associado à vaga
+  approvalStatus: varchar("approval_status", { length: 50 }).default("pending"), // Status da aprovação: pending, approved, rejected
+  currentApprovalStep: integer("current_approval_step"), // Etapa atual de aprovação
   approvedBy: varchar("approved_by").references(() => users.id), // Usuário que aprovou a vaga
   approvedAt: timestamp("approved_at"), // Data de aprovação da vaga
   createdWithIrregularity: boolean("created_with_irregularity").default(false), // Vaga criada com irregularidade conhecida (excedendo limite de vagas do cliente)
@@ -428,6 +489,30 @@ export const jobBenefits = pgTable("job_benefits", {
   jobId: varchar("job_id").references(() => jobs.id, { onDelete: "cascade" }).notNull(),
   benefitId: varchar("benefit_id").references(() => benefits.id, { onDelete: "cascade" }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Job approval history - Histórico de aprovações de vagas
+export const jobApprovalHistory = pgTable("job_approval_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").references(() => jobs.id, { onDelete: "cascade" }).notNull(),
+  workflowStepId: varchar("workflow_step_id").references(() => approvalWorkflowSteps.id).notNull(),
+  stepName: varchar("step_name", { length: 255 }).notNull(), // Nome da etapa no momento da aprovação
+  stepOrder: integer("step_order").notNull(), // Ordem da etapa
+  status: approvalWorkflowStepStatusEnum("status").notNull(), // Status: pending, approved, rejected, skipped
+  approvedBy: varchar("approved_by").references(() => users.id), // Usuário que aprovou/rejeitou
+  comments: text("comments"), // Comentários do aprovador
+  approvedAt: timestamp("approved_at"), // Data/hora da aprovação/rejeição
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type JobApprovalHistory = typeof jobApprovalHistory.$inferSelect;
+export type InsertJobApprovalHistory = z.infer<typeof insertJobApprovalHistorySchema>;
+
+export const insertJobApprovalHistorySchema = createInsertSchema(jobApprovalHistory).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // User-Company-Role assignments table
