@@ -166,6 +166,23 @@ Distribuídas por categoria:
   - These clients should be manually configured with profession-specific limits through ClientModal
 - **Impact**: More flexible quota management allowing different limits for different job types per client.
 
+### Job Creation Validation System (Nov 2025)
+- **Feature**: Comprehensive validation system for job creation that enforces quota policies and profession-based limits.
+- **Validation Flow**:
+  1. **Policy Check**: Retrieves `job_creation_quota_policy` setting (allow/block/require_approval)
+  2. **Profession Limit Lookup**: Fetches configured limit for the specific client-profession combination
+  3. **Active Jobs Count**: Counts current active jobs for that client and profession
+  4. **Policy Application**:
+     - **Block**: Prevents job creation if limit exceeded, returns detailed error with quota info
+     - **Require Approval**: Allows creation but marks job with `createdWithIrregularity` flag for workflow approval
+     - **Allow**: Permits creation even if limit exceeded (logs warning)
+- **Implementation**:
+  - Backend: `POST /api/jobs` route in `server/routes.ts` (lines 1871-1924)
+  - New method: `countActiveJobsByClientAndProfession()` in `server/storage.ts`
+  - Active status definition: `['nova_vaga', 'aprovada', 'em_recrutamento', 'em_dp', 'em_admissao']`
+- **Error Messages**: Clear, Portuguese messages indicating current usage, limit, and available slots
+- **Impact**: Enforces contract compliance and prevents quota violations based on configurable policies.
+
 # External Dependencies
 
 ## Database Services

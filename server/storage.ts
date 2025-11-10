@@ -163,6 +163,7 @@ export interface IStorage {
   upsertClientProfessionLimit(limit: InsertClientProfessionLimit): Promise<SelectClientProfessionLimit>;
   deleteClientProfessionLimit(id: string): Promise<void>;
   deleteAllClientProfessionLimits(clientId: string): Promise<void>;
+  countActiveJobsByClientAndProfession(clientId: string, professionId: string): Promise<number>;
   
   // Profession operations
   getProfessions(): Promise<Profession[]>;
@@ -765,6 +766,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAllClientProfessionLimits(clientId: string): Promise<void> {
     await db.delete(clientProfessionLimits).where(eq(clientProfessionLimits.clientId, clientId));
+  }
+
+  async countActiveJobsByClientAndProfession(clientId: string, professionId: string): Promise<number> {
+    // Status que consideram a vaga como "ativa" (não concluída/cancelada)
+    const activeStatuses = [
+      'nova_vaga',
+      'aprovada', 
+      'em_recrutamento',
+      'em_dp',
+      'em_admissao'
+    ];
+    
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(jobs)
+      .where(
+        and(
+          eq(jobs.clientId, clientId),
+          eq(jobs.professionId, professionId),
+          inArray(jobs.status, activeStatuses)
+        )
+      );
+    
+    return Number(result[0]?.count || 0);
   }
 
   // Profession operations

@@ -1832,12 +1832,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate profession exists and is active  
       const profession = await storage.getProfession(validatedData.professionId);
       if (!profession || !profession.isActive) {
-        return res.status(400).json({ message: "Invalid or inactive profession" });
+        return res.status(400).json({ message: "Profissão inválida ou inativa" });
       }
       
       // Require companyId for authorization
       if (!validatedData.companyId) {
-        return res.status(400).json({ message: "Company ID is required" });
+        return res.status(400).json({ message: "Empresa é obrigatória" });
+      }
+      
+      // Require clientId for quota validation
+      if (!validatedData.clientId) {
+        return res.status(400).json({ message: "Cliente é obrigatório" });
       }
       
       // Skip permission checks in AUTH_BYPASS mode
@@ -1856,12 +1861,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Check permission for the specific company
         const hasPermission = await storage.checkUserPermission(userId, validatedData.companyId, 'create_jobs');
         if (!hasPermission) {
-          return res.status(403).json({ message: "Insufficient permissions" });
+          return res.status(403).json({ message: "Sem permissão para criar vagas" });
         }
       }
       
-      // If vacancyQuantity > 1, create multiple job records
+      // === VALIDAÇÃO DE POLÍTICA E DISPONIBILIDADE DE VAGAS ===
+      
+      // 1. Buscar política de criação de vagas
+      const quotaPolicy = await storage.getSystemSetting('job_creation_quota_policy');
+      const policy = quotaPolicy?.value || 'allow'; // Default: allow
+      
+      console.log(`Política de criação de vagas: ${policy}`);
+      
+      // 2. Buscar limite de vagas para esta profissão e cliente
+      const professionLimit = await storage.getClientProfessionLimit(
+        validatedData.clientId,
+        validatedData.professionId
+      );
+      
+      console.log('Limite de profissão:', professionLimit);
+      
+      if (!professionLimit) {
+        return res.status(400).json({ 
+          message: `Limite de vagas não configurado para a profissão "${profession.name}" neste cliente` 
+        });
+      }
+      
+      // 3. Contar vagas ativas desta profissão para este cliente
+      const activeJobsCount = await storage.countActiveJobsByClientAndProfession(
+        validatedData.clientId,
+        validatedData.professionId
+      );
+      
       const quantity = jobDataForDb.vacancyQuantity || 1;
+      const futureCount = activeJobsCount + quantity;
+      
+      console.log(`Vagas ativas: ${activeJobsCount}, Novas: ${quantity}, Total futuro: ${futureCount}, Limite: ${professionLimit.maxJobs}`);
+      
+      // 4. Aplicar política de criação de vagas
+      if (futureCount > professionLimit.maxJobs) {
+        const availableSlots = Math.max(0, professionLimit.maxJobs - activeJobsCount);
+        
+        if (policy === 'block') {
+          return res.status(400).json({ 
+            message: `Limite de vagas excedido! Cliente possui ${activeJobsCount} vagas ativas de ${professionLimit.maxJobs} permitidas para "${profession.name}". Disponível: ${availableSlots} vaga(s).`,
+            quota: {
+              active: activeJobsCount,
+              limit: professionLimit.maxJobs,
+              available: availableSlots,
+              requested: quantity
+            }
+          });
+        } else if (policy === 'require_approval') {
+          // Marcar vaga como criada com irregularidade
+          jobDataForDb.createdWithIrregularity = true;
+          console.log('Vaga será criada com irregularidade (requer aprovação)');
+        }
+        // Se policy === 'allow', continua normalmente mesmo excedendo o limite
+      }
+      
+      // If vacancyQuantity > 1, create multiple job records
       
       if (quantity > 1) {
         const createdJobs = [];
