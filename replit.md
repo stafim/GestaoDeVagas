@@ -58,9 +58,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Workflow Approval System
 - **Approval Types**: Supports dual authorization (two different approvers), approval by specific users, and approval by permission types.
+- **Dual Authorization Subtypes**: When selecting dual approval, choose between:
+  - **User Specific**: Two different users with the same role must approve
+  - **Permission Type**: Two users with a specific permission type must approve
 - **Multi-Step Workflows**: Configure sequential approval steps with different approval rules.
 - **Status Management**: Active/inactive workflows with default workflow designation.
-- **Integration**: Seamlessly integrates with job vacancy approval process.
+- **Integration**: Seamlessly integrates with job vacancy approval process and quota validation.
 
 ## Sales Plan Management
 - **Plans**: CRUD for managing subscription plans with configurable features.

@@ -36,6 +36,7 @@ import type { ApprovalWorkflow, ApprovalWorkflowStep, User } from "@shared/schem
 const workflowStepSchema = z.object({
   stepOrder: z.number().min(1),
   approvalType: z.enum(["dual", "user", "permission"]),
+  dualApprovalSubtype: z.enum(["user", "permission"]).optional(),
   approverId: z.string().optional(),
   requiredPermission: z.string().optional(),
 });
@@ -53,6 +54,7 @@ type CreateWorkflowForm = z.infer<typeof createWorkflowSchema>;
 interface WorkflowStep {
   stepOrder: number;
   approvalType: "dual" | "user" | "permission";
+  dualApprovalSubtype?: "user" | "permission";
   approverId?: string;
   requiredPermission?: string;
 }
@@ -95,12 +97,20 @@ export default function Workflow() {
       const workflow = await workflowRes.json();
 
       for (const step of data.steps) {
+        const stepName = step.approvalType === "dual" 
+          ? `Dupla Alçada - Etapa ${step.stepOrder}`
+          : step.approvalType === "user"
+          ? `Aprovação por Usuário - Etapa ${step.stepOrder}`
+          : `Aprovação por Permissão - Etapa ${step.stepOrder}`;
+
         await apiRequest("POST", "/api/workflow-steps", {
           workflowId: workflow.id,
           stepOrder: step.stepOrder,
-          approvalType: step.approvalType,
-          approverId: step.approverId,
-          requiredPermission: step.requiredPermission,
+          stepName: stepName,
+          stepType: step.approvalType,
+          dualApprovalSubtype: step.dualApprovalSubtype,
+          userId: step.approverId,
+          permission: step.requiredPermission,
         });
       }
 
@@ -473,8 +483,81 @@ export default function Workflow() {
                           )}
 
                           {step.approvalType === "dual" && (
-                            <div className="text-sm text-muted-foreground">
-                              Esta etapa requer aprovação de dois usuários diferentes com permissão de aprovador.
+                            <div className="space-y-4">
+                              <div className="text-sm text-muted-foreground">
+                                Esta etapa requer aprovação de dois usuários/aprovadores diferentes.
+                              </div>
+                              
+                              <div>
+                                <Label>Tipo de Aprovação</Label>
+                                <Select
+                                  value={step.dualApprovalSubtype}
+                                  onValueChange={(value: "user" | "permission") => {
+                                    updateStep(index, "dualApprovalSubtype", value);
+                                    // Limpar campos relacionados ao tipo anterior
+                                    if (value === "user") {
+                                      updateStep(index, "requiredPermission", undefined);
+                                    } else {
+                                      updateStep(index, "approverId", undefined);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger data-testid={`select-dual-subtype-${index}`}>
+                                    <SelectValue placeholder="Selecione o tipo de aprovação" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="user">Usuário Específico</SelectItem>
+                                    <SelectItem value="permission">Tipo de Usuário (Permissão)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {step.dualApprovalSubtype === "user" && (
+                                <div>
+                                  <Label>Usuário Aprovador</Label>
+                                  <Select
+                                    value={step.approverId}
+                                    onValueChange={(value) => updateStep(index, "approverId", value)}
+                                  >
+                                    <SelectTrigger data-testid={`select-dual-user-${index}`}>
+                                      <SelectValue placeholder="Selecione um usuário" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {users?.map((user) => (
+                                        <SelectItem key={user.id} value={user.id}>
+                                          {user.firstName} {user.lastName} ({user.email})
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Dois usuários diferentes precisarão aprovar
+                                  </p>
+                                </div>
+                              )}
+
+                              {step.dualApprovalSubtype === "permission" && (
+                                <div>
+                                  <Label>Permissão/Cargo Necessário</Label>
+                                  <Select
+                                    value={step.requiredPermission}
+                                    onValueChange={(value) => updateStep(index, "requiredPermission", value)}
+                                  >
+                                    <SelectTrigger data-testid={`select-dual-permission-${index}`}>
+                                      <SelectValue placeholder="Selecione uma permissão" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="admin">Administrador</SelectItem>
+                                      <SelectItem value="manager">Gerente</SelectItem>
+                                      <SelectItem value="hr_manager">Gerente de RH</SelectItem>
+                                      <SelectItem value="approver">Aprovador</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Dois usuários com esta permissão precisarão aprovar
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           )}
                         </CardContent>

@@ -313,9 +313,15 @@ export const permissionTypeEnum = pgEnum("permission_type", [
 
 // Approval workflow enums
 export const approvalWorkflowStepTypeEnum = pgEnum("approval_workflow_step_type", [
+  "dual", // Dupla alçada - requer aprovação de dois usuários diferentes
   "user", // Aprovação por usuário específico
   "role", // Aprovação por qualquer usuário com a role especificada
   "permission", // Aprovação por qualquer usuário com a permissão especificada
+]);
+
+export const dualApprovalSubtypeEnum = pgEnum("dual_approval_subtype", [
+  "user", // Dupla alçada com usuários específicos
+  "permission", // Dupla alçada com tipo de permissão
 ]);
 
 export const approvalWorkflowStepStatusEnum = pgEnum("approval_workflow_step_status", [
@@ -409,10 +415,11 @@ export const approvalWorkflowSteps = pgTable("approval_workflow_steps", {
   workflowId: varchar("workflow_id").references(() => approvalWorkflows.id, { onDelete: "cascade" }).notNull(),
   stepOrder: integer("step_order").notNull(), // Ordem da etapa (1, 2, 3...)
   stepName: varchar("step_name", { length: 255 }).notNull(), // Nome da etapa (ex: "Primeira Alçada", "Segunda Alçada")
-  stepType: approvalWorkflowStepTypeEnum("step_type").notNull(), // Tipo: user, role, ou permission
-  userId: varchar("user_id").references(() => users.id), // Usuário específico (quando type = "user")
+  stepType: approvalWorkflowStepTypeEnum("step_type").notNull(), // Tipo: dual, user, role, ou permission
+  dualApprovalSubtype: dualApprovalSubtypeEnum("dual_approval_subtype"), // Subtipo quando stepType = "dual" (user ou permission)
+  userId: varchar("user_id").references(() => users.id), // Usuário específico (quando type = "user" ou dual+user)
   role: roleTypeEnum("role"), // Role necessária (quando type = "role")
-  permission: permissionTypeEnum("permission"), // Permissão necessária (quando type = "permission")
+  permission: permissionTypeEnum("permission"), // Permissão necessária (quando type = "permission" ou dual+permission)
   isRequired: boolean("is_required").default(true), // Se a etapa é obrigatória
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
