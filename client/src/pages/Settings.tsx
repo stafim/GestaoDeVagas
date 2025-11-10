@@ -800,82 +800,188 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Job Creation Policy */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings2 className="h-5 w-5" />
+                Política de Criação de Vagas
+              </CardTitle>
+              <CardDescription>
+                Defina o comportamento quando um cliente atingir o limite de vagas contratadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingSettings ? (
+                <p className="text-gray-500 text-center py-8">Carregando...</p>
+              ) : (() => {
+                const quotaPolicySetting = systemSettings.find(s => s.key === 'job_creation_quota_policy');
+                if (!quotaPolicySetting) return null;
+                
+                return (
+                  <div className="space-y-4">
+                    <div className="p-4 border rounded-lg">
+                      <div className="grid gap-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                            {quotaPolicySetting.label}
+                          </h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            {quotaPolicySetting.description}
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <Select 
+                            value={quotaPolicySetting.value}
+                            onValueChange={(value) => {
+                              updateSystemSettingMutation.mutate({
+                                key: 'job_creation_quota_policy',
+                                value: value,
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="w-full" data-testid="select-quota-policy">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="allow">
+                                <div className="flex items-start gap-2 py-1">
+                                  <div className="flex-1">
+                                    <div className="font-semibold">Permitir Sempre</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Vagas podem ser criadas livremente, mesmo quando o cliente atingir o limite
+                                    </div>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="block">
+                                <div className="flex items-start gap-2 py-1">
+                                  <div className="flex-1">
+                                    <div className="font-semibold">Barrar Criação</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Impede completamente a criação de vagas quando o limite for atingido
+                                    </div>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="require_approval">
+                                <div className="flex items-start gap-2 py-1">
+                                  <div className="flex-1">
+                                    <div className="font-semibold">Exigir Aprovação do Gestor</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Permite criação, mas marca a vaga como pré-reprovada para aprovação do gestor
+                                    </div>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
+                          <div className="flex items-start gap-2">
+                            <i className="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-0.5"></i>
+                            <div className="text-sm text-blue-800 dark:text-blue-300">
+                              {quotaPolicySetting.value === 'allow' && (
+                                <p><strong>Modo Atual:</strong> Vagas serão criadas sem restrições, mesmo quando o cliente exceder o limite contratual.</p>
+                              )}
+                              {quotaPolicySetting.value === 'block' && (
+                                <p><strong>Modo Atual:</strong> O sistema bloqueará a criação de novas vagas quando o cliente atingir seu limite contratual.</p>
+                              )}
+                              {quotaPolicySetting.value === 'require_approval' && (
+                                <p><strong>Modo Atual:</strong> Vagas podem ser criadas, mas serão marcadas como pré-reprovadas e exigirão aprovação do gestor quando excederem o limite.</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
           {/* System Settings Section */}
           <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
-            Configurações do Sistema
+            Outras Configurações
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoadingSettings ? (
             <p className="text-gray-500 text-center py-8">Carregando...</p>
-          ) : systemSettings.length === 0 ? (
-            <p className="text-gray-500 text-center py-8" data-testid="text-no-settings">
-              Nenhuma configuração disponível
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {systemSettings.map((setting) => (
-                <div
-                  key={setting.key}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                  data-testid={`setting-row-${setting.key}`}
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white" data-testid={`text-setting-label-${setting.key}`}>
-                      {setting.label}
-                    </h3>
-                    {setting.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300" data-testid={`text-setting-description-${setting.key}`}>
-                        {setting.description}
-                      </p>
-                    )}
-                    {(setting.minValue !== null || setting.maxValue !== null) && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Valor permitido: {setting.minValue} - {setting.maxValue}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      type="number"
-                      min={setting.minValue || undefined}
-                      max={setting.maxValue || undefined}
-                      defaultValue={setting.value}
-                      className="w-24"
-                      data-testid={`input-setting-value-${setting.key}`}
-                      onBlur={(e) => {
-                        const newValue = e.target.value;
-                        if (newValue !== setting.value) {
-                          const numValue = parseInt(newValue);
-                          if (
-                            !isNaN(numValue) &&
-                            (setting.minValue === null || setting.minValue === undefined || numValue >= setting.minValue) &&
-                            (setting.maxValue === null || setting.maxValue === undefined || numValue <= setting.maxValue)
-                          ) {
-                            updateSystemSettingMutation.mutate({
-                              key: setting.key,
-                              value: newValue,
-                            });
-                          } else {
-                            toast({
-                              title: "Erro",
-                              description: `Valor deve estar entre ${setting.minValue} e ${setting.maxValue}`,
-                              variant: "destructive",
-                            });
-                            e.target.value = setting.value;
+          ) : (() => {
+            const otherSettings = systemSettings.filter(s => s.key !== 'job_creation_quota_policy');
+            return otherSettings.length === 0 ? (
+              <p className="text-gray-500 text-center py-8" data-testid="text-no-settings">
+                Nenhuma configuração disponível
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {otherSettings.map((setting) => (
+                  <div
+                    key={setting.key}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                    data-testid={`setting-row-${setting.key}`}
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white" data-testid={`text-setting-label-${setting.key}`}>
+                        {setting.label}
+                      </h3>
+                      {setting.description && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300" data-testid={`text-setting-description-${setting.key}`}>
+                          {setting.description}
+                        </p>
+                      )}
+                      {(setting.minValue !== null || setting.maxValue !== null) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Valor permitido: {setting.minValue} - {setting.maxValue}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="number"
+                        min={setting.minValue || undefined}
+                        max={setting.maxValue || undefined}
+                        defaultValue={setting.value}
+                        className="w-24"
+                        data-testid={`input-setting-value-${setting.key}`}
+                        onBlur={(e) => {
+                          const newValue = e.target.value;
+                          if (newValue !== setting.value) {
+                            const numValue = parseInt(newValue);
+                            if (
+                              !isNaN(numValue) &&
+                              (setting.minValue === null || setting.minValue === undefined || numValue >= setting.minValue) &&
+                              (setting.maxValue === null || setting.maxValue === undefined || numValue <= setting.maxValue)
+                            ) {
+                              updateSystemSettingMutation.mutate({
+                                key: setting.key,
+                                value: newValue,
+                              });
+                            } else {
+                              toast({
+                                title: "Erro",
+                                description: `Valor deve estar entre ${setting.minValue} e ${setting.maxValue}`,
+                                variant: "destructive",
+                              });
+                              e.target.value = setting.value;
+                            }
                           }
-                        }
-                      }}
-                    />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">dias</span>
+                        }}
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">dias</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
         </TabsContent>
