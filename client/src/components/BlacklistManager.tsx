@@ -20,7 +20,6 @@ const blacklistCandidateFormSchema = z.object({
   cpf: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF deve estar no formato 000.000.000-00"),
   reason: z.string().min(10, "Motivo deve ter no mínimo 10 caracteres"),
   organizationId: z.string(),
-  createdBy: z.string().optional(),
 });
 
 type BlacklistCandidateFormData = z.infer<typeof blacklistCandidateFormSchema>;
@@ -48,7 +47,6 @@ export function BlacklistManager() {
       cpf: "",
       reason: "",
       organizationId: "demo-org-id",
-      createdBy: "demo-user-bypass",
     },
   });
 
@@ -154,7 +152,6 @@ export function BlacklistManager() {
         cpf: "",
         reason: "",
         organizationId: "demo-org-id",
-        createdBy: "demo-user-bypass",
       });
     }
   };
