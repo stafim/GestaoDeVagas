@@ -161,6 +161,16 @@ export const clients = pgTable("clients", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Client profession limits - limites de vagas por profissão para cada cliente
+export const clientProfessionLimits = pgTable("client_profession_limits", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
+  professionId: varchar("profession_id").notNull(), // ID da profissão (não usamos FK porque professions é dinâmico)
+  maxJobs: integer("max_jobs").notNull(), // Número máximo de vagas permitidas para esta profissão
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Client dashboard permissions - controla quais dashboards cada cliente pode acessar
 export const clientDashboardPermissions = pgTable("client_dashboard_permissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -878,6 +888,15 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   createdAt: true,
   updatedAt: true,
 });
+
+export const insertClientProfessionLimitSchema = createInsertSchema(clientProfessionLimits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertClientProfessionLimit = z.infer<typeof insertClientProfessionLimitSchema>;
+export type SelectClientProfessionLimit = typeof clientProfessionLimits.$inferSelect;
 
 export const insertClientDashboardPermissionSchema = createInsertSchema(clientDashboardPermissions).omit({
   id: true,
