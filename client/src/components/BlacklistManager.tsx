@@ -210,7 +210,8 @@ export function BlacklistManager() {
             throw new Error("Arquivo vazio ou inválido");
           }
           
-          const workbook = XLSX.read(data, { type: 'binary' });
+          // Usar ArrayBuffer para melhor compatibilidade com .xls e .xlsx
+          const workbook = XLSX.read(data, { type: 'array' });
           
           if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
             throw new Error("Arquivo Excel não contém planilhas");
@@ -247,7 +248,7 @@ export function BlacklistManager() {
           console.error("Erro ao processar XLSX:", error);
           setIsProcessing(false);
           toast({
-            title: "Erro ao processar XLSX",
+            title: "Erro ao processar arquivo Excel",
             description: error instanceof Error ? error.message : "Erro desconhecido ao processar arquivo Excel",
             variant: "destructive",
           });
@@ -258,11 +259,12 @@ export function BlacklistManager() {
         setIsProcessing(false);
         toast({
           title: "Erro ao ler arquivo",
-          description: "Não foi possível ler o arquivo XLSX. Verifique se o arquivo não está corrompido.",
+          description: "Não foi possível ler o arquivo Excel. Verifique se o arquivo não está corrompido.",
           variant: "destructive",
         });
       };
-      reader.readAsBinaryString(file);
+      // Usar readAsArrayBuffer para melhor suporte a .xls e .xlsx
+      reader.readAsArrayBuffer(file);
     }
   };
 
