@@ -12,6 +12,7 @@ import {
   insertClientSchema,
   insertClientEmployeeSchema,
   insertClientDashboardPermissionSchema,
+  insertClientProfessionLimitSchema,
   insertJobSchema,
   insertCandidateSchema,
   insertApplicationSchema,
@@ -1277,6 +1278,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting client dashboard permission:", error);
       res.status(500).json({ message: "Falha ao remover permissão de dashboard" });
+    }
+  });
+
+  // Client Profession Limits routes
+  app.get('/api/clients/:clientId/profession-limits', isAuthenticated, async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const limits = await storage.getClientProfessionLimits(clientId);
+      res.json(limits);
+    } catch (error) {
+      console.error("Error fetching client profession limits:", error);
+      res.status(500).json({ message: "Falha ao buscar limites de profissões" });
+    }
+  });
+
+  app.get('/api/clients/:clientId/profession-limits/:professionId', isAuthenticated, async (req, res) => {
+    try {
+      const { clientId, professionId } = req.params;
+      const limit = await storage.getClientProfessionLimit(clientId, professionId);
+      if (!limit) {
+        return res.status(404).json({ message: "Limite não encontrado" });
+      }
+      res.json(limit);
+    } catch (error) {
+      console.error("Error fetching client profession limit:", error);
+      res.status(500).json({ message: "Falha ao buscar limite de profissão" });
+    }
+  });
+
+  app.post('/api/clients/:clientId/profession-limits', isAuthenticated, async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const validatedData = insertClientProfessionLimitSchema.parse({
+        ...req.body,
+        clientId
+      });
+      const limit = await storage.upsertClientProfessionLimit(validatedData);
+      res.status(201).json(limit);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      console.error("Error upserting client profession limit:", error);
+      res.status(500).json({ message: "Falha ao criar/atualizar limite de profissão" });
+    }
+  });
+
+  app.delete('/api/client-profession-limits/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteClientProfessionLimit(id);
+      res.json({ message: "Limite de profissão removido com sucesso" });
+    } catch (error) {
+      console.error("Error deleting client profession limit:", error);
+      res.status(500).json({ message: "Falha ao remover limite de profissão" });
     }
   });
 

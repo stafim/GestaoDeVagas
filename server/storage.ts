@@ -9,6 +9,7 @@ import {
   clients,
   clientEmployees,
   clientDashboardPermissions,
+  clientProfessionLimits,
   employees,
   jobs,
   candidates,
@@ -56,6 +57,8 @@ import {
   type InsertClientEmployee,
   type SelectClientDashboardPermission,
   type InsertClientDashboardPermission,
+  type SelectClientProfessionLimit,
+  type InsertClientProfessionLimit,
   type Employee,
   type InsertEmployee,
   type Job,
@@ -153,6 +156,13 @@ export interface IStorage {
   getAllClientDashboardPermissions(): Promise<SelectClientDashboardPermission[]>;
   upsertClientDashboardPermission(permission: InsertClientDashboardPermission): Promise<SelectClientDashboardPermission>;
   deleteClientDashboardPermission(id: string): Promise<void>;
+  
+  // Client Profession Limits operations
+  getClientProfessionLimits(clientId: string): Promise<SelectClientProfessionLimit[]>;
+  getClientProfessionLimit(clientId: string, professionId: string): Promise<SelectClientProfessionLimit | undefined>;
+  upsertClientProfessionLimit(limit: InsertClientProfessionLimit): Promise<SelectClientProfessionLimit>;
+  deleteClientProfessionLimit(id: string): Promise<void>;
+  deleteAllClientProfessionLimits(clientId: string): Promise<void>;
   
   // Profession operations
   getProfessions(): Promise<Profession[]>;
@@ -695,6 +705,66 @@ export class DatabaseStorage implements IStorage {
 
   async deleteClientDashboardPermission(id: string): Promise<void> {
     await db.delete(clientDashboardPermissions).where(eq(clientDashboardPermissions.id, id));
+  }
+
+  // Client Profession Limits operations
+  async getClientProfessionLimits(clientId: string): Promise<SelectClientProfessionLimit[]> {
+    return await db
+      .select()
+      .from(clientProfessionLimits)
+      .where(eq(clientProfessionLimits.clientId, clientId))
+      .orderBy(clientProfessionLimits.professionId);
+  }
+
+  async getClientProfessionLimit(clientId: string, professionId: string): Promise<SelectClientProfessionLimit | undefined> {
+    const [limit] = await db
+      .select()
+      .from(clientProfessionLimits)
+      .where(
+        and(
+          eq(clientProfessionLimits.clientId, clientId),
+          eq(clientProfessionLimits.professionId, professionId)
+        )
+      );
+    return limit;
+  }
+
+  async upsertClientProfessionLimit(limit: InsertClientProfessionLimit): Promise<SelectClientProfessionLimit> {
+    // Check if limit already exists
+    const [existing] = await db
+      .select()
+      .from(clientProfessionLimits)
+      .where(
+        and(
+          eq(clientProfessionLimits.clientId, limit.clientId),
+          eq(clientProfessionLimits.professionId, limit.professionId)
+        )
+      );
+
+    if (existing) {
+      // Update existing limit
+      const [updated] = await db
+        .update(clientProfessionLimits)
+        .set({ maxJobs: limit.maxJobs, updatedAt: new Date() })
+        .where(eq(clientProfessionLimits.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new limit
+      const [created] = await db
+        .insert(clientProfessionLimits)
+        .values(limit)
+        .returning();
+      return created;
+    }
+  }
+
+  async deleteClientProfessionLimit(id: string): Promise<void> {
+    await db.delete(clientProfessionLimits).where(eq(clientProfessionLimits.id, id));
+  }
+
+  async deleteAllClientProfessionLimits(clientId: string): Promise<void> {
+    await db.delete(clientProfessionLimits).where(eq(clientProfessionLimits.clientId, clientId));
   }
 
   // Profession operations
