@@ -27,6 +27,7 @@ import Financeiro from "@/pages/Financeiro";
 import Planos from "@/pages/Planos";
 import LoginDemo from "@/pages/LoginDemo";
 import Workflow from "@/pages/Workflow";
+import Aprovacoes from "@/pages/Aprovacoes";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,6 +52,7 @@ function Router() {
           <Route path="/users" component={() => <Layout><Users /></Layout>} />
           <Route path="/permissions" component={() => <Layout><Permissions /></Layout>} />
           <Route path="/workflow" component={() => <Layout><Workflow /></Layout>} />
+          <Route path="/aprovacoes" component={() => <Layout><Aprovacoes /></Layout>} />
           <Route path="/performance" component={() => <Layout><Performance /></Layout>} />
           <Route path="/reports" component={() => <Layout><Reports /></Layout>} />
           <Route path="/reports/job-closure" component={() => <Layout><JobClosureReport /></Layout>} />
