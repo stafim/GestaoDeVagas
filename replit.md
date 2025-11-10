@@ -56,6 +56,12 @@ Preferred communication style: Simple, everyday language.
 - **Flexibility**: Per-job Kanban selection, with fallback to default.
 - **Visuals**: Color-coded stages, deletion protection for boards in use.
 
+## Workflow Approval System
+- **Approval Types**: Supports dual authorization (two different approvers), approval by specific users, and approval by permission types.
+- **Multi-Step Workflows**: Configure sequential approval steps with different approval rules.
+- **Status Management**: Active/inactive workflows with default workflow designation.
+- **Integration**: Seamlessly integrates with job vacancy approval process.
+
 ## Sales Plan Management
 - **Plans**: CRUD for managing subscription plans with configurable features.
 - **Feature Toggles**: 12 system features that can be enabled/disabled per plan (Dashboard, Real-time, Jobs, Kanban, Companies, Clients, Users, Permissions, Job Closure, Advanced Reports, Integrations, Notifications).
@@ -72,6 +78,14 @@ Preferred communication style: Simple, everyday language.
 ## Development Workflow
 - **Build**: Separate client (Vite) and server (esbuild) builds.
 - **Code Quality**: TypeScript strict mode, ESLint.
+
+## Test Data
+The system includes the following test companies:
+- **Opus Serviços** (CNPJ: 12.345.678/0001-90) - Serviços gerais e facilities
+- **Opus Logística** (CNPJ: 23.456.789/0001-01) - Logística e transporte
+- **Acelera IT** (CNPJ: 34.567.890/0001-12) - Tecnologia da informação
+- **Opus Manutenção** (CNPJ: 45.678.901/0001-23) - Manutenção industrial
+- **Opus EUA** (CNPJ: 56.789.012/0001-34) - Operações internacionais
 
 ## Known Technical Issues & Solutions
 
