@@ -2720,6 +2720,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to create approval workflow entries for a job
+  async function createJobApprovalWorkflow(job: any, storage: IStorage) {
+    if (!job.approvalWorkflowId) {
+      console.log('No workflow configured for job, skipping approval creation');
+      return;
+    }
+    
+    console.log(`Creating approval workflow entries for job ${job.id} with workflow ${job.approvalWorkflowId}`);
+    
+    // Get workflow steps
+    const workflowSteps = await storage.getWorkflowSteps(job.approvalWorkflowId);
+    
+    if (!workflowSteps || workflowSteps.length === 0) {
+      console.log('No workflow steps found, skipping approval creation');
+      return;
+    }
+    
+    console.log(`Found ${workflowSteps.length} workflow steps`);
+    
+    // Create approval history entry for each step with status='pending'
+    for (const step of workflowSteps) {
+      await storage.createJobApprovalHistory({
+        jobId: job.id,
+        workflowStepId: step.id,
+        stepName: step.stepName,
+        stepOrder: step.stepOrder,
+        status: 'pending',
+      });
+      
+      console.log(`Created approval entry for step ${step.stepOrder}: ${step.stepName}`);
+    }
+    
+    // Update job to set approvalStatus='pending' and currentApprovalStep=1
+    await storage.updateJob(job.id, {
+      approvalStatus: 'pending',
+      currentApprovalStep: 1,
+    });
+    
+    console.log(`Job ${job.id} updated with approval status: pending, current step: 1`);
+  }
+
   app.post('/api/jobs', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || (req.session as any).user?.id;
@@ -2895,6 +2936,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           jobCopy.vacancyQuantity = 1;
           
           const job = await storage.createJob(jobCopy);
+          
+          // Create approval workflow entries if workflow is configured
+          await createJobApprovalWorkflow(job, storage);
+          
           createdJobs.push(job);
         }
         
@@ -2903,6 +2948,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(201).json(createdJobs[0]);
       } else {
         const job = await storage.createJob(jobDataForDb);
+        
+        // Create approval workflow entries if workflow is configured
+        await createJobApprovalWorkflow(job, storage);
+        
         res.status(201).json(job);
       }
     } catch (error) {
