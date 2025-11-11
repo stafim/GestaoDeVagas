@@ -339,10 +339,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const selectedProfessionId = form.watch("professionId");
   const selectedClientId = form.watch("clientId");
   const openingReason = form.watch("openingReason");
+  const selectedCostCenterId = form.watch("costCenterId");
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/companies", selectedCompanyId, "employees"],
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedCompanyId && openingReason !== "substituicao",
   });
 
   // Load cost centers when company is selected
@@ -382,8 +383,26 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
   const { data: clientEmployees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/clients", selectedClientId, "employees"],
-    enabled: !!selectedClientId && !isEditing,
+    enabled: !!selectedClientId && !isEditing && openingReason === "substituicao",
   });
+
+  // Filter employees for replacement based on cost center
+  const filteredEmployeesForReplacement = React.useMemo(() => {
+    if (openingReason !== "substituicao") return [];
+    if (!clientEmployees || clientEmployees.length === 0) return [];
+    
+    // Filter by cost center if selected
+    if (selectedCostCenterId) {
+      return clientEmployees.filter((emp: any) => emp.costCenterId === selectedCostCenterId);
+    }
+    
+    return clientEmployees;
+  }, [openingReason, clientEmployees, selectedCostCenterId]);
+
+  // Use appropriate employee list based on opening reason
+  const displayedEmployees = openingReason === "substituicao" 
+    ? filteredEmployeesForReplacement 
+    : employees;
 
   // Get profession limits for selected client
   const { data: professionLimits = [] } = useQuery<SelectClientProfessionLimit[]>({
@@ -1172,12 +1191,14 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                               />
                               <CommandList>
                                 <CommandEmpty>
-                                  {selectedCompanyId 
-                                    ? "Nenhum funcionário encontrado" 
-                                    : "Selecione uma empresa primeiro"}
+                                  {!selectedClientId 
+                                    ? "Selecione um cliente primeiro"
+                                    : !selectedCostCenterId
+                                    ? "Selecione um centro de custo primeiro"
+                                    : "Nenhum funcionário encontrado neste centro de custo"}
                                 </CommandEmpty>
                                 <CommandGroup>
-                                  {employees && employees.length > 0 && employees.map((employee) => (
+                                  {displayedEmployees && displayedEmployees.length > 0 && displayedEmployees.map((employee) => (
                                     <CommandItem
                                       key={employee.id}
                                       value={`${employee.employeeCode} ${employee.name} ${employee.position}`}

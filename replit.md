@@ -4,7 +4,23 @@ VagasPro is a job management system built with React and Express, designed to st
 
 ## Recent Updates (Nov 11, 2025)
 
-### UI Performance Improvements - Profession Search (LATEST)
+### Employee Replacement Workflow - Cost Center Filtering (LATEST)
+- **Feature**: Smart employee filtering for staff replacement scenarios
+- **Implementation**:
+  - When creating a job with "Substituição de Quadro" reason
+  - System now shows only employees from the selected cost center
+  - Uses `clientEmployees` table (imported from Senior) instead of company employees
+  - Dynamic filtering: Employee list updates when cost center selection changes
+- **UX Improvements**:
+  - Clear messaging: "Selecione um centro de custo primeiro"
+  - No employees shown until cost center is selected
+  - Prevents confusion by limiting choices to relevant employees only
+- **Technical Details**:
+  - Filters `client_employees` by `costCenterId` field
+  - 184 active employees available across 328 Localiza cost centers
+  - Uses React.useMemo for performance optimization
+
+### UI Performance Improvements - Profession Search
 - **Component**: ClientModal - Profession Limits section
 - **Change**: Replaced dropdown Select with searchable Combobox for professions
 - **Benefits**:
