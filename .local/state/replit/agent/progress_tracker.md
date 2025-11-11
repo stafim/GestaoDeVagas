@@ -121,3 +121,11 @@
 [x] 5. Verify application running on port 5000
 [x] 6. Confirm all API endpoints responding correctly
 [x] 7. Complete project import verification
+
+## Correção: Organization ID Not Found - Senior Integration
+[x] 1. Identificar erro ao salvar API key da Senior HCM
+[x] 2. Verificar organizationId no DEMO_USER
+[x] 3. Buscar ID da organização "Grupo OPUS" no banco de dados
+[x] 4. Atualizar DEMO_USER com organizationId correto (a6b0e84d-df56-45ab-810b-310f100cd760)
+[x] 5. Reiniciar aplicação para aplicar mudanças
+[x] 6. Confirmar que configuração da Senior HCM agora funciona

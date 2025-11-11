@@ -30,7 +30,7 @@ export function getSessionForSimpleAuth() {
 // Demo user for bypass mode (using Grazieli Peres from database)
 const DEMO_USER = {
   id: "3ee816bb-0cd2-493c-b6a5-6f4d566de07c",
-  organizationId: "default-org-id",
+  organizationId: "a6b0e84d-df56-45ab-810b-310f100cd760",
   email: "grazieli.peres@grupoopus.com", 
   firstName: "Grazieli Peres",
   lastName: "Grazieli Peres",
