@@ -140,7 +140,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const metrics = await storage.getDashboardMetrics(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const metrics = await storage.getDashboardMetrics(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(metrics);
     } catch (error) {
       console.error("Error fetching dashboard metrics:", error);
@@ -155,7 +156,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsByStatus(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsByStatus(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs by status:", error);
@@ -190,7 +192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsByCreator(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsByCreator(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs by creator:", error);
@@ -205,7 +208,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getAllJobsByCreator(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getAllJobsByCreator(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching all jobs by creator:", error);
@@ -220,7 +224,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsByCompany(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsByCompany(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs by company:", error);
@@ -235,7 +240,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsByWorkPosition(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsByWorkPosition(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs by work position:", error);
@@ -250,7 +256,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsByCostCenter(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsByCostCenter(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs by cost center:", error);
@@ -265,7 +272,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsByClient(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsByClient(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs by client:", error);
@@ -280,7 +288,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsSLA(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsSLA(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs SLA:", error);
@@ -295,7 +304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
       const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
       const jobTypes = Array.isArray(req.query.jobType) ? req.query.jobType as string[] : (req.query.jobType ? [req.query.jobType as string] : []);
-      const data = await storage.getJobsProductivity(months, companyIds, divisions, recruiterIds, jobTypes);
+      const openingReasons = Array.isArray(req.query.openingReason) ? req.query.openingReason as string[] : (req.query.openingReason ? [req.query.openingReason as string] : []);
+      const data = await storage.getJobsProductivity(months, companyIds, divisions, recruiterIds, jobTypes, openingReasons);
       res.json(data);
     } catch (error) {
       console.error("Error fetching jobs productivity:", error);

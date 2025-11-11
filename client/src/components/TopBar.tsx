@@ -33,6 +33,14 @@ export default function TopBar({
 
   const isAuthBypass = user?.id === "demo-user-bypass";
 
+  // Fetch pending approvals count
+  const { data: pendingApprovals } = useQuery<any[]>({
+    queryKey: ["/api/approvals/pending"],
+    enabled: !!user?.id,
+  });
+
+  const pendingApprovalsCount = pendingApprovals?.length || 0;
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -135,14 +143,17 @@ export default function TopBar({
             size="sm"
             className="relative p-2 h-auto"
             data-testid="button-notifications"
+            onClick={() => setLocation("/aprovacoes")}
           >
             <Bell className="h-5 w-5" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-            >
-              3
-            </Badge>
+            {pendingApprovalsCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              >
+                {pendingApprovalsCount}
+              </Badge>
+            )}
           </Button>
 
           {/* Create button */}

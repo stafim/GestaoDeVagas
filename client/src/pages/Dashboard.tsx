@@ -94,6 +94,7 @@ export default function Dashboard() {
   const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
   const [selectedRecruiters, setSelectedRecruiters] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
+  const [selectedOpeningReasons, setSelectedOpeningReasons] = useState<string[]>([]);
   
   // Gerar lista dos últimos 12 meses
   const getMonthOptions = () => {
@@ -685,6 +686,83 @@ export default function Dashboard() {
                             onClick={(e) => e.stopPropagation()}
                           />
                           <span className="text-sm">{type.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Filtro por Tipo de Contratação */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <UserPlus className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">Tipo de Contratação</h3>
+                    <p className="text-xs text-muted-foreground">Substituição ou Aumento de quadro</p>
+                  </div>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-[240px] justify-between"
+                      data-testid="select-opening-reason-filter"
+                    >
+                      <span className="truncate">
+                        {selectedOpeningReasons.length === 0
+                          ? "Todos os tipos"
+                          : selectedOpeningReasons.length === 1
+                          ? selectedOpeningReasons[0] === "substituicao"
+                            ? "Substituição"
+                            : "Aumento de quadro"
+                          : "Ambos"}
+                      </span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[240px] p-0" align="end">
+                    <div className="flex items-center justify-between border-b px-3 py-2">
+                      <span className="text-sm font-medium">Tipo de Contratação</span>
+                      {selectedOpeningReasons.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setSelectedOpeningReasons([])}
+                        >
+                          Limpar
+                        </Button>
+                      )}
+                    </div>
+                    <div className="max-h-64 overflow-y-auto p-2">
+                      {[
+                        { value: "substituicao", label: "Substituição" },
+                        { value: "aumento_quadro", label: "Aumento de quadro" }
+                      ].map((reason) => (
+                        <div
+                          key={reason.value}
+                          className="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer"
+                          onClick={() => {
+                            setSelectedOpeningReasons((prev) =>
+                              prev.includes(reason.value)
+                                ? prev.filter((r) => r !== reason.value)
+                                : [...prev, reason.value]
+                            );
+                          }}
+                        >
+                          <Checkbox
+                            checked={selectedOpeningReasons.includes(reason.value)}
+                            onCheckedChange={(checked) => {
+                              setSelectedOpeningReasons((prev) =>
+                                checked
+                                  ? [...prev, reason.value]
+                                  : prev.filter((r) => r !== reason.value)
+                              );
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <span className="text-sm">{reason.label}</span>
                         </div>
                       ))}
                     </div>

@@ -46,6 +46,8 @@ Preferred communication style: Simple, everyday language.
 - **ClientModal Employee List Enhancements**: Adds status filter and a 100-item limit with a results counter for employee lists.
 - **Employee Replacement Field**: Simplified to a free-text input for direct entry of employee names to be replaced.
 - **Job Type Filter**: Dashboard filtering by job type (Produtiva/Improdutiva) across all metrics and charts, with backend support for jobType parameter in all dashboard endpoints.
+- **Opening Reason Filter**: Dashboard filtering by hiring type (Substituição/Aumento de quadro) across all metrics and charts, with backend support for openingReason parameter in all dashboard endpoints.
+- **Dynamic Approvals Badge**: Notification bell icon dynamically displays count of pending approvals from /api/approvals/pending endpoint, with click navigation to approvals page.
 
 # External Dependencies
 
