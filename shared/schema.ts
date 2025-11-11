@@ -157,6 +157,10 @@ export const clients = pgTable("clients", {
   contractFilePath: varchar("contract_file_path", { length: 500 }),
   maxJobs: integer("max_jobs"),
   isActive: boolean("is_active").default(true),
+  // Senior Integration fields
+  importedFromSenior: boolean("imported_from_senior").default(false), // Se foi importado da API Senior
+  seniorId: varchar("senior_id", { length: 100 }), // ID do cliente na Senior (para evitar duplicatas)
+  lastSyncedAt: timestamp("last_synced_at"), // Data da última sincronização com Senior
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
