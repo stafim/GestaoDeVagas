@@ -1076,7 +1076,7 @@ export const insertJobSchema = z.object({
   unhealthinessLevel: z.enum(["nao", "10", "20", "40"]).optional(),
   
   // Workflow de aprovação
-  approvalWorkflowId: z.string().min(1, "Workflow de aprovação é obrigatório"),
+  approvalWorkflowId: z.string().optional(),
   
   // Benefícios (array of benefit IDs)
   benefitIds: z.array(z.string()).optional(),
