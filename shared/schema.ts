@@ -141,6 +141,10 @@ export const costCenters = pgTable("cost_centers", {
   code: varchar("code", { length: 50 }).notNull(),
   companyId: varchar("company_id").references(() => companies.id),
   budget: decimal("budget", { precision: 10, scale: 2 }),
+  // Senior Integration fields
+  importedFromSenior: boolean("imported_from_senior").default(false), // Se foi importado da API Senior
+  seniorId: varchar("senior_id", { length: 100 }), // ID do centro de custo na Senior (r018ccu.codccu)
+  lastSyncedAt: timestamp("last_synced_at"), // Data da última sincronização com Senior
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
