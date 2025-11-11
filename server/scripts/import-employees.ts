@@ -132,14 +132,21 @@ async function importEmployees() {
           }
 
           // Mapear situação do funcionário
-          // Senior sitafa: 7=Ativo, 4=Desligado, 5=Férias, 8=Afastado, 9=Aviso Prévio
+          // Senior sitafa: 1=Normal/Ativo, 4=Desligado, 5=Férias, 7=Ativo, 8=Afastado, 9=Aviso Prévio
           let status: 'ativo' | 'desligado' | 'ferias' | 'afastamento' = 'ativo';
-          if (employee.sitafa === 4 || employee.datafa) {
+          
+          // Verificar se datafa é uma data real (não 1900-12-31 que é placeholder)
+          const hasRealTerminationDate = employee.datafa && 
+            new Date(employee.datafa).getFullYear() > 1900;
+          
+          if (employee.sitafa === 4 || hasRealTerminationDate) {
             status = 'desligado';
           } else if (employee.sitafa === 5) {
             status = 'ferias';
           } else if (employee.sitafa === 8 || employee.sitafa === 9) {
             status = 'afastamento';
+          } else if (employee.sitafa === 1 || employee.sitafa === 7) {
+            status = 'ativo';
           }
 
           const employeeData = {
