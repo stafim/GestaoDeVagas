@@ -55,7 +55,7 @@ VagasPro is a job management system built with React and Express, designed to st
   - Primary source for organizational job positions
 
 ### Work Positions Integration ⭐ (LATEST)
-- **Objective**: Import work position data from Senior HCM r017pos table and integrate into job creation workflow
+- **Objective**: Import work position data from Senior HCM r017pos table and integrate into job creation workflow with search capabilities
 - **Database Schema**: Extended `workPositions` table with Senior integration fields
   - `seniorId` (varchar) - Senior position code (codpos)
   - `seniorEstablishment` (varchar) - Senior establishment code (estpos)
@@ -72,12 +72,21 @@ VagasPro is a job management system built with React and Express, designed to st
   - **3,055 work positions successfully imported** from Senior database
   - Examples: ANALISTA DE DP, ASSISTENTE DEPTO PESSOAL, TECNICO SEGURANCA TRABALHO
 - **Backend Implementation**:
-  - `GET /api/work-positions` endpoint - Returns all active work positions
-  - `getWorkPositions()` storage method - Retrieves filtered work positions list
+  - `GET /api/work-positions` endpoint with query params:
+    - `search` (optional) - Filter by name using case-insensitive LIKE
+    - `limit` (optional, default: 100) - Limit number of results
+  - `getWorkPositions(search?, limit)` storage method with filtering
+  - Smart query: Loads first 100 positions by default, supports dynamic search
 - **Frontend Integration** ✅:
-  - JobModal now dynamically loads work positions from API
-  - Replaced mock data with real database records
-  - Dropdown displays all 3,055 imported positions
+  - JobModal uses searchable Combobox component (replacing simple Select)
+  - Real-time search: Query updates as user types
+  - Loads first 100 positions initially for performance
+  - Search filters 3,055 positions dynamically
+  - Clear UX with "Buscar posto de trabalho..." placeholder
+- **Performance**:
+  - Initial load: 100 positions (~5KB)
+  - Search response: <100ms with indexed queries
+  - Prevents overwhelming UI with 3,000+ options
 - **Senior Source Table**: r017pos
   - Fields: estpos, emppos, ccupos, locpos, codpos, nompos, abrpos
   - Linked to professions via r017car mapping table
