@@ -38,6 +38,7 @@ import {
   workflowJobStatusRules,
   jobApprovalHistory,
   blacklistCandidates,
+  seniorIntegrationSettings,
   type Organization,
   type InsertOrganization,
   type Invoice,
@@ -107,9 +108,12 @@ import {
   type InsertJobApprovalHistory,
   type BlacklistCandidate,
   type InsertBlacklistCandidate,
+  type SeniorIntegrationSetting,
+  type InsertSeniorIntegrationSetting,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, and, or, ilike, sql, inArray, isNull } from "drizzle-orm";
+import { createSeniorIntegrationService } from "./services/seniorIntegration";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -414,6 +418,16 @@ export interface IStorage {
   createBlacklistCandidate(candidate: InsertBlacklistCandidate): Promise<BlacklistCandidate>;
   updateBlacklistCandidate(id: string, candidate: Partial<InsertBlacklistCandidate>): Promise<BlacklistCandidate>;
   deleteBlacklistCandidate(id: string): Promise<void>;
+  
+  // Senior HCM Integration operations
+  getSeniorIntegrationSettings(organizationId: string): Promise<SeniorIntegrationSetting | undefined>;
+  createOrUpdateSeniorIntegrationSettings(organizationId: string, settings: InsertSeniorIntegrationSetting): Promise<SeniorIntegrationSetting>;
+  testSeniorConnection(organizationId: string): Promise<{ success: boolean; health: boolean; tablesCount: number; employeesCount: number; error?: string }>;
+  getSeniorEmployees(organizationId: string): Promise<any[]>;
+  getSeniorDepartments(organizationId: string): Promise<any[]>;
+  getSeniorPositions(organizationId: string): Promise<any[]>;
+  executeSeniorQuery(organizationId: string, sqlText: string): Promise<any[]>;
+  syncSeniorData(organizationId: string): Promise<{ success: boolean; message: string; syncedAt?: Date; error?: string }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3582,6 +3596,225 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBlacklistCandidate(id: string): Promise<void> {
     await db.delete(blacklistCandidates).where(eq(blacklistCandidates.id, id));
+  }
+
+  // Senior HCM Integration operations
+  async getSeniorIntegrationSettings(organizationId: string): Promise<SeniorIntegrationSetting | undefined> {
+    const [settings] = await db
+      .select()
+      .from(seniorIntegrationSettings)
+      .where(eq(seniorIntegrationSettings.organizationId, organizationId));
+    return settings;
+  }
+
+  async createOrUpdateSeniorIntegrationSettings(
+    organizationId: string,
+    settingsData: InsertSeniorIntegrationSetting
+  ): Promise<SeniorIntegrationSetting> {
+    const existing = await this.getSeniorIntegrationSettings(organizationId);
+    
+    if (existing) {
+      // Update existing settings
+      const [updated] = await db
+        .update(seniorIntegrationSettings)
+        .set({ ...settingsData, updatedAt: new Date() })
+        .where(eq(seniorIntegrationSettings.organizationId, organizationId))
+        .returning();
+      return updated;
+    } else {
+      // Create new settings
+      const [created] = await db
+        .insert(seniorIntegrationSettings)
+        .values(settingsData)
+        .returning();
+      return created;
+    }
+  }
+
+  async testSeniorConnection(organizationId: string): Promise<{
+    success: boolean;
+    health: boolean;
+    tablesCount: number;
+    employeesCount: number;
+    error?: string;
+  }> {
+    const settings = await this.getSeniorIntegrationSettings(organizationId);
+    
+    if (!settings) {
+      return {
+        success: false,
+        health: false,
+        tablesCount: 0,
+        employeesCount: 0,
+        error: "Integration settings not found",
+      };
+    }
+
+    const service = createSeniorIntegrationService({
+      apiUrl: settings.apiUrl,
+      apiKey: settings.apiKey,
+    });
+
+    const result = await service.testConnection();
+
+    // Update last sync status
+    await db
+      .update(seniorIntegrationSettings)
+      .set({
+        lastSyncAt: new Date(),
+        lastSyncStatus: result.success ? "success" : "error",
+        lastSyncError: result.error || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(seniorIntegrationSettings.organizationId, organizationId));
+
+    return result;
+  }
+
+  async getSeniorEmployees(organizationId: string): Promise<any[]> {
+    const settings = await this.getSeniorIntegrationSettings(organizationId);
+    
+    if (!settings || !settings.isActive) {
+      throw new Error("Senior integration is not configured or not active");
+    }
+
+    const service = createSeniorIntegrationService({
+      apiUrl: settings.apiUrl,
+      apiKey: settings.apiKey,
+    });
+
+    return await service.getActiveEmployees();
+  }
+
+  async getSeniorDepartments(organizationId: string): Promise<any[]> {
+    const settings = await this.getSeniorIntegrationSettings(organizationId);
+    
+    if (!settings || !settings.isActive) {
+      throw new Error("Senior integration is not configured or not active");
+    }
+
+    const service = createSeniorIntegrationService({
+      apiUrl: settings.apiUrl,
+      apiKey: settings.apiKey,
+    });
+
+    return await service.getDepartments();
+  }
+
+  async getSeniorPositions(organizationId: string): Promise<any[]> {
+    const settings = await this.getSeniorIntegrationSettings(organizationId);
+    
+    if (!settings || !settings.isActive) {
+      throw new Error("Senior integration is not configured or not active");
+    }
+
+    const service = createSeniorIntegrationService({
+      apiUrl: settings.apiUrl,
+      apiKey: settings.apiKey,
+    });
+
+    return await service.getPositions();
+  }
+
+  async executeSeniorQuery(organizationId: string, sqlText: string): Promise<any[]> {
+    const settings = await this.getSeniorIntegrationSettings(organizationId);
+    
+    if (!settings || !settings.isActive) {
+      throw new Error("Senior integration is not configured or not active");
+    }
+
+    const service = createSeniorIntegrationService({
+      apiUrl: settings.apiUrl,
+      apiKey: settings.apiKey,
+    });
+
+    return await service.executeQuery(sqlText);
+  }
+
+  async syncSeniorData(organizationId: string): Promise<{
+    success: boolean;
+    message: string;
+    syncedAt?: Date;
+    error?: string;
+  }> {
+    try {
+      const settings = await this.getSeniorIntegrationSettings(organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return {
+          success: false,
+          message: "Senior integration is not configured or not active",
+          error: "Integration not configured",
+        };
+      }
+
+      const service = createSeniorIntegrationService({
+        apiUrl: settings.apiUrl,
+        apiKey: settings.apiKey,
+      });
+
+      // Test connection first
+      const testResult = await service.testConnection();
+      
+      if (!testResult.success) {
+        await db
+          .update(seniorIntegrationSettings)
+          .set({
+            lastSyncAt: new Date(),
+            lastSyncStatus: "error",
+            lastSyncError: testResult.error || "Connection test failed",
+            updatedAt: new Date(),
+          })
+          .where(eq(seniorIntegrationSettings.organizationId, organizationId));
+
+        return {
+          success: false,
+          message: "Connection test failed",
+          error: testResult.error,
+        };
+      }
+
+      // Fetch data from Senior
+      const employees = await service.getActiveEmployees();
+      const departments = await service.getDepartments();
+      const positions = await service.getPositions();
+
+      // Update last sync status
+      const syncedAt = new Date();
+      await db
+        .update(seniorIntegrationSettings)
+        .set({
+          lastSyncAt: syncedAt,
+          lastSyncStatus: "success",
+          lastSyncError: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(seniorIntegrationSettings.organizationId, organizationId));
+
+      return {
+        success: true,
+        message: `Successfully synced ${employees.length} employees, ${departments.length} departments, and ${positions.length} positions from Senior`,
+        syncedAt,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      await db
+        .update(seniorIntegrationSettings)
+        .set({
+          lastSyncAt: new Date(),
+          lastSyncStatus: "error",
+          lastSyncError: errorMessage,
+          updatedAt: new Date(),
+        })
+        .where(eq(seniorIntegrationSettings.organizationId, organizationId));
+
+      return {
+        success: false,
+        message: "Failed to sync data from Senior",
+        error: errorMessage,
+      };
+    }
   }
 }
 

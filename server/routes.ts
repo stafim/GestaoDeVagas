@@ -3705,6 +3705,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Senior HCM Integration Routes
+  // Get Senior integration settings for current organization
+  app.get('/api/senior-integration/settings', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      
+      // Omitir API key na resposta por segurança
+      if (settings) {
+        const { apiKey, ...safeSettings } = settings;
+        res.json({ ...safeSettings, apiKey: '***' });
+      } else {
+        res.json(null);
+      }
+    } catch (error) {
+      console.error("Error fetching Senior integration settings:", error);
+      res.status(500).json({ message: "Failed to fetch Senior integration settings" });
+    }
+  });
+
+  // Create or update Senior integration settings
+  app.post('/api/senior-integration/settings', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      const userId = (req.session as any)?.user?.id;
+      
+      if (!organizationId || !userId) {
+        res.status(400).json({ message: "Organization ID or User ID not found" });
+        return;
+      }
+
+      const settingsData = {
+        ...req.body,
+        organizationId,
+        createdBy: userId,
+      };
+
+      const settings = await storage.createOrUpdateSeniorIntegrationSettings(organizationId, settingsData);
+      
+      // Omitir API key na resposta
+      const { apiKey, ...safeSettings } = settings;
+      res.json({ ...safeSettings, apiKey: '***' });
+    } catch (error) {
+      console.error("Error saving Senior integration settings:", error);
+      res.status(500).json({ message: "Failed to save Senior integration settings" });
+    }
+  });
+
+  // Test Senior integration connection
+  app.post('/api/senior-integration/test-connection', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      const testResult = await storage.testSeniorConnection(organizationId);
+      res.json(testResult);
+    } catch (error) {
+      console.error("Error testing Senior connection:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to test connection",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Get active employees from Senior
+  app.get('/api/senior-integration/employees', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      const employees = await storage.getSeniorEmployees(organizationId);
+      res.json(employees);
+    } catch (error) {
+      console.error("Error fetching Senior employees:", error);
+      res.status(500).json({ message: "Failed to fetch employees from Senior" });
+    }
+  });
+
+  // Get departments from Senior
+  app.get('/api/senior-integration/departments', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      const departments = await storage.getSeniorDepartments(organizationId);
+      res.json(departments);
+    } catch (error) {
+      console.error("Error fetching Senior departments:", error);
+      res.status(500).json({ message: "Failed to fetch departments from Senior" });
+    }
+  });
+
+  // Get positions from Senior
+  app.get('/api/senior-integration/positions', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      const positions = await storage.getSeniorPositions(organizationId);
+      res.json(positions);
+    } catch (error) {
+      console.error("Error fetching Senior positions:", error);
+      res.status(500).json({ message: "Failed to fetch positions from Senior" });
+    }
+  });
+
+  // Execute custom SQL query on Senior database
+  app.post('/api/senior-integration/query', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      const { sqlText } = req.body;
+      
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      if (!sqlText || typeof sqlText !== 'string') {
+        res.status(400).json({ message: "SQL query is required" });
+        return;
+      }
+
+      // Validar que é apenas SELECT (segurança)
+      const trimmedQuery = sqlText.trim().toUpperCase();
+      if (!trimmedQuery.startsWith('SELECT')) {
+        res.status(400).json({ message: "Only SELECT queries are allowed" });
+        return;
+      }
+
+      const results = await storage.executeSeniorQuery(organizationId, sqlText);
+      res.json(results);
+    } catch (error) {
+      console.error("Error executing Senior query:", error);
+      res.status(500).json({ message: "Failed to execute query on Senior" });
+    }
+  });
+
+  // Sync data from Senior
+  app.post('/api/senior-integration/sync', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = (req.session as any)?.user?.organizationId;
+      if (!organizationId) {
+        res.status(400).json({ message: "Organization ID not found" });
+        return;
+      }
+
+      const syncResult = await storage.syncSeniorData(organizationId);
+      res.json(syncResult);
+    } catch (error) {
+      console.error("Error syncing Senior data:", error);
+      res.status(500).json({ message: "Failed to sync data from Senior" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
