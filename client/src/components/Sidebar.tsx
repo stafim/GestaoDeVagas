@@ -167,11 +167,15 @@ export default function Sidebar() {
     }
   };
 
+  // Check if user is super admin
+  const isSuperAdmin = currentUser?.role === 'super_admin';
+  
   // Filter navigation items based on user permissions
+  // Super admins ONLY see admin navigation items (Organizations, Plans, Financial)
   // null = no permissions configured (show all menus by default)
   // [] = permissions configured but no access (show no menus)
   // [items] = show only the accessible menus
-  const filteredClientNavigationItems = clientNavigationItems.filter(item => {
+  const filteredClientNavigationItems = isSuperAdmin ? [] : clientNavigationItems.filter(item => {
     if (accessibleMenus === null || accessibleMenus === undefined) {
       return true; // No permissions configured, show all menus
     }
@@ -181,8 +185,8 @@ export default function Sidebar() {
     return (accessibleMenus as string[]).includes(item.href);
   });
 
-  // Admin items are only visible to Master Admins (users without organizationId)
-  const isMasterAdmin = currentUser?.organizationId === null;
+  // Admin items are only visible to Master Admins (users without organizationId) or Super Admins
+  const isMasterAdmin = currentUser?.organizationId === null || isSuperAdmin;
   
   const filteredAdminNavigationItems = isMasterAdmin ? adminNavigationItems.filter(item => {
     if (accessibleMenus === null || accessibleMenus === undefined) {
@@ -225,14 +229,15 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <div className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {/* Client Section */}
-          <div className="mb-3">
-            <div className="px-3 mb-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Cliente
-              </p>
-            </div>
-            {filteredClientNavigationItems.map((item) => {
+          {/* Client Section - Hidden for super admins */}
+          {!isSuperAdmin && filteredClientNavigationItems.length > 0 && (
+            <div className="mb-3">
+              <div className="px-3 mb-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Cliente
+                </p>
+              </div>
+              {filteredClientNavigationItems.map((item) => {
               const isActive = location === item.href || location.startsWith(item.href + "/");
               const Icon = item.icon;
               
@@ -274,6 +279,7 @@ export default function Sidebar() {
               );
             })}
           </div>
+          )}
 
           {/* Admin Section - Only show if there are items */}
           {filteredAdminNavigationItems.length > 0 && (
