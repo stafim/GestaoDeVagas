@@ -3744,6 +3744,32 @@ export class DatabaseStorage implements IStorage {
     return history;
   }
 
+  async getJobApprovalHistoryForJob(jobId: string): Promise<any[]> {
+    const history = await db
+      .select({
+        id: jobApprovalHistory.id,
+        stepName: jobApprovalHistory.stepName,
+        stepOrder: jobApprovalHistory.stepOrder,
+        status: jobApprovalHistory.status,
+        comments: jobApprovalHistory.comments,
+        approvedBy: jobApprovalHistory.approvedBy,
+        approvedAt: jobApprovalHistory.approvedAt,
+        approvedBy2: jobApprovalHistory.approvedBy2,
+        approvedAt2: jobApprovalHistory.approvedAt2,
+        approver1Name: sql<string>`u1.first_name || ' ' || u1.last_name`.as('approver1Name'),
+        approver1Email: sql<string>`u1.email`.as('approver1Email'),
+        approver2Name: sql<string>`u2.first_name || ' ' || u2.last_name`.as('approver2Name'),
+        approver2Email: sql<string>`u2.email`.as('approver2Email'),
+      })
+      .from(jobApprovalHistory)
+      .leftJoin(sql`users u1`, sql`${jobApprovalHistory.approvedBy} = u1.id`)
+      .leftJoin(sql`users u2`, sql`${jobApprovalHistory.approvedBy2} = u2.id`)
+      .where(eq(jobApprovalHistory.jobId, jobId))
+      .orderBy(jobApprovalHistory.stepOrder);
+
+    return history;
+  }
+
   // Organization operations (Multi-tenant support)
   async getOrganizations(): Promise<Organization[]> {
     const allOrganizations = await db.select().from(organizations).orderBy(desc(organizations.createdAt));

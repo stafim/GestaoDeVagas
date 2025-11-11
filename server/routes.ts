@@ -4738,6 +4738,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get job approval details (status history + approval history)
+  app.get('/api/jobs/:jobId/approval-details', isAuthenticated, async (req, res) => {
+    try {
+      const { jobId } = req.params;
+      
+      // Get job status history
+      const statusHistory = await storage.getJobStatusHistory(jobId);
+      
+      // Get job approval history
+      const approvalHistory = await storage.getJobApprovalHistoryForJob(jobId);
+      
+      res.json({
+        statusHistory,
+        approvalHistory
+      });
+    } catch (error) {
+      console.error("Error fetching job approval details:", error);
+      res.status(500).json({ message: "Failed to fetch job approval details" });
+    }
+  });
+
   app.patch('/api/job-approval-history/:id', isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
