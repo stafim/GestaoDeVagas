@@ -422,6 +422,7 @@ export interface IStorage {
   // Senior HCM Integration operations
   getSeniorIntegrationSettings(organizationId: string): Promise<SeniorIntegrationSetting | undefined>;
   createOrUpdateSeniorIntegrationSettings(organizationId: string, settings: InsertSeniorIntegrationSetting): Promise<SeniorIntegrationSetting>;
+  updateSeniorIntegrationSyncStatus(organizationId: string, status: string, message: string | null, error: string | null): Promise<void>;
   testSeniorConnection(organizationId: string): Promise<{ success: boolean; health: boolean; tablesCount: number; employeesCount: number; error?: string }>;
   getSeniorEmployees(organizationId: string): Promise<any[]>;
   getSeniorDepartments(organizationId: string): Promise<any[]>;
@@ -3669,6 +3670,23 @@ export class DatabaseStorage implements IStorage {
       .where(eq(seniorIntegrationSettings.organizationId, organizationId));
 
     return result;
+  }
+
+  async updateSeniorIntegrationSyncStatus(
+    organizationId: string,
+    status: string,
+    message: string | null,
+    error: string | null
+  ): Promise<void> {
+    await db
+      .update(seniorIntegrationSettings)
+      .set({
+        lastSyncAt: new Date(),
+        lastSyncStatus: status,
+        lastSyncError: error,
+        updatedAt: new Date(),
+      })
+      .where(eq(seniorIntegrationSettings.organizationId, organizationId));
   }
 
   async getSeniorEmployees(organizationId: string): Promise<any[]> {

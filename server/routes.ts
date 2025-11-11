@@ -656,6 +656,264 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Senior Integration routes
+  app.get('/api/senior-integration/settings', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      
+      if (!organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      
+      // Mask the API key for security
+      if (settings && settings.apiKey) {
+        settings.apiKey = '***';
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching Senior integration settings:", error);
+      res.status(500).json({ message: "Failed to fetch Senior integration settings" });
+    }
+  });
+
+  app.post('/api/senior-integration/settings', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      
+      if (!organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const { apiUrl, apiKey, isActive, autoSync, syncInterval } = req.body;
+
+      if (!apiUrl || !apiKey) {
+        return res.status(400).json({ message: "API URL and API Key are required" });
+      }
+
+      const settings = await storage.createOrUpdateSeniorIntegrationSettings(organizationId, {
+        apiUrl,
+        apiKey,
+        isActive: isActive ?? true,
+        autoSync: autoSync ?? false,
+        syncInterval: syncInterval ?? 60,
+      });
+
+      // Mask the API key in response
+      if (settings && settings.apiKey) {
+        settings.apiKey = '***';
+      }
+
+      res.json(settings);
+    } catch (error) {
+      console.error("Error saving Senior integration settings:", error);
+      res.status(500).json({ message: "Failed to save Senior integration settings" });
+    }
+  });
+
+  app.post('/api/senior-integration/test-connection', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      
+      if (!organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Test health endpoint
+      const healthResponse = await fetch(`${settings.apiUrl}/health`, {
+        headers: {
+          'x-api-key': settings.apiKey,
+        },
+      });
+
+      if (!healthResponse.ok) {
+        return res.json({
+          success: false,
+          error: `API retornou status ${healthResponse.status}`,
+        });
+      }
+
+      const healthData = await healthResponse.json();
+
+      // Test tables endpoint
+      const tablesResponse = await fetch(`${settings.apiUrl}/tables`, {
+        headers: {
+          'x-api-key': settings.apiKey,
+        },
+      });
+
+      let tablesCount = 0;
+      if (tablesResponse.ok) {
+        const tablesData = await tablesResponse.json();
+        tablesCount = tablesData.tables?.length || 0;
+      }
+
+      // Test employees count
+      const employeesResponse = await fetch(`${settings.apiUrl}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+        },
+        body: JSON.stringify({
+          query: "SELECT COUNT(*) as total FROM funcionarios WHERE sitafa = 'A'"
+        }),
+      });
+
+      let employeesCount = 0;
+      if (employeesResponse.ok) {
+        const employeesData = await employeesResponse.json();
+        employeesCount = employeesData.data?.[0]?.total || 0;
+      }
+
+      res.json({
+        success: true,
+        health: healthData,
+        tablesCount,
+        employeesCount,
+      });
+
+    } catch (error) {
+      console.error("Error testing Senior connection:", error);
+      res.json({
+        success: false,
+        error: error instanceof Error ? error.message : "Erro desconhecido ao testar conexão",
+      });
+    }
+  });
+
+  app.post('/api/senior-integration/sync', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      
+      if (!organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Sync employees
+      const employeesResponse = await fetch(`${settings.apiUrl}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+        },
+        body: JSON.stringify({
+          query: "SELECT * FROM funcionarios WHERE sitafa = 'A'"
+        }),
+      });
+
+      if (!employeesResponse.ok) {
+        throw new Error(`Falha ao buscar funcionários: ${employeesResponse.status}`);
+      }
+
+      const employeesData = await employeesResponse.json();
+      const employeesCount = employeesData.data?.length || 0;
+
+      // Update last sync info
+      await storage.updateSeniorIntegrationSyncStatus(
+        organizationId, 
+        'success', 
+        `Sincronizados ${employeesCount} colaboradores`,
+        null
+      );
+
+      res.json({
+        success: true,
+        message: `Sincronização concluída com sucesso! ${employeesCount} colaboradores atualizados.`,
+        employeesCount,
+      });
+
+    } catch (error) {
+      console.error("Error syncing Senior data:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      
+      // Update last sync with error
+      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      if (organizationId) {
+        await storage.updateSeniorIntegrationSyncStatus(
+          organizationId, 
+          'error', 
+          null,
+          errorMessage
+        );
+      }
+
+      res.json({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
+
+  app.post('/api/senior-integration/query', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      
+      if (!organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      const { query } = req.body;
+
+      if (!query) {
+        return res.status(400).json({ message: "SQL query is required" });
+      }
+
+      const queryResponse = await fetch(`${settings.apiUrl}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!queryResponse.ok) {
+        throw new Error(`Query falhou: ${queryResponse.status}`);
+      }
+
+      const data = await queryResponse.json();
+      res.json(data);
+
+    } catch (error) {
+      console.error("Error executing Senior query:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao executar query" 
+      });
+    }
+  });
+
   // System Settings routes
   app.get('/api/settings', isAuthenticated, async (req, res) => {
     try {
