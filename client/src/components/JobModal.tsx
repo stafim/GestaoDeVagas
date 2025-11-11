@@ -166,6 +166,17 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     queryKey: ["/api/companies"],
   });
 
+  type CostCenter = {
+    id: string;
+    name: string;
+    code: string;
+    companyId: string | null;
+  };
+
+  const { data: costCenters = [] } = useQuery<CostCenter[]>({
+    queryKey: ["/api/cost-centers"],
+  });
+
   const { data: professions } = useQuery<Profession[]>({
     queryKey: ["/api/professions"],
   });
@@ -315,11 +326,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const selectedProfessionId = form.watch("professionId");
   const selectedClientId = form.watch("clientId");
   const openingReason = form.watch("openingReason");
-
-  const { data: costCenters } = useQuery({
-    queryKey: ["/api/companies", selectedCompanyId, "cost-centers"],
-    enabled: !!selectedCompanyId,
-  });
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/companies", selectedCompanyId, "employees"],
@@ -801,6 +807,43 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="costCenterId"
+                  render={({ field }) => {
+                    const selectedCompanyId = form.watch("companyId");
+                    const filteredCostCenters = selectedCompanyId 
+                      ? costCenters.filter(cc => cc.companyId === selectedCompanyId)
+                      : costCenters;
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Centro de Custo</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value || ""}
+                          disabled={!selectedCompanyId}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-cost-center">
+                              <SelectValue placeholder={selectedCompanyId ? "Selecione um centro de custo" : "Selecione primeiro uma empresa"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="">Nenhum</SelectItem>
+                            {filteredCostCenters.map((costCenter) => (
+                              <SelectItem key={costCenter.id} value={costCenter.id}>
+                                {costCenter.code} - {costCenter.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField

@@ -137,6 +137,7 @@ export interface IStorage {
   deleteCompany(id: string): Promise<void>;
   
   // Cost Center operations
+  getCostCenters(): Promise<CostCenter[]>;
   getCostCentersByCompany(companyId: string): Promise<CostCenter[]>;
   createCostCenter(costCenter: InsertCostCenter): Promise<CostCenter>;
   updateCostCenter(id: string, costCenter: Partial<InsertCostCenter>): Promise<CostCenter>;
@@ -566,6 +567,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Cost Center operations
+  async getCostCenters(): Promise<CostCenter[]> {
+    return await db
+      .select()
+      .from(costCenters)
+      .orderBy(costCenters.name);
+  }
+
   async getCostCentersByCompany(companyId: string): Promise<CostCenter[]> {
     return await db
       .select()

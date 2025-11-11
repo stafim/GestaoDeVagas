@@ -2,6 +2,17 @@
 
 VagasPro is a job management system built with React and Express, designed to streamline recruitment workflows for companies. It facilitates the management of job postings and applications, offers a comprehensive dashboard for tracking hiring metrics, and enables the analysis of recruitment performance through various reports and visualizations. The system includes robust role-based permission management, detailed job status tracking, admission data management, and integration capabilities with external HCM Senior databases.
 
+## Recent Updates (Nov 11, 2025)
+
+### Cost Center Integration
+- **Backend**: Added `GET /api/cost-centers` endpoint to fetch all cost centers
+- **Storage**: Implemented `getCostCenters()` method for retrieving all cost centers across companies
+- **Frontend**: Added cost center selection field in job creation form
+  - Automatically filters cost centers based on selected company
+  - Displays cost centers in format: "CODE - Name" (e.g., "ADM001 - Administrativo")
+  - Field is disabled until a company is selected
+- **Database**: 7 sample cost centers created across 3 companies for testing
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
