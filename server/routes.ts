@@ -936,9 +936,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { query } = req.body;
+      const { query, sqlText } = req.body;
+      const sql = sqlText || query;
 
-      if (!query) {
+      if (!sql) {
         return res.status(400).json({ message: "SQL query is required" });
       }
 
@@ -948,7 +949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Content-Type': 'application/json',
           'x-api-key': settings.apiKey,
         },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ sqlText: sql }),
       });
 
       if (!queryResponse.ok) {
