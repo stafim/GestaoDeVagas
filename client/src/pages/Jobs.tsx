@@ -135,6 +135,20 @@ export default function Jobs() {
     queryKey: ["/api/users"],
   });
 
+  // Fetch job statuses for filter
+  type JobStatus = {
+    id: string;
+    key: string;
+    label: string;
+    color: string;
+    displayOrder: number;
+    isActive: boolean;
+  };
+
+  const { data: jobStatuses = [] } = useQuery<JobStatus[]>({
+    queryKey: ["/api/job-statuses"],
+  });
+
   const { data: jobs, isLoading } = useQuery<JobsListResponse>({
     queryKey: ["/api/jobs", { limit: pageSize, offset: currentPage * pageSize, search, statusFilter, companyFilter, recruiterFilter }],
     queryFn: async () => {
@@ -463,11 +477,14 @@ export default function Jobs() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os status</SelectItem>
-                    {Object.keys(JOB_STATUS_CONFIG).map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {getStatusLabel(status)}
-                      </SelectItem>
-                    ))}
+                    {jobStatuses
+                      .filter(status => status.isActive)
+                      .sort((a, b) => a.displayOrder - b.displayOrder)
+                      .map((status) => (
+                        <SelectItem key={status.key} value={status.key}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -149,8 +149,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const [clientHasNoPositions, setClientHasNoPositions] = useState(false);
   const [userAwareOfIrregularity, setUserAwareOfIrregularity] = useState(false);
   const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
-  const [workPositionSearch, setWorkPositionSearch] = useState("");
-  const [workPositionPopoverOpen, setWorkPositionPopoverOpen] = useState(false);
 
   // Função para obter a data de hoje no formato YYYY-MM-DD
   const getTodayDate = () => {
@@ -178,20 +176,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
   const { data: professions } = useQuery<Profession[]>({
     queryKey: ["/api/professions"],
-  });
-
-  const { data: workPositions } = useQuery<any[]>({
-    queryKey: ["/api/work-positions", workPositionSearch],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (workPositionSearch) {
-        params.append('search', workPositionSearch);
-      }
-      params.append('limit', '100');
-      const response = await fetch(`/api/work-positions?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch work positions');
-      return response.json();
-    },
   });
 
   const { data: clients } = useQuery<Client[]>({
@@ -272,7 +256,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
       description: "",
       department: "",
       location: "",
-      workPosition: "",
       costCenterDescription: "",
       status: defaultStatusKey,
       vacancyQuantity: "1",
@@ -314,7 +297,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
         companyId: jobData.companyId || undefined,
         costCenterId: jobData.costCenterId || undefined,
         costCenterDescription: jobData.costCenterDescription || "",
-        workPosition: jobData.workPosition || "",
         contractType: jobData.contractType || "clt",
         jobType: jobData.jobType || undefined,
         status: jobData.status || defaultStatusKey,
@@ -350,7 +332,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const selectedClientId = form.watch("clientId");
   const openingReason = form.watch("openingReason");
   const selectedCostCenterId = form.watch("costCenterId");
-  const selectedWorkPosition = form.watch("workPosition");
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/companies", selectedCompanyId, "employees"],
@@ -520,7 +501,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
         description: data.description || undefined,
         costCenterId: data.costCenterId || undefined,
         costCenterDescription: data.costCenterDescription || undefined,
-        workPosition: data.workPosition || undefined,
         department: data.department || undefined,
         location: data.location || undefined,
         contractType: data.contractType,
@@ -588,7 +568,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
         description: data.description || undefined,
         costCenterId: data.costCenterId || undefined,
         costCenterDescription: data.costCenterDescription || undefined,
-        workPosition: data.workPosition || undefined,
         department: data.department || undefined,
         location: data.location || undefined,
         contractType: data.contractType,
@@ -903,77 +882,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   )}
                 />
 
-                {/* 5. Posto de Trabalho */}
-                <FormField
-                  control={form.control}
-                  name="workPosition"
-                  render={({ field }) => {
-                    const selectedPosition = workPositions?.find(p => p.name === field.value);
-                    return (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Posto de Trabalho</FormLabel>
-                        <Popover open={workPositionPopoverOpen} onOpenChange={setWorkPositionPopoverOpen}>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                data-testid="button-work-position"
-                                className={cn(
-                                  "justify-between font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {selectedPosition?.name || "Buscar posto de trabalho..."}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[400px] p-0">
-                            <Command shouldFilter={false}>
-                              <CommandInput
-                                placeholder="Digite para buscar..."
-                                value={workPositionSearch}
-                                onValueChange={setWorkPositionSearch}
-                                data-testid="input-work-position-search"
-                              />
-                              <CommandList>
-                                <CommandEmpty>Nenhum posto de trabalho encontrado.</CommandEmpty>
-                                <CommandGroup>
-                                  {Array.isArray(workPositions) && workPositions.map((position: any) => (
-                                    <CommandItem
-                                      key={position.id}
-                                      value={position.name}
-                                      onSelect={() => {
-                                        form.setValue("workPosition", position.name);
-                                        setWorkPositionPopoverOpen(false);
-                                        setWorkPositionSearch("");
-                                      }}
-                                      data-testid={`option-work-position-${position.id}`}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          position.name === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {position.name}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-
-                {/* 6. Profissão */}
+                {/* 5. Profissão */}
                 <FormField
                   control={form.control}
                   name="professionId"
@@ -1068,7 +977,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   </FormItem>
                 )}
 
-                {/* 7. Workflow de Aprovação */}
+                {/* 6. Workflow de Aprovação */}
                 <FormField
                   control={form.control}
                   name="approvalWorkflowId"

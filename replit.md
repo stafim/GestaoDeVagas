@@ -8,7 +8,29 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
-### Default Job Status Configuration (LATEST)
+### Job Status Filter - Dynamic from Database (LATEST)
+- **Status Filter Enhancement**:
+  - Status filter in Jobs page (Gerenciar Vagas) now loads from `job_statuses` table
+  - Replaced hardcoded status list with dynamic query from `/api/job-statuses`
+  - Shows only active statuses (`isActive = true`)
+  - Ordered by `displayOrder` field for consistent presentation
+- **Benefits**:
+  - Users can customize which statuses appear in filter
+  - Changes in Configurações → Status reflect immediately in filter
+  - Maintains consistency across entire system
+
+### Work Position Field Removed from Job Creation
+- **Field Removal**:
+  - Removed "Posto de Trabalho" (Work Position) field from job creation/edit form
+  - Field was redundant and not essential for job creation workflow
+  - Simplified form for better user experience
+- **Technical Changes**:
+  - Removed `workPosition` field from JobModal form schema
+  - Removed `workPositionSearch` state and related logic
+  - Removed work positions query and popover component
+  - Backend still stores `workPosition` if provided via API
+
+### Default Job Status Configuration
 - **Schema Enhancement**:
   - Added `isDefault` field to `job_statuses` table (boolean, default: false) - for future use
 - **Job Creation Behavior**:
