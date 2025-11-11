@@ -4562,6 +4562,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alias endpoint for backwards compatibility
+  app.get('/api/workflow-steps/:workflowId', isAuthenticated, async (req, res) => {
+    try {
+      const { workflowId } = req.params;
+      const steps = await storage.getWorkflowSteps(workflowId);
+      res.json(steps);
+    } catch (error) {
+      console.error("Error fetching workflow steps:", error);
+      res.status(500).json({ message: "Failed to fetch workflow steps" });
+    }
+  });
+
   app.post('/api/workflow-steps', isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertApprovalWorkflowStepSchema.parse(req.body);

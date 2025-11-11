@@ -80,15 +80,29 @@ export default function Workflow() {
   const { data: workflowStepsData } = useQuery<Record<string, ApprovalWorkflowStep[]>>({
     queryKey: ["/api/workflow-steps/all", workflowIds],
     queryFn: async () => {
-      if (!workflows || workflows.length === 0) return {};
+      if (!workflows || workflows.length === 0) {
+        console.log("No workflows found for loading steps");
+        return {};
+      }
+      
+      console.log(`Loading steps for ${workflows.length} workflows:`, workflows.map(w => w.id));
       
       const stepsMap: Record<string, ApprovalWorkflowStep[]> = {};
       for (const workflow of workflows) {
-        const response = await fetch(`/api/workflow-steps/${workflow.id}`, { credentials: "include" });
-        if (response.ok) {
-          stepsMap[workflow.id] = await response.json();
+        try {
+          const response = await fetch(`/api/workflow-steps/${workflow.id}`, { credentials: "include" });
+          if (response.ok) {
+            const steps = await response.json();
+            stepsMap[workflow.id] = steps;
+            console.log(`Loaded ${steps.length} steps for workflow ${workflow.id}:`, steps);
+          } else {
+            console.error(`Failed to load steps for workflow ${workflow.id}:`, response.status);
+          }
+        } catch (error) {
+          console.error(`Error loading steps for workflow ${workflow.id}:`, error);
         }
       }
+      console.log("Final stepsMap:", stepsMap);
       return stepsMap;
     },
     enabled: !!workflows && workflows.length > 0,
@@ -324,6 +338,13 @@ export default function Workflow() {
           {workflows.map((workflow) => {
             const steps = workflowStepsData?.[workflow.id] || [];
             const isExpanded = expandedWorkflows.has(workflow.id);
+            
+            console.log(`Rendering workflow ${workflow.id} (${workflow.name}):`, {
+              isExpanded,
+              stepsCount: steps.length,
+              steps,
+              allStepsData: workflowStepsData
+            });
             
             return (
               <Card key={workflow.id} className="hover-elevate">
