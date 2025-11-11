@@ -11,11 +11,11 @@ import { ptBR } from "date-fns/locale";
 import { useLocation } from "wouter";
 
 const CHART_COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+  "#1e3a8a",
+  "#1e40af",
+  "#2563eb",
+  "#3b82f6",
+  "#60a5fa",
 ];
 
 export default function RealTime() {
@@ -121,10 +121,10 @@ export default function RealTime() {
             <Card data-testid="card-open-jobs">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Vagas Abertas</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="h-4 w-4" style={{ color: '#1e40af' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{realtimeData.metrics.openJobs}</div>
+                <div className="text-2xl font-bold" style={{ color: '#1e40af' }}>{realtimeData.metrics.openJobs}</div>
                 <p className="text-xs text-muted-foreground">
                   Em processo de recrutamento
                 </p>
@@ -134,10 +134,10 @@ export default function RealTime() {
             <Card data-testid="card-closed-jobs">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Vagas Fechadas</CardTitle>
-                <CheckCircle className="h-4 w-4 text-blue-600" />
+                <CheckCircle className="h-4 w-4" style={{ color: '#2563eb' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{realtimeData.metrics.closedJobs}</div>
+                <div className="text-2xl font-bold" style={{ color: '#2563eb' }}>{realtimeData.metrics.closedJobs}</div>
                 <p className="text-xs text-muted-foreground">
                   Com admissão realizada
                 </p>
@@ -147,10 +147,10 @@ export default function RealTime() {
             <Card data-testid="card-avg-time">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
-                <Clock className="h-4 w-4 text-orange-600" />
+                <Clock className="h-4 w-4" style={{ color: '#3b82f6' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold" style={{ color: '#3b82f6' }}>
                   {realtimeData.metrics.averageTimeToClose > 0 
                     ? `${realtimeData.metrics.averageTimeToClose} dias`
                     : "N/A"
@@ -224,7 +224,7 @@ export default function RealTime() {
                               {format(new Date(job.openingDate), "dd/MM/yyyy", { locale: ptBR })}
                             </Badge>
                             {job.admissionDate ? (
-                              <Badge variant="default" className="text-xs bg-green-600">
+                              <Badge variant="default" className="text-xs" style={{ backgroundColor: '#2563eb' }}>
                                 <CheckCircle className="h-3 w-3 mr-1" />
                                 Fechada
                               </Badge>
@@ -310,7 +310,7 @@ export default function RealTime() {
                 <CardTitle className="text-sm font-medium">Taxa de Conclusão</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold" style={{ color: '#2563eb' }}>
                   {realtimeData.metrics.totalJobs > 0
                     ? `${Math.round((realtimeData.metrics.closedJobs / realtimeData.metrics.totalJobs) * 100)}%`
                     : "0%"}
@@ -326,7 +326,7 @@ export default function RealTime() {
                 <CardTitle className="text-sm font-medium">Vagas em Andamento</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold" style={{ color: '#1e40af' }}>
                   {realtimeData.metrics.openJobs}
                 </div>
                 <p className="text-xs text-muted-foreground">

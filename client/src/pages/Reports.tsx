@@ -39,7 +39,7 @@ import {
   Cell,
 } from "recharts";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+const COLORS = ['#1e3a8a', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa'];
 
 const statusLabels: Record<string, string> = {
   active: "Ativa",
@@ -308,7 +308,7 @@ export default function Reports() {
                           labelLine={false}
                           label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                           outerRadius={80}
-                          fill="hsl(var(--primary))"
+                          fill="#2563eb"
                           dataKey="value"
                         >
                           {jobsByStatus?.map((entry: any, index: number) => (
@@ -339,7 +339,7 @@ export default function Reports() {
                         <Line 
                           type="monotone" 
                           dataKey="count" 
-                          stroke="hsl(var(--primary))" 
+                          stroke="#2563eb" 
                           strokeWidth={2}
                         />
                       </LineChart>

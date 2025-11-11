@@ -35,7 +35,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+const COLORS = ['#1e3a8a', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa'];
 
 export default function Performance() {
   const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
@@ -130,7 +130,7 @@ export default function Performance() {
                     <Line 
                       type="monotone" 
                       dataKey="count" 
-                      stroke="hsl(var(--primary))" 
+                      stroke="#2563eb" 
                       strokeWidth={2}
                       name="Candidaturas"
                     />
@@ -158,7 +158,7 @@ export default function Performance() {
                       labelLine={false}
                       label={({ status, percent }) => `${status} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="hsl(var(--primary))"
+                      fill="#2563eb"
                       dataKey="count"
                     >
                       {jobsByStatus?.map((entry: any, index: number) => (
@@ -185,17 +185,17 @@ export default function Performance() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Vagas preenchidas</span>
-                <span className="text-lg font-bold text-green-600">78%</span>
+                <span className="text-lg font-bold" style={{ color: '#1e40af' }}>78%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+                <div className="h-2 rounded-full" style={{ width: '78%', backgroundColor: '#1e40af' }}></div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Dentro do prazo</span>
-                <span className="text-lg font-bold text-blue-600">82%</span>
+                <span className="text-lg font-bold" style={{ color: '#2563eb' }}>82%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '82%' }}></div>
+                <div className="h-2 rounded-full" style={{ width: '82%', backgroundColor: '#2563eb' }}></div>
               </div>
             </CardContent>
           </Card>
@@ -209,7 +209,7 @@ export default function Performance() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">8.4</div>
+                <div className="text-3xl font-bold mb-2" style={{ color: '#2563eb' }}>8.4</div>
                 <p className="text-sm text-muted-foreground">Score médio de qualificação</p>
               </div>
               <div className="space-y-2">
@@ -240,19 +240,19 @@ export default function Performance() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Taxa de resposta</span>
-                  <span className="text-sm font-bold text-green-600">+15%</span>
+                  <span className="text-sm font-bold" style={{ color: '#1e40af' }}>+15%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Tempo de resposta</span>
-                  <span className="text-sm font-bold text-blue-600">2.3h</span>
+                  <span className="text-sm font-bold" style={{ color: '#2563eb' }}>2.3h</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Abandono no processo</span>
-                  <span className="text-sm font-bold text-orange-600">12%</span>
+                  <span className="text-sm font-bold" style={{ color: '#3b82f6' }}>12%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Net Promoter Score</span>
-                  <span className="text-sm font-bold text-primary">72</span>
+                  <span className="text-sm font-bold" style={{ color: '#2563eb' }}>72</span>
                 </div>
               </div>
             </CardContent>
