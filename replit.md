@@ -33,7 +33,7 @@ VagasPro is a job management system built with React and Express, designed to st
   - Field is disabled until a company is selected
 - **Database**: 2,593 cost centers imported from Senior r018ccu table across 12 companies
 
-### Profession/Position Integration ⭐ (LATEST)
+### Profession/Position Integration
 - **Objective**: Import profession/position data from Senior HCM r024car table into VagasPro
 - **Database Schema Extended**:
   - `seniorId` (varchar) - Código do cargo no Senior (codcar)
@@ -53,6 +53,34 @@ VagasPro is a job management system built with React and Express, designed to st
   - 1,200 total profession records
   - Fields: estcar, codcar, titcar, titred, codcbo/codcb2
   - Primary source for organizational job positions
+
+### Work Positions Integration ⭐ (LATEST)
+- **Objective**: Import work position data from Senior HCM r017pos table and integrate into job creation workflow
+- **Database Schema**: Extended `workPositions` table with Senior integration fields
+  - `seniorId` (varchar) - Senior position code (codpos)
+  - `seniorEstablishment` (varchar) - Senior establishment code (estpos)
+  - `seniorCompany` (varchar) - Senior company code (emppos)
+  - `seniorCostCenter` (varchar) - Senior cost center code (ccupos)
+  - `seniorLocal` (varchar) - Senior local code (locpos)
+  - `importedFromSenior` (boolean) - Tracks imported positions
+  - `lastSyncedAt` (timestamp) - Last synchronization timestamp
+- **Import Script**: `server/scripts/import-work-positions.ts`
+  - Queries Senior r017pos table for work position data
+  - Maps fields: nompos (name), abrpos (abbreviation), codpos (code)
+  - Duplicate prevention using composite key (establishment + company + cost center + local)
+- **Import Results**:
+  - **3,055 work positions successfully imported** from Senior database
+  - Examples: ANALISTA DE DP, ASSISTENTE DEPTO PESSOAL, TECNICO SEGURANCA TRABALHO
+- **Backend Implementation**:
+  - `GET /api/work-positions` endpoint - Returns all active work positions
+  - `getWorkPositions()` storage method - Retrieves filtered work positions list
+- **Frontend Integration** ✅:
+  - JobModal now dynamically loads work positions from API
+  - Replaced mock data with real database records
+  - Dropdown displays all 3,055 imported positions
+- **Senior Source Table**: r017pos
+  - Fields: estpos, emppos, ccupos, locpos, codpos, nompos, abrpos
+  - Linked to professions via r017car mapping table
 
 # User Preferences
 
