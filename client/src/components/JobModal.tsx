@@ -1088,6 +1088,31 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
                 <FormField
                   control={form.control}
+                  name="department"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Divisão</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-department">
+                            <SelectValue placeholder="Selecione uma divisão" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {divisions?.map((division) => (
+                            <SelectItem key={division.id} value={division.name}>
+                              {division.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="startDate"
                   render={({ field }) => (
                     <FormItem>
@@ -1221,31 +1246,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                           <SelectItem value="masculino">Masculino</SelectItem>
                           <SelectItem value="feminino">Feminino</SelectItem>
                           <SelectItem value="indiferente">Indiferente</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="department"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Divisão</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-department">
-                            <SelectValue placeholder="Selecione uma divisão" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {divisions?.map((division) => (
-                            <SelectItem key={division.id} value={division.name}>
-                              {division.name}
-                            </SelectItem>
-                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
