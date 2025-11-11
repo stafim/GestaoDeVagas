@@ -31,11 +31,12 @@ Preferred communication style: Simple, everyday language.
   - Ensures consistency between job divisions and workflow divisions
   - Division field positioned immediately after Client field in "Informações Básicas" section
   - **Workflow filtering**: Approval workflow dropdown shows only workflows matching the selected division
-  - **Cost Center filtering - STRICT MODE**: When division is selected, cost center dropdown shows ONLY cost centers that belong to that specific division (strict filtering)
+  - **Cost Center filtering - DIVISION-ONLY MODE**: When division is selected, cost center dropdown shows ONLY cost centers that belong to that specific division
+  - Cost center field is **enabled immediately** after division selection (no dependency on company)
   - Workflow field disabled until division is selected
-  - Cost center field enabled after company is selected
-  - Auto-clears workflow and cost center selections if division is changed to prevent mismatches
-  - Informative placeholders guide users through the cascading selection process
+  - Auto-clears cost center selection if division is changed to prevent mismatches
+  - Cost center list loads all centers once, filtered by division in the UI
+  - Informative placeholders and warnings guide users when no cost centers exist for selected division
 - **Use Case**:
   - Each workflow must be associated with a specific division
   - Each cost center can optionally be associated with a specific division

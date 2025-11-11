@@ -351,34 +351,26 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     enabled: !!selectedCompanyId && openingReason !== "substituicao",
   });
 
-  // Load cost centers when company is selected
+  // Load all cost centers once (filtered by division in the form)
   useEffect(() => {
     const loadCostCenters = async () => {
-      if (selectedCompanyId) {
-        try {
-          const response = await fetch(`/api/companies/${selectedCompanyId}/cost-centers`, {
-            credentials: 'include',
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setCostCenters(data);
-          } else {
-            setCostCenters([]);
-          }
-        } catch (error) {
-          console.error('Error loading cost centers:', error);
+      try {
+        const response = await fetch('/api/cost-centers', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCostCenters(data);
+        } else {
           setCostCenters([]);
         }
-      } else {
+      } catch (error) {
+        console.error('Error loading cost centers:', error);
         setCostCenters([]);
-        // Clear cost center selection when company changes
-        if (form.getValues('costCenterId')) {
-          form.setValue('costCenterId', undefined);
-        }
       }
     };
     loadCostCenters();
-  }, [selectedCompanyId, form]);
+  }, []); // Load once when component mounts
 
   // Clear cost center selection when division changes
   React.useEffect(() => {
@@ -931,25 +923,18 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   control={form.control}
                   name="costCenterId"
                   render={({ field }) => {
-                    const selectedCompanyId = form.watch("companyId");
                     const selectedDepartment = form.watch("department");
                     
                     // Find division ID by name
                     const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
                     
-                    // Filter cost centers by company and division
-                    // If division is selected, show ONLY cost centers of that division
-                    // If no division selected, show all cost centers of the company
-                    const filteredCostCenters = selectedCompanyId && selectedDivision
-                      ? costCenters.filter(cc => 
-                          cc.companyId === selectedCompanyId && 
-                          cc.divisionId === selectedDivision.id
-                        )
-                      : selectedCompanyId
-                        ? costCenters.filter(cc => cc.companyId === selectedCompanyId)
-                        : costCenters;
+                    // Filter cost centers ONLY by division
+                    // Show only cost centers that belong to the selected division
+                    const filteredCostCenters = selectedDivision
+                      ? costCenters.filter(cc => cc.divisionId === selectedDivision.id)
+                      : [];
 
-                    const isDisabled = !selectedCompanyId;
+                    const isDisabled = !selectedDepartment;
 
                     return (
                       <FormItem>
@@ -962,10 +947,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                           <FormControl>
                             <SelectTrigger data-testid="select-cost-center">
                               <SelectValue placeholder={
-                                !selectedCompanyId 
-                                  ? "Selecione primeiro uma empresa" 
+                                !selectedDepartment 
+                                  ? "Selecione primeiro uma divisão" 
                                   : filteredCostCenters.length === 0
-                                    ? "Nenhum centro de custo disponível"
+                                    ? "Nenhum centro de custo disponível para esta divisão"
                                     : "Selecione um centro de custo"
                               } />
                             </SelectTrigger>
@@ -979,14 +964,19 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                               ))
                             ) : (
                               <div className="py-6 text-center text-sm text-muted-foreground">
-                                Nenhum centro de custo disponível para esta empresa{selectedDepartment ? ' e divisão' : ''}
+                                Nenhum centro de custo disponível para a divisão {selectedDepartment}
                               </div>
                             )}
                           </SelectContent>
                         </Select>
                         {isDisabled && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            Selecione uma empresa para ver os centros de custo
+                            Selecione uma divisão para ver os centros de custo
+                          </p>
+                        )}
+                        {!isDisabled && filteredCostCenters.length === 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            ⚠️ Não há centros de custo cadastrados para a divisão {selectedDepartment}
                           </p>
                         )}
                         <FormMessage />
