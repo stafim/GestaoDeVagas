@@ -152,8 +152,7 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
 
   const deleteJobMutation = useMutation({
     mutationFn: async (reason: string) => {
-      const response = await apiRequest("DELETE", `/api/jobs/${jobId}`, { reason });
-      return response.json();
+      await apiRequest("DELETE", `/api/jobs/${jobId}`, { reason });
     },
     onSuccess: async () => {
       toast({
