@@ -22,6 +22,9 @@ import {
   CheckCircle
 } from "lucide-react";
 import logoImage from "@assets/Screenshot_20250930_142224_Chrome~2_1759253037075.jpg";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { User } from "@shared/schema";
 
 // Client navigation items
 const clientNavigationItems = [
@@ -132,18 +135,43 @@ const bottomNavItems = [
 ];
 
 export default function Sidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Get current user from API
-  const { data: currentUser } = useQuery({
+  const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/auth/user"],
   });
 
   // Get accessible menus for the current user
-  const { data: accessibleMenus } = useQuery({
+  const { data: accessibleMenus } = useQuery<string[]>({
     queryKey: ["/api/permissions/menu", currentUser?.id, "accessible"],
     enabled: !!currentUser?.id,
   });
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/auth/logout", {});
+      
+      // Clear all queries
+      await queryClient.invalidateQueries();
+      queryClient.clear();
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      
+      // Redirect to login page
+      setLocation("/login-demo");
+    } catch (error) {
+      toast({
+        title: "Erro ao fazer logout",
+        description: "Ocorreu um erro ao tentar sair do sistema.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Filter navigation items based on user permissions
   // null = no permissions configured (show all menus by default)
@@ -346,14 +374,14 @@ export default function Sidebar() {
                 </p>
               </div>
             </div>
-            <a
-              href="/api/logout"
-              className="text-muted-foreground hover:text-foreground p-2 rounded-lg hover:bg-accent transition-colors"
+            <button
+              onClick={handleLogout}
+              className="text-muted-foreground hover:text-foreground p-2 rounded-lg hover:bg-accent transition-colors cursor-pointer"
               data-testid="button-logout"
               title="Sair do sistema"
             >
               <LogOut className="h-4 w-4" />
-            </a>
+            </button>
           </div>
         </div>
       </div>
