@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -130,6 +130,13 @@ interface JobModalProps {
   initialClientId?: string;
 }
 
+type CostCenter = {
+  id: string;
+  name: string;
+  code: string;
+  companyId: string | null;
+};
+
 export default function JobModal({ isOpen, onClose, jobId, initialClientId }: JobModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -141,6 +148,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientHasNoPositions, setClientHasNoPositions] = useState(false);
   const [userAwareOfIrregularity, setUserAwareOfIrregularity] = useState(false);
+  const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
 
   // Função para obter a data de hoje no formato YYYY-MM-DD
   const getTodayDate = () => {
@@ -164,17 +172,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
   const { data: companies } = useQuery<CompaniesListResponse>({
     queryKey: ["/api/companies"],
-  });
-
-  type CostCenter = {
-    id: string;
-    name: string;
-    code: string;
-    companyId: string | null;
-  };
-
-  const { data: costCenters = [] } = useQuery<CostCenter[]>({
-    queryKey: ["/api/cost-centers"],
   });
 
   const { data: professions } = useQuery<Profession[]>({
@@ -331,6 +328,35 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     queryKey: ["/api/companies", selectedCompanyId, "employees"],
     enabled: !!selectedCompanyId,
   });
+
+  // Load cost centers when company is selected
+  useEffect(() => {
+    const loadCostCenters = async () => {
+      if (selectedCompanyId) {
+        try {
+          const response = await fetch(`/api/companies/${selectedCompanyId}/cost-centers`, {
+            credentials: 'include',
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setCostCenters(data);
+          } else {
+            setCostCenters([]);
+          }
+        } catch (error) {
+          console.error('Error loading cost centers:', error);
+          setCostCenters([]);
+        }
+      } else {
+        setCostCenters([]);
+        // Clear cost center selection when company changes
+        if (form.getValues('costCenterId')) {
+          form.setValue('costCenterId', undefined);
+        }
+      }
+    };
+    loadCostCenters();
+  }, [selectedCompanyId, form]);
 
   // Fetch selected client data and its employees
   const { data: selectedClient } = useQuery<any>({
