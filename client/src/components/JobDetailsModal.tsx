@@ -173,13 +173,16 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
       setDeleteReason("");
       onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error deleting job:", error);
+      const errorMessage = error?.message || "Falha ao excluir a vaga";
       toast({
-        title: "Erro",
-        description: "Falha ao excluir a vaga",
+        title: "Erro ao Excluir",
+        description: errorMessage,
         variant: "destructive",
       });
+      setShowDeleteDialog(false);
+      setDeleteReason("");
     }
   });
 
