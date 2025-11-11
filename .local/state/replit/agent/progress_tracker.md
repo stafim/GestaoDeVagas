@@ -129,3 +129,10 @@
 [x] 4. Atualizar DEMO_USER com organizationId correto (a6b0e84d-df56-45ab-810b-310f100cd760)
 [x] 5. Reiniciar aplicação para aplicar mudanças
 [x] 6. Confirmar que configuração da Senior HCM agora funciona
+
+## Restrição de Acesso: Funções Master Admin
+[x] 1. Identificar requisito: apenas Master Admin acessa Organizações, Planos e Financeiro
+[x] 2. Verificar estrutura do schema: organizationId === null = Master Admin
+[x] 3. Modificar Sidebar para adicionar verificação isMasterAdmin
+[x] 4. Implementar filtro: apenas usuários com organizationId === null veem itens admin
+[x] 5. Testar: usuário atual (com organizationId) não verá itens administrativos

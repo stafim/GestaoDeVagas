@@ -187,7 +187,10 @@ export default function Sidebar() {
     return (accessibleMenus as string[]).includes(item.href);
   });
 
-  const filteredAdminNavigationItems = adminNavigationItems.filter(item => {
+  // Admin items are only visible to Master Admins (users without organizationId)
+  const isMasterAdmin = currentUser?.organizationId === null;
+  
+  const filteredAdminNavigationItems = isMasterAdmin ? adminNavigationItems.filter(item => {
     if (accessibleMenus === null || accessibleMenus === undefined) {
       return true; // No permissions configured, show all menus
     }
@@ -195,7 +198,7 @@ export default function Sidebar() {
       return false; // Permissions configured but user has no access
     }
     return (accessibleMenus as string[]).includes(item.href);
-  });
+  }) : [];
 
   const filteredBottomNavItems = bottomNavItems.filter(item => {
     if (accessibleMenus === null || accessibleMenus === undefined) {
