@@ -31,7 +31,28 @@ VagasPro is a job management system built with React and Express, designed to st
   - Automatically filters cost centers based on selected company
   - Displays cost centers in format: "CODE - Name" (e.g., "ADM001 - Administrativo")
   - Field is disabled until a company is selected
-- **Database**: 7 sample cost centers created across 3 companies for testing
+- **Database**: 2,593 cost centers imported from Senior r018ccu table across 12 companies
+
+### Profession/Position Integration ⭐ (LATEST)
+- **Objective**: Import profession/position data from Senior HCM r024car table into VagasPro
+- **Database Schema Extended**:
+  - `seniorId` (varchar) - Código do cargo no Senior (codcar)
+  - `seniorEstablishment` (varchar) - Estabelecimento no Senior (estcar)
+  - `importedFromSenior` (boolean) - Tracks imported professions
+  - `lastSyncedAt` (timestamp) - Last synchronization timestamp
+  - `cboCode` (varchar) - Código CBO oficial (Classificação Brasileira de Ocupações)
+- **Import Script**: `server/scripts/import-professions.ts`
+  - Queries Senior r024car table for profession data
+  - Maps fields: titcar (full name), titred (description), codcbo/codcb2 (CBO code)
+  - Duplicate prevention using seniorEstablishment + seniorId composite key
+- **Import Results**:
+  - **923 professions successfully imported** from 1,200 records in Senior
+  - 277 skipped due to duplicate names (unique constraint)
+  - Examples: AUXILIAR DE PRODUCAO (CBO 784205), TECNICO SEGURANCA DO TRABALHO (CBO 351605), BORRACHEIRO (CBO 992115)
+- **Senior Source Table**: r024car
+  - 1,200 total profession records
+  - Fields: estcar, codcar, titcar, titred, codcbo/codcb2
+  - Primary source for organizational job positions
 
 # User Preferences
 
