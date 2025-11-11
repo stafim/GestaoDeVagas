@@ -12,19 +12,21 @@ Preferred communication style: Simple, everyday language.
 - **Database Structure**:
   - **divisions table**: Stores organizational divisions from Senior (code, name, isActive)
   - **7 divisions imported**: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
-  - **approvalWorkflows.divisionId**: Optional foreign key to divisions table
+  - **approvalWorkflows.divisionId**: Required foreign key to divisions table (NOT NULL)
 - **Backend Implementation**:
   - Import script: `server/scripts/import-divisions.ts` syncs divisions from Senior's `usu_tdivare` table
   - API endpoint: `GET /api/divisions` returns all active divisions
   - Storage method: `getDivisions()` queries divisions ordered by name
 - **Frontend Features**:
-  - Division selector in workflow creation form (optional field)
-  - Dropdown options: "Todas as divisões" (blank) or specific division (FACILITIES, ENGENHARIA, etc)
-  - Description: "Associe este workflow a uma divisão específica"
+  - Division selector in workflow creation form (required field)
+  - Dropdown with 7 divisions: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
+  - Validation: User must select a division before creating workflow
+  - Description: "Este workflow será aplicado apenas para vagas desta divisão"
 - **Use Case**:
-  - Create approval workflows for all divisions (leave blank)
+  - Each workflow must be associated with a specific division
   - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
   - Enables customized approval processes per organizational area
+  - To cover all divisions, create separate workflows for each
 
 ### Dashboard Charts - Work Positions & Cost Centers
 - **New Charts Added**:

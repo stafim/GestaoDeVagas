@@ -457,7 +457,7 @@ export const approvalWorkflows = pgTable("approval_workflows", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull(), // Nome do workflow (ex: "Aprovação Dupla Alçada")
   description: text("description"), // Descrição do workflow
-  divisionId: varchar("division_id").references(() => divisions.id), // Divisão associada (opcional)
+  divisionId: varchar("division_id").references(() => divisions.id).notNull(), // Divisão associada (obrigatória)
   isActive: boolean("is_active").default(true), // Se o workflow está ativo
   isDefault: boolean("is_default").default(false), // Se é o workflow padrão para novas vagas
   createdAt: timestamp("created_at").defaultNow(),

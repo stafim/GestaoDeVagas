@@ -46,7 +46,7 @@ const workflowStepSchema = z.object({
 const createWorkflowSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   description: z.string().optional(),
-  divisionId: z.string().optional(), // Divisão opcional
+  divisionId: z.string().min(1, "Divisão é obrigatória"), // Divisão obrigatória
   isActive: z.boolean().default(true),
   isDefault: z.boolean().default(false),
   steps: z.array(workflowStepSchema).min(1, "Adicione pelo menos uma etapa de aprovação"),
@@ -514,11 +514,11 @@ export default function Workflow() {
                   name="divisionId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Divisão (Opcional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || undefined}>
+                      <FormLabel>Divisão</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-division">
-                            <SelectValue placeholder="Todas as divisões (deixe em branco)" />
+                            <SelectValue placeholder="Selecione a divisão" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -530,7 +530,7 @@ export default function Workflow() {
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        Deixe em branco para aplicar a todas as divisões, ou selecione uma específica (ADMINISTRATIVO, FACILITIES, etc)
+                        Este workflow será aplicado apenas para vagas desta divisão
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
