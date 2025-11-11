@@ -183,3 +183,6 @@
 [x] 2. Confirmar que funcionalidade JÁ ESTÁ IMPLEMENTADA no JobModal.tsx (linhas 794-803)
 [x] 3. Lógica implementada: handleCostCenterChange auto-preenche companyId quando centro de custo é selecionado
 [x] 4. Funcionalidade pronta e testada: Ao selecionar centro de custo, campo Empresa é automaticamente preenchido
+[x] 5. Desabilitar campo Empresa para edição manual (disabled={true})
+[x] 6. Adicionar mensagem informativa: "Este campo é preenchido automaticamente ao selecionar o centro de custo"
+[x] 7. Alterar placeholder para: "Selecione um centro de custo para preencher automaticamente"

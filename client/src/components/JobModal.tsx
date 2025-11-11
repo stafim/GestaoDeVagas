@@ -863,10 +863,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Empresa</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} disabled>
                         <FormControl>
                           <SelectTrigger data-testid="select-company">
-                            <SelectValue placeholder="Selecione uma empresa" />
+                            <SelectValue placeholder="Selecione um centro de custo para preencher automaticamente" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -877,6 +877,9 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                           ))}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Este campo é preenchido automaticamente ao selecionar o centro de custo
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
