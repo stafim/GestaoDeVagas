@@ -93,6 +93,7 @@ export default function Dashboard() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
   const [selectedRecruiters, setSelectedRecruiters] = useState<string[]>([]);
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
   
   // Gerar lista dos últimos 12 meses
   const getMonthOptions = () => {
@@ -123,13 +124,14 @@ export default function Dashboard() {
   });
 
   const { data: metrics, isLoading: metricsLoading} = useQuery<DashboardMetrics>({
-    queryKey: ["/api/dashboard/metrics", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/metrics", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/metrics?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch metrics');
       return await res.json();
@@ -137,13 +139,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsByStatus, isLoading: jobsByStatusLoading } = useQuery<JobsByStatusResponse>({
-    queryKey: ["/api/dashboard/jobs-by-status", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-by-status", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-by-status?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by status');
       return await res.json();
@@ -159,13 +162,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsByCreator, isLoading: jobsByCreatorLoading } = useQuery<JobsByCreatorResponse>({
-    queryKey: ["/api/dashboard/jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-by-creator?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by creator');
       return await res.json();
@@ -173,13 +177,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsByCompany, isLoading: jobsByCompanyLoading } = useQuery<JobsByCompanyResponse>({
-    queryKey: ["/api/dashboard/jobs-by-company", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-by-company", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-by-company?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by company');
       return await res.json();
@@ -187,13 +192,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsByClient, isLoading: jobsByClientLoading } = useQuery<Array<{ clientId: string; clientName: string; count: number }>>({
-    queryKey: ["/api/dashboard/jobs-by-client", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-by-client", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-by-client?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by client');
       return await res.json();
@@ -201,13 +207,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsSLA, isLoading: jobsSLALoading } = useQuery<JobsSLAResponse>({
-    queryKey: ["/api/dashboard/jobs-sla", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-sla", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-sla?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs SLA');
       return await res.json();
@@ -215,13 +222,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsProductivity, isLoading: jobsProductivityLoading } = useQuery<{ productive: number; unproductive: number }>({
-    queryKey: ["/api/dashboard/jobs-productivity", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-productivity", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-productivity?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs productivity');
       return await res.json();
@@ -229,13 +237,14 @@ export default function Dashboard() {
   });
 
   const { data: allJobsByCreator, isLoading: allJobsByCreatorLoading } = useQuery<JobsByCreatorResponse>({
-    queryKey: ["/api/dashboard/all-jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/all-jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/all-jobs-by-creator?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch all jobs by creator');
       return await res.json();
@@ -243,13 +252,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsByWorkPosition, isLoading: jobsByWorkPositionLoading } = useQuery<JobsByWorkPositionResponse>({
-    queryKey: ["/api/dashboard/jobs-by-work-position", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-by-work-position", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-by-work-position?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by work position');
       return await res.json();
@@ -257,13 +267,14 @@ export default function Dashboard() {
   });
 
   const { data: jobsByCostCenter, isLoading: jobsByCostCenterLoading } = useQuery<JobsByCostCenterResponse>({
-    queryKey: ["/api/dashboard/jobs-by-cost-center", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryKey: ["/api/dashboard/jobs-by-cost-center", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
       selectedCompanies.forEach(company => params.append("companyId", company));
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      selectedJobTypes.forEach(type => params.append("jobType", type));
       const res = await fetch(`/api/dashboard/jobs-by-cost-center?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by cost center');
       return await res.json();
@@ -599,6 +610,83 @@ export default function Dashboard() {
                           </div>
                         );
                       })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Filtro por Tipo de Vaga */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Briefcase className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">Tipo de Vaga</h3>
+                    <p className="text-xs text-muted-foreground">Produtivas ou Improdutivas</p>
+                  </div>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-[240px] justify-between"
+                      data-testid="select-job-type-filter"
+                    >
+                      <span className="truncate">
+                        {selectedJobTypes.length === 0
+                          ? "Todos os tipos"
+                          : selectedJobTypes.length === 1
+                          ? selectedJobTypes[0] === "produtiva"
+                            ? "Produtivas"
+                            : "Improdutivas"
+                          : "Ambos"}
+                      </span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[240px] p-0" align="end">
+                    <div className="flex items-center justify-between border-b px-3 py-2">
+                      <span className="text-sm font-medium">Tipo de Vaga</span>
+                      {selectedJobTypes.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setSelectedJobTypes([])}
+                        >
+                          Limpar
+                        </Button>
+                      )}
+                    </div>
+                    <div className="max-h-64 overflow-y-auto p-2">
+                      {[
+                        { value: "produtiva", label: "Produtivas" },
+                        { value: "improdutiva", label: "Improdutivas" }
+                      ].map((type) => (
+                        <div
+                          key={type.value}
+                          className="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer"
+                          onClick={() => {
+                            setSelectedJobTypes((prev) =>
+                              prev.includes(type.value)
+                                ? prev.filter((t) => t !== type.value)
+                                : [...prev, type.value]
+                            );
+                          }}
+                        >
+                          <Checkbox
+                            checked={selectedJobTypes.includes(type.value)}
+                            onCheckedChange={(checked) => {
+                              setSelectedJobTypes((prev) =>
+                                checked
+                                  ? [...prev, type.value]
+                                  : prev.filter((t) => t !== type.value)
+                              );
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <span className="text-sm">{type.label}</span>
+                        </div>
+                      ))}
                     </div>
                   </PopoverContent>
                 </Popover>

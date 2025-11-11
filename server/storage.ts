@@ -314,7 +314,7 @@ export interface IStorage {
   advanceApplicationStage(applicationId: string, stageId: string, score: number, feedback?: string): Promise<void>;
   
   // Analytics operations
-  getDashboardMetrics(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<{
+  getDashboardMetrics(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<{
     totalJobs: number;
     activeJobs: number;
     closedJobs: number;
@@ -323,15 +323,15 @@ export interface IStorage {
     openJobsCurrentMonth: number;
   }>;
   
-  getJobsByStatus(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ status: string; count: number }>>;
+  getJobsByStatus(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ status: string; count: number }>>;
   getApplicationsByMonth(): Promise<Array<{ month: string; count: number }>>;
   getOpenJobsByMonth(): Promise<Array<{ month: string; count: number }>>;
-  getJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>>;
-  getAllJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>>;
-  getJobsByCompany(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ companyId: string; companyName: string; count: number }>>;
-  getJobsByClient(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ clientId: string; clientName: string; count: number }>>;
-  getJobsSLA(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<{ withinSLA: number; outsideSLA: number }>;
-  getJobsProductivity(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<{ productive: number; unproductive: number }>;
+  getJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>>;
+  getAllJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>>;
+  getJobsByCompany(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ companyId: string; companyName: string; count: number }>>;
+  getJobsByClient(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ clientId: string; clientName: string; count: number }>>;
+  getJobsSLA(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<{ withinSLA: number; outsideSLA: number }>;
+  getJobsProductivity(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<{ productive: number; unproductive: number }>;
   getJobsStatusSummary(month?: string): Promise<Array<{ status: string; count: number }>>;
   
   // Selection process analytics
@@ -1864,7 +1864,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Analytics operations
-  async getDashboardMetrics(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<{
+  async getDashboardMetrics(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<{
     totalJobs: number;
     activeJobs: number;
     closedJobs: number;
@@ -1884,6 +1884,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
 
     let totalJobsQuery = db.select({ count: count() }).from(jobs);
@@ -1940,7 +1943,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getJobsByStatus(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ status: string; count: number }>> {
+  async getJobsByStatus(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ status: string; count: number }>> {
     const conditions = [];
     if (months && months.length > 0) {
       conditions.push(inArray(sql`TO_CHAR(${jobs.createdAt}, 'YYYY-MM')`, months));
@@ -1953,6 +1956,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
 
     let query = db
@@ -1999,7 +2005,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(sql`TO_CHAR(${jobs.createdAt}, 'YYYY-MM')`);
   }
 
-  async getJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>> {
+  async getJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>> {
     const conditions = [eq(jobs.status, '6c1a97ba-cfcc-463e-82bc-01f8e0aa6be1')];
     
     if (months && months.length > 0) {
@@ -2013,6 +2019,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const result = await db
@@ -2034,7 +2043,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getAllJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>> {
+  async getAllJobsByCreator(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ creatorId: string; creatorName: string; count: number }>> {
     const conditions = [];
     
     if (months && months.length > 0) {
@@ -2048,6 +2057,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const result = await db
@@ -2069,7 +2081,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getJobsByCompany(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ companyId: string; companyName: string; companyColor: string; count: number }>> {
+  async getJobsByCompany(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ companyId: string; companyName: string; companyColor: string; count: number }>> {
     // Exclude completed and canceled jobs (only show open jobs)
     const conditions = [
       sql`${jobs.status} NOT IN ('6ef1106a-a027-4424-9e10-63d6f9f2910c', '17ea0666-f253-415d-8a0c-0be57295c209')`
@@ -2086,6 +2098,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const result = await db
@@ -2109,7 +2124,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getJobsByWorkPosition(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ workPosition: string; count: number }>> {
+  async getJobsByWorkPosition(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ workPosition: string; count: number }>> {
     const conditions = [
       sql`${jobs.status} NOT IN ('6ef1106a-a027-4424-9e10-63d6f9f2910c', '17ea0666-f253-415d-8a0c-0be57295c209')`,
       isNotNull(jobs.workPosition)
@@ -2126,6 +2141,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const result = await db
@@ -2145,7 +2163,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getJobsByCostCenter(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ costCenterId: string; costCenterName: string; count: number }>> {
+  async getJobsByCostCenter(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ costCenterId: string; costCenterName: string; count: number }>> {
     const conditions = [
       sql`${jobs.status} NOT IN ('6ef1106a-a027-4424-9e10-63d6f9f2910c', '17ea0666-f253-415d-8a0c-0be57295c209')`,
       isNotNull(jobs.costCenterId)
@@ -2162,6 +2180,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const result = await db
@@ -2184,7 +2205,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getJobsByClient(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ clientId: string; clientName: string; count: number }>> {
+  async getJobsByClient(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<Array<{ clientId: string; clientName: string; count: number }>> {
     const conditions: any[] = [sql`${jobs.clientId} IS NOT NULL`];
     
     if (months && months.length > 0) {
@@ -2198,6 +2219,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const result = await db
@@ -2219,7 +2243,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getJobsSLA(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<{ withinSLA: number; outsideSLA: number }> {
+  async getJobsSLA(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<{ withinSLA: number; outsideSLA: number }> {
     const now = new Date();
     
     const conditions: any[] = [sql`${jobs.slaDeadline} IS NOT NULL`];
@@ -2234,6 +2258,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const query = db
@@ -2262,7 +2289,7 @@ export class DatabaseStorage implements IStorage {
     return { withinSLA, outsideSLA };
   }
 
-  async getJobsProductivity(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<{ productive: number; unproductive: number }> {
+  async getJobsProductivity(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[], jobTypes?: string[]): Promise<{ productive: number; unproductive: number }> {
     const conditions: any[] = [];
     if (months && months.length > 0) {
       conditions.push(inArray(sql`TO_CHAR(${jobs.createdAt}, 'YYYY-MM')`, months));
@@ -2275,6 +2302,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (recruiterIds && recruiterIds.length > 0) {
       conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    if (jobTypes && jobTypes.length > 0) {
+      conditions.push(inArray(jobs.jobType, jobTypes));
     }
     
     const query = db

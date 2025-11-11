@@ -45,6 +45,7 @@ Preferred communication style: Simple, everyday language.
 - **Dashboard Charts**: Includes charts for "Vagas por Posto de Trabalho" and "Vagas por Centro de Custos" with filtering capabilities.
 - **ClientModal Employee List Enhancements**: Adds status filter and a 100-item limit with a results counter for employee lists.
 - **Employee Replacement Field**: Simplified to a free-text input for direct entry of employee names to be replaced.
+- **Job Type Filter**: Dashboard filtering by job type (Produtiva/Improdutiva) across all metrics and charts, with backend support for jobType parameter in all dashboard endpoints.
 
 # External Dependencies
 
