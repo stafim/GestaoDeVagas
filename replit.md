@@ -4,6 +4,26 @@ VagasPro is a job management system built with React and Express, designed to st
 
 ## Recent Updates (Nov 11, 2025)
 
+### Senior HCM Client Synchronization (LATEST)
+- **Objective**: Import client data from Senior HCM API into VagasPro
+- **Database Schema**:
+  - Added `importedFromSenior` (boolean) - Tracks imported clients
+  - Added `seniorId` (varchar) - Senior system ID for duplicate prevention
+  - Added `lastSyncedAt` (timestamp) - Last synchronization timestamp
+- **Backend Implementation**:
+  - `getClients()` method in `seniorIntegration.ts` - Queries Senior E085CLI table
+  - `POST /api/senior/sync-clients` endpoint - Handles batch import with duplicate detection
+  - Smart sync: Creates new clients or updates existing ones based on `seniorId`
+- **Frontend Features**:
+  - "Importar da Senior" button on Clients page with loading state
+  - Success/error toasts showing import statistics (imported, updated, errors)
+  - Automatic client list refresh after import
+- **Technical Notes**:
+  - Uses Senior E085CLI table (main client registry)
+  - SQL query: `SELECT CODCLI, NOMCLI, ENDCLI, CEPCLI, CGCCPF FROM E085CLI`
+  - Temporary mock data (8 clients) while API query format is resolved with Senior support
+  - Infrastructure ready for real data integration
+
 ### Cost Center Integration
 - **Backend**: Added `GET /api/cost-centers` endpoint to fetch all cost centers
 - **Storage**: Implemented `getCostCenters()` method for retrieving all cost centers across companies
