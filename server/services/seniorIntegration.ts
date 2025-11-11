@@ -192,6 +192,127 @@ export class SeniorIntegrationService {
   }
 
   /**
+   * Busca clientes cadastrados na Senior
+   * NOTA: Por enquanto retorna dados de exemplo, pois a API Senior está
+   * rejeitando queries SQL com erro "Somente SELECT é permitido".
+   * Quando a API for corrigida, substituir por query real.
+   */
+  async getClients(): Promise<Array<{
+    seniorId: string;
+    name: string;
+    contactPerson?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+  }>> {
+    // TODO: Quando a API Senior permitir queries SQL, substituir por:
+    // const query = `
+    //   SELECT 
+    //     CodCli as seniorId,
+    //     NomCli as name,
+    //     ConCli as contactPerson,
+    //     TelCli as phone,
+    //     EmlCli as email,
+    //     EndCli as address,
+    //     CidCli as city,
+    //     EstCli as state
+    //   FROM [sua_tabela_de_clientes]
+    //   WHERE SitCli = 'A'  -- Apenas clientes ativos
+    //   ORDER BY NomCli
+    // `;
+    // return this.executeQuery(query);
+
+    // DADOS DE EXEMPLO - Simula clientes vindos da Senior
+    // Remover quando a API Senior estiver funcionando
+    console.warn('⚠️ Usando dados de exemplo de clientes - API Senior não permite queries SQL');
+    
+    return [
+      {
+        seniorId: 'CLI001',
+        name: 'Indústria ABC Ltda',
+        contactPerson: 'Carlos Silva',
+        phone: '(11) 3456-7890',
+        email: 'contato@industriaabc.com.br',
+        address: 'Av. Industrial, 1000',
+        city: 'São Paulo',
+        state: 'SP',
+      },
+      {
+        seniorId: 'CLI002',
+        name: 'Comércio XYZ S.A.',
+        contactPerson: 'Maria Santos',
+        phone: '(11) 2345-6789',
+        email: 'comercial@comercioxyz.com.br',
+        address: 'Rua das Flores, 500',
+        city: 'São Paulo',
+        state: 'SP',
+      },
+      {
+        seniorId: 'CLI003',
+        name: 'Serviços TechPro Ltda',
+        contactPerson: 'João Oliveira',
+        phone: '(21) 3333-4444',
+        email: 'contato@techpro.com.br',
+        address: 'Av. Atlântica, 2500',
+        city: 'Rio de Janeiro',
+        state: 'RJ',
+      },
+      {
+        seniorId: 'CLI004',
+        name: 'Construtora Forte S.A.',
+        contactPerson: 'Ana Paula Costa',
+        phone: '(31) 2222-3333',
+        email: 'obras@construtoraforte.com.br',
+        address: 'Rua das Acácias, 850',
+        city: 'Belo Horizonte',
+        state: 'MG',
+      },
+      {
+        seniorId: 'CLI005',
+        name: 'Logística Express Ltda',
+        contactPerson: 'Pedro Martins',
+        phone: '(41) 4444-5555',
+        email: 'operacoes@logisticaexpress.com.br',
+        address: 'Rodovia BR-101, Km 250',
+        city: 'Curitiba',
+        state: 'PR',
+      },
+      {
+        seniorId: 'CLI006',
+        name: 'Alimentos Sabor Ltda',
+        contactPerson: 'Fernanda Lima',
+        phone: '(51) 5555-6666',
+        email: 'comercial@alimentossabor.com.br',
+        address: 'Av. dos Estados, 3200',
+        city: 'Porto Alegre',
+        state: 'RS',
+      },
+      {
+        seniorId: 'CLI007',
+        name: 'Tecnologia Digital S.A.',
+        contactPerson: 'Ricardo Souza',
+        phone: '(85) 6666-7777',
+        email: 'ti@tecdigital.com.br',
+        address: 'Rua da Inovação, 100',
+        city: 'Fortaleza',
+        state: 'CE',
+      },
+      {
+        seniorId: 'CLI008',
+        name: 'Moda Fashion Ltda',
+        contactPerson: 'Juliana Rocha',
+        phone: '(71) 7777-8888',
+        email: 'vendas@modafashion.com.br',
+        address: 'Shopping Center, Loja 205',
+        city: 'Salvador',
+        state: 'BA',
+      },
+    ];
+  }
+
+  /**
    * Trata erros da API Senior
    */
   private handleError(error: unknown, message: string): void {
