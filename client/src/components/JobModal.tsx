@@ -108,7 +108,7 @@ const jobFormSchema = z.object({
   hasChartered: z.boolean().default(false),
   
   kanbanBoardId: z.string().optional(),
-  approvalWorkflowId: z.string().optional(),
+  approvalWorkflowId: z.string().min(1, "Workflow de aprovação é obrigatório"),
 }).refine((data) => {
   // Se o motivo for substituição, a quantidade deve ser 1
   if (data.openingReason === "substituicao") {
@@ -818,11 +818,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
                     return (
                       <FormItem>
-                        <FormLabel>Workflow de Aprovação</FormLabel>
+                        <FormLabel>Workflow de Aprovação *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-approval-workflow">
-                              <SelectValue placeholder="Selecione o workflow (opcional)" />
+                              <SelectValue placeholder="Selecione o workflow de aprovação" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
