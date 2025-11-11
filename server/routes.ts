@@ -659,13 +659,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Integration routes
   app.get('/api/senior-integration/settings', isAuthenticated, async (req, res) => {
     try {
-      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
       
-      if (!organizationId) {
+      if (!user || !user.organizationId) {
         return res.status(400).json({ message: "Organization ID not found" });
       }
 
-      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
       
       // Mask the API key for security
       if (settings && settings.apiKey) {
@@ -681,9 +682,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/senior-integration/settings', isAuthenticated, async (req, res) => {
     try {
-      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
       
-      if (!organizationId) {
+      if (!user || !user.organizationId) {
         return res.status(400).json({ message: "Organization ID not found" });
       }
 
@@ -693,7 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API URL and API Key are required" });
       }
 
-      const settings = await storage.createOrUpdateSeniorIntegrationSettings(organizationId, {
+      const settings = await storage.createOrUpdateSeniorIntegrationSettings(user.organizationId, {
         apiUrl,
         apiKey,
         isActive: isActive ?? true,
@@ -715,13 +717,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/senior-integration/test-connection', isAuthenticated, async (req, res) => {
     try {
-      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
       
-      if (!organizationId) {
+      if (!user || !user.organizationId) {
         return res.status(400).json({ message: "Organization ID not found" });
       }
 
-      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
       
       if (!settings || !settings.isActive) {
         return res.status(400).json({ 
@@ -795,13 +798,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/senior-integration/sync', isAuthenticated, async (req, res) => {
     try {
-      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
       
-      if (!organizationId) {
+      if (!user || !user.organizationId) {
         return res.status(400).json({ message: "Organization ID not found" });
       }
 
-      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
       
       if (!settings || !settings.isActive) {
         return res.status(400).json({ 
@@ -831,7 +835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update last sync info
       await storage.updateSeniorIntegrationSyncStatus(
-        organizationId, 
+        user.organizationId, 
         'success', 
         `Sincronizados ${employeesCount} colaboradores`,
         null
@@ -849,14 +853,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       
       // Update last sync with error
-      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
-      if (organizationId) {
-        await storage.updateSeniorIntegrationSyncStatus(
-          organizationId, 
-          'error', 
-          null,
-          errorMessage
-        );
+      try {
+        const userId = req.user?.id || (req.session as any).user?.id;
+        const user = await storage.getUser(userId);
+        if (user?.organizationId) {
+          await storage.updateSeniorIntegrationSyncStatus(
+            user.organizationId, 
+            'error', 
+            null,
+            errorMessage
+          );
+        }
+      } catch (updateError) {
+        console.error("Error updating sync status:", updateError);
       }
 
       res.json({
@@ -868,13 +877,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/senior-integration/query', isAuthenticated, async (req, res) => {
     try {
-      const organizationId = req.user?.organizationId || (req.session as any).user?.organizationId;
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
       
-      if (!organizationId) {
+      if (!user || !user.organizationId) {
         return res.status(400).json({ message: "Organization ID not found" });
       }
 
-      const settings = await storage.getSeniorIntegrationSettings(organizationId);
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
       
       if (!settings || !settings.isActive) {
         return res.status(400).json({ 
