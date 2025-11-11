@@ -1045,7 +1045,7 @@ export const insertJobSchema = z.object({
   contractType: z.enum(["clt", "pj", "freelancer", "estagio", "temporario"]).default("clt"),
   jobType: z.enum(["produtiva", "improdutiva"]).optional(),
   salaryMin: z.string().optional(),
-  status: z.enum(["draft", "active", "paused", "closed", "expired", "aberto", "aprovada", "em_recrutamento", "em_documentacao"]).default("draft"),
+  status: z.string().optional(),
   createdBy: z.string().optional(),
   expiresAt: z.string().optional(),
   slaDeadline: z.string().optional(),
