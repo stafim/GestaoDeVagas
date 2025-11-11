@@ -144,3 +144,11 @@
 [x] 4. Atualizar DEMO_USER para usar dados de Ricardo Stafim
 [x] 5. Reiniciar aplicação e confirmar via logs que está usando usuário correto
 [x] 6. Usuário logado agora: Ricardo Stafim na organização "Grupo OPUS"
+
+## Criação de Dados Básicos: Divisões, Profissões e Centros de Custo
+[x] 1. Identificar problema: API retornando arrays vazios para divisões, profissões e centros de custo
+[x] 2. Verificar estrutura das tabelas no schema
+[x] 3. Criar 5 divisões: Administrativo, Operacional, Comercial, Tecnologia, RH
+[x] 4. Criar 10 profissões com categorias e códigos CBO
+[x] 5. Criar 10 centros de custo associados às divisões
+[x] 6. Confirmar dados no banco de dados (5 divisões, 10 profissões, 10 centros de custo)
