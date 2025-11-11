@@ -228,12 +228,18 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     label: string;
     variant: "default" | "secondary" | "destructive" | "outline";
     displayOrder: number;
+    isDefault?: boolean;
     isActive: boolean;
   };
 
   const { data: jobStatuses = [] } = useQuery<JobStatus[]>({
     queryKey: ["/api/job-statuses"],
   });
+
+  // Get default job status
+  const defaultJobStatus = jobStatuses.find(status => status.isDefault) || jobStatuses.find(status => status.key === "aberto");
+  const defaultStatusKey = defaultJobStatus?.key || "aberto";
+  const defaultStatusLabel = defaultJobStatus?.label || "ABERTO";
 
   // Fetch job creation quota policy
   type SystemSetting = {
@@ -268,7 +274,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
       location: "",
       workPosition: "",
       costCenterDescription: "",
-      status: "aberto",
+      status: defaultStatusKey,
       vacancyQuantity: "1",
       unhealthinessLevel: "nao",
       hasHazardPay: false,
@@ -311,7 +317,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
         workPosition: jobData.workPosition || "",
         contractType: jobData.contractType || "clt",
         jobType: jobData.jobType || undefined,
-        status: jobData.status || "aberto",
+        status: jobData.status || defaultStatusKey,
         salaryMin: jobData.salaryMin || "",
         openingDate: jobData.openingDate ? new Date(jobData.openingDate).toISOString().split('T')[0] : undefined,
         startDate: jobData.startDate ? new Date(jobData.startDate).toISOString().split('T')[0] : undefined,
@@ -1897,7 +1903,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
             {/* Mensagem informativa quando criar nova vaga */}
             {!isEditing && (
               <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-                ℹ️ Ao criar uma vaga, o status será automaticamente definido como <strong>ABERTO</strong>
+                ℹ️ Ao criar uma vaga, o status será automaticamente definido como <strong>{defaultStatusLabel}</strong>
               </div>
             )}
 

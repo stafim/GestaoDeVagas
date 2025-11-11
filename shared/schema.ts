@@ -411,6 +411,7 @@ export const jobStatuses = pgTable("job_statuses", {
   color: varchar("color", { length: 7 }), // Hex color code, e.g., "#3B82F6"
   description: text("description"), // Optional description
   displayOrder: integer("display_order").default(0), // Order for display in lists
+  isDefault: boolean("is_default").default(false), // Indicates if this is the default status for new jobs
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

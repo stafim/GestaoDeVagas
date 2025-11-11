@@ -8,6 +8,25 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
+### Default Job Status Configuration (LATEST)
+- **Schema Enhancement**:
+  - Added `isDefault` field to `job_statuses` table (boolean, default: false)
+  - Allows configuration of which status is used when creating new jobs
+- **Job Creation Behavior**:
+  - System now uses the status marked as `isDefault` when creating new jobs
+  - Falls back to status with key "aberto" if no default is set
+  - Falls back to hardcoded "aberto" if no statuses exist
+- **UI Updates**:
+  - Informative message dynamically shows correct default status label
+  - "Ao criar uma vaga, o status será automaticamente definido como [LABEL]"
+  - Label updates based on configured default status (e.g., "Vaga aberta" instead of "Aberto")
+- **Technical Implementation**:
+  - `defaultJobStatus` computed from jobStatuses array using isDefault flag
+  - Form defaultValues use `defaultStatusKey` instead of hardcoded "aberto"
+  - JobStatus type includes optional `isDefault` field
+
+# Recent Updates (Nov 11, 2025)
+
 ### Work Scales Management System (LATEST)
 - **Schema Updates**:
   - Added `startTime` field (varchar, format HH:MM) - Horário de entrada
