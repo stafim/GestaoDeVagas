@@ -136,3 +136,11 @@
 [x] 3. Modificar Sidebar para adicionar verificação isMasterAdmin
 [x] 4. Implementar filtro: apenas usuários com organizationId === null veem itens admin
 [x] 5. Testar: usuário atual (com organizationId) não verá itens administrativos
+
+## Correção: Usuário Demo Fictício
+[x] 1. Identificar problema: usuário "Grazieli Peres" aparece mas não existe no banco
+[x] 2. Verificar usuários reais no banco de dados
+[x] 3. Encontrar usuário real: Ricardo Stafim (ID: 2e8d4227-c3f6-4daa-af9e-1f6cbd04d8b4)
+[x] 4. Atualizar DEMO_USER para usar dados de Ricardo Stafim
+[x] 5. Reiniciar aplicação e confirmar via logs que está usando usuário correto
+[x] 6. Usuário logado agora: Ricardo Stafim na organização "Grupo OPUS"

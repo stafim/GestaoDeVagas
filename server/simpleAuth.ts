@@ -27,13 +27,13 @@ export function getSessionForSimpleAuth() {
   });
 }
 
-// Demo user for bypass mode (using Grazieli Peres from database)
+// Demo user for bypass mode (using Ricardo Stafim from database)
 const DEMO_USER = {
-  id: "3ee816bb-0cd2-493c-b6a5-6f4d566de07c",
+  id: "2e8d4227-c3f6-4daa-af9e-1f6cbd04d8b4",
   organizationId: "a6b0e84d-df56-45ab-810b-310f100cd760",
-  email: "grazieli.peres@grupoopus.com", 
-  firstName: "Grazieli Peres",
-  lastName: "Grazieli Peres",
+  email: "ricardo.stafim@grupoopus.com", 
+  firstName: "Ricardo",
+  lastName: "Stafim",
   role: "admin" as const,
   profileImageUrl: null,
   createdAt: new Date(),
