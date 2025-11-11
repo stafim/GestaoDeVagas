@@ -384,6 +384,68 @@ export default function Workflow() {
                 {isExpanded && (
                   <CardContent className="pt-0">
                     <Separator className="mb-4" />
+                    
+                    {/* Informações Gerais */}
+                    <div className="space-y-3 mb-6">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Informações Gerais
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Status</div>
+                          <div className="text-sm">
+                            {workflow.isActive ? (
+                              <Badge variant="default" className="bg-green-600">Ativo</Badge>
+                            ) : (
+                              <Badge variant="secondary">Inativo</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Workflow Padrão</div>
+                          <div className="text-sm">
+                            {workflow.isDefault ? (
+                              <Badge variant="default">Sim</Badge>
+                            ) : (
+                              <Badge variant="outline">Não</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Divisão</div>
+                          <div className="text-sm">
+                            {workflow.divisionId 
+                              ? divisions?.find(d => d.id === workflow.divisionId)?.name || 'N/A'
+                              : 'Todas as divisões'
+                            }
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Total de Etapas</div>
+                          <div className="text-sm font-medium">{steps.length}</div>
+                        </div>
+                        {workflow.createdAt && (
+                          <div className="space-y-1">
+                            <div className="text-xs text-muted-foreground">Criado em</div>
+                            <div className="text-sm">
+                              {new Date(workflow.createdAt).toLocaleDateString('pt-BR')}
+                            </div>
+                          </div>
+                        )}
+                        {workflow.updatedAt && (
+                          <div className="space-y-1">
+                            <div className="text-xs text-muted-foreground">Atualizado em</div>
+                            <div className="text-sm">
+                              {new Date(workflow.updatedAt).toLocaleDateString('pt-BR')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <Separator className="mb-4" />
+
+                    {/* Etapas de Aprovação */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <Shield className="h-4 w-4" />
@@ -400,45 +462,41 @@ export default function Workflow() {
                             .sort((a, b) => a.stepOrder - b.stepOrder)
                             .map((step, index) => {
                               const user = step.userId ? users?.find(u => u.id === step.userId) : null;
+                              const user2 = step.userId2 ? users?.find(u => u.id === step.userId2) : null;
                               
                               return (
                                 <div
                                   key={step.id}
                                   className="flex items-center justify-between p-3 rounded-md border bg-card"
                                 >
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-3 flex-1">
                                     <Badge variant="outline" className="text-xs font-mono">
                                       #{step.stepOrder}
                                     </Badge>
-                                    <div>
+                                    <div className="flex-1">
                                       <div className="text-sm font-medium flex items-center gap-2">
                                         {step.stepType === "dual" && <Users className="h-4 w-4 text-primary" />}
                                         {step.stepType === "user" && <UserCheck className="h-4 w-4 text-primary" />}
                                         {step.stepType === "permission" && <Shield className="h-4 w-4 text-primary" />}
-                                        {getStepTypeLabel(step)}
+                                        {step.stepName || getStepTypeLabel(step)}
                                       </div>
                                       <div className="text-xs text-muted-foreground mt-1">
                                         {step.stepType === "user" && user && (
-                                          <span>Aprovador: {user.firstName} {user.lastName}</span>
+                                          <span>Aprovador: {user.firstName} {user.lastName} ({user.email})</span>
                                         )}
                                         {(step.stepType === "role" || step.stepType === "permission") && step.role && (
                                           <span>Cargo: {getRoleLabel(step.role)}</span>
                                         )}
                                         {step.stepType === "dual" && step.dualApprovalSubtype === "user" && (
-                                          <>
-                                            {step.userId && (
-                                              <>
-                                                <span>Aprovador 1: {users?.find(u => u.id === step.userId)?.firstName} {users?.find(u => u.id === step.userId)?.lastName}</span>
-                                                {step.userId2 && (
-                                                  <>
-                                                    <br />
-                                                    <span>Aprovador 2: {users?.find(u => u.id === step.userId2)?.firstName} {users?.find(u => u.id === step.userId2)?.lastName}</span>
-                                                  </>
-                                                )}
-                                              </>
+                                          <div className="space-y-0.5">
+                                            {user && (
+                                              <div>Aprovador 1: {user.firstName} {user.lastName} ({user.email})</div>
                                             )}
-                                            {!step.userId && <span>2 aprovadores específicos</span>}
-                                          </>
+                                            {user2 && (
+                                              <div>Aprovador 2: {user2.firstName} {user2.lastName} ({user2.email})</div>
+                                            )}
+                                            {!user && !user2 && <span>2 aprovadores específicos</span>}
+                                          </div>
                                         )}
                                         {step.stepType === "dual" && step.dualApprovalSubtype === "permission" && step.role && (
                                           <span>2 aprovações de usuários do tipo: {getRoleLabel(step.role)}</span>
@@ -451,6 +509,23 @@ export default function Workflow() {
                             })}
                         </div>
                       )}
+                    </div>
+
+                    {/* Regras de Aplicação */}
+                    <Separator className="my-4" />
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Regras de Aplicação
+                      </div>
+                      <div className="text-xs text-muted-foreground space-y-1 bg-muted p-3 rounded-md">
+                        <div>• Este workflow será aplicado automaticamente nas vagas criadas{workflow.divisionId ? ` da divisão "${divisions?.find(d => d.id === workflow.divisionId)?.name}"` : ' de todas as divisões'}</div>
+                        {workflow.isDefault && (
+                          <div>• Como workflow padrão, será selecionado automaticamente ao criar uma vaga</div>
+                        )}
+                        <div>• As vagas passarão por {steps.length} etapa(s) de aprovação sequenciais</div>
+                        <div>• Após aprovação em todas as etapas, a vaga será movida para o status "Aprovada"</div>
+                        <div>• Se rejeitada em qualquer etapa, a vaga será marcada como "Rejeitada"</div>
+                      </div>
                     </div>
                   </CardContent>
                 )}
