@@ -474,6 +474,37 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     }
   }, [form.watch("department"), workflows, divisions, form]);
 
+  // Auto-fill work hours when work scale is selected
+  React.useEffect(() => {
+    const selectedWorkScaleId = form.watch("workScaleId");
+    
+    if (selectedWorkScaleId && workScales) {
+      const selectedWorkScale = workScales.find(ws => ws.id === selectedWorkScaleId);
+      
+      if (selectedWorkScale) {
+        // Format work hours based on scale data
+        let workHoursText = "";
+        
+        if (selectedWorkScale.startTime && selectedWorkScale.endTime) {
+          workHoursText = `${selectedWorkScale.startTime} às ${selectedWorkScale.endTime}`;
+          
+          // Add break intervals if they exist
+          if (selectedWorkScale.breakIntervals && selectedWorkScale.breakIntervals.trim() !== "") {
+            workHoursText += ` (Intervalos: ${selectedWorkScale.breakIntervals})`;
+          }
+        } else if (selectedWorkScale.description) {
+          // Fallback to description if times are not defined
+          workHoursText = selectedWorkScale.description;
+        }
+        
+        // Only update if there's content to set
+        if (workHoursText) {
+          form.setValue("workHours", workHoursText);
+        }
+      }
+    }
+  }, [form.watch("workScaleId"), workScales, form]);
+
   const createJobMutation = useMutation({
     mutationFn: async (data: JobFormData) => {
       // Convert form data to API format and remove invalid fields
