@@ -17,6 +17,7 @@ Preferred communication style: Simple, everyday language.
 - **Backend Implementation**:
   - Division import: `server/scripts/import-divisions.ts` syncs from `usu_tdivare` table
   - Cost center import: `server/scripts/import-cost-centers.ts` syncs from `r018ccu` table WITH division relationship via `usu_coddiv` field
+  - Script supports **UPDATE** mode: updates existing cost centers with division information from Senior
   - API endpoint: `GET /api/divisions` returns all active divisions
   - Storage method: `getDivisions()` queries divisions ordered by name
   - **166 cost centers** have division assigned in Senior, **2,427** without division

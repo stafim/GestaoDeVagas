@@ -1,5 +1,6 @@
 import { db } from '../db';
 import { costCenters, companies, divisions } from '@shared/schema';
+import { eq, and } from 'drizzle-orm';
 
 async function importCostCenters() {
   try {
@@ -82,12 +83,13 @@ async function importCostCenters() {
     console.log(`✓ Found ${existingCostCenters.length} existing cost centers in database\n`);
 
     let imported = 0;
+    let updated = 0;
     let skipped = 0;
     let errors = 0;
     let withDivision = 0;
     let withoutDivision = 0;
 
-    console.log('Importing cost centers...\n');
+    console.log('Importing/updating cost centers...\n');
 
     for (const seniorCC of seniorCostCenters) {
       try {
@@ -98,13 +100,6 @@ async function importCostCenters() {
           if (errors < 5) {
             console.log(`⚠ Skipping ${seniorCC.codccu}: Company ${seniorCC.numemp} not found`);
           }
-          skipped++;
-          continue;
-        }
-
-        // Check if already exists
-        const key = `${seniorCC.codccu}-${companyId}`;
-        if (existingMap.has(key)) {
           skipped++;
           continue;
         }
@@ -122,21 +117,41 @@ async function importCostCenters() {
           withoutDivision++;
         }
 
-        // Import cost center
-        await db.insert(costCenters).values({
-          name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
-          code: seniorCC.codccu,
-          companyId: companyId,
-          divisionId: divisionId || null,
-          seniorId: seniorCC.codccu,
-          importedFromSenior: true,
-          lastSyncedAt: new Date(),
-        });
-
-        imported++;
+        // Check if already exists
+        const key = `${seniorCC.codccu}-${companyId}`;
+        const exists = existingMap.has(key);
         
-        if (imported % 100 === 0) {
-          console.log(`  Imported ${imported} cost centers...`);
+        if (exists) {
+          // Update existing cost center with division info
+          await db.update(costCenters)
+            .set({
+              name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
+              divisionId: divisionId || null,
+              lastSyncedAt: new Date(),
+            })
+            .where(and(
+              eq(costCenters.seniorId, seniorCC.codccu),
+              eq(costCenters.companyId, companyId)
+            ));
+          
+          updated++;
+        } else {
+          // Insert new cost center
+          await db.insert(costCenters).values({
+            name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
+            code: seniorCC.codccu,
+            companyId: companyId,
+            divisionId: divisionId || null,
+            seniorId: seniorCC.codccu,
+            importedFromSenior: true,
+            lastSyncedAt: new Date(),
+          });
+          
+          imported++;
+        }
+        
+        if ((imported + updated) % 100 === 0) {
+          console.log(`  Processed ${imported + updated} cost centers...`);
         }
 
       } catch (error) {
@@ -150,10 +165,11 @@ async function importCostCenters() {
     console.log('\n' + '='.repeat(50));
     console.log('Import completed!');
     console.log('='.repeat(50));
-    console.log(`✓ Successfully imported: ${imported}`);
+    console.log(`✓ Successfully imported (new): ${imported}`);
+    console.log(`✓ Successfully updated (existing): ${updated}`);
     console.log(`  - With division: ${withDivision}`);
     console.log(`  - Without division: ${withoutDivision}`);
-    console.log(`⚠ Skipped (already exists or no company): ${skipped}`);
+    console.log(`⚠ Skipped (no company mapping): ${skipped}`);
     console.log(`❌ Errors: ${errors}`);
     console.log(`📊 Total processed: ${seniorCostCenters.length}`);
     console.log('='.repeat(50));
