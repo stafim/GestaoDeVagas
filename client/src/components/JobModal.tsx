@@ -149,6 +149,8 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const [clientHasNoPositions, setClientHasNoPositions] = useState(false);
   const [userAwareOfIrregularity, setUserAwareOfIrregularity] = useState(false);
   const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
+  const [workPositionSearch, setWorkPositionSearch] = useState("");
+  const [workPositionPopoverOpen, setWorkPositionPopoverOpen] = useState(false);
 
   // Função para obter a data de hoje no formato YYYY-MM-DD
   const getTodayDate = () => {
@@ -179,7 +181,17 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   });
 
   const { data: workPositions } = useQuery<any[]>({
-    queryKey: ["/api/work-positions"],
+    queryKey: ["/api/work-positions", workPositionSearch],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (workPositionSearch) {
+        params.append('search', workPositionSearch);
+      }
+      params.append('limit', '100');
+      const response = await fetch(`/api/work-positions?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch work positions');
+      return response.json();
+    },
   });
 
   const { data: clients } = useQuery<Client[]>({
@@ -756,26 +768,70 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                 <FormField
                   control={form.control}
                   name="workPosition"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Posto de Trabalho</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-work-position">
-                            <SelectValue placeholder="Selecione o posto de trabalho" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.isArray(workPositions) && workPositions.map((position: any) => (
-                            <SelectItem key={position.id} value={position.name}>
-                              {position.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const selectedPosition = workPositions?.find(p => p.name === field.value);
+                    return (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Posto de Trabalho</FormLabel>
+                        <Popover open={workPositionPopoverOpen} onOpenChange={setWorkPositionPopoverOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                data-testid="button-work-position"
+                                className={cn(
+                                  "justify-between font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {selectedPosition?.name || "Buscar posto de trabalho..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-0">
+                            <Command shouldFilter={false}>
+                              <CommandInput
+                                placeholder="Digite para buscar..."
+                                value={workPositionSearch}
+                                onValueChange={setWorkPositionSearch}
+                                data-testid="input-work-position-search"
+                              />
+                              <CommandList>
+                                <CommandEmpty>Nenhum posto de trabalho encontrado.</CommandEmpty>
+                                <CommandGroup>
+                                  {Array.isArray(workPositions) && workPositions.map((position: any) => (
+                                    <CommandItem
+                                      key={position.id}
+                                      value={position.name}
+                                      onSelect={() => {
+                                        form.setValue("workPosition", position.name);
+                                        setWorkPositionPopoverOpen(false);
+                                        setWorkPositionSearch("");
+                                      }}
+                                      data-testid={`option-work-position-${position.id}`}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          position.name === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {position.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
