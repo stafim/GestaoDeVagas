@@ -18,17 +18,48 @@ const CHART_COLORS = [
   "#60a5fa",
 ];
 
+interface RealTimeData {
+  client: {
+    id: string;
+    name: string;
+    cnpj: string;
+    jobLimit: number | null;
+  };
+  metrics: {
+    totalJobs: number;
+    openJobs: number;
+    closedJobs: number;
+    averageTimeToClose: number;
+  };
+  statusDistribution: Array<{
+    status: string;
+    count: number;
+  }>;
+  recentJobs: Array<{
+    id: string;
+    title: string;
+    openingDate: string;
+    admissionDate: string | null;
+  }>;
+  kanbanDistribution: Array<{
+    stageName: string;
+    stageColor: string;
+    candidateCount: number;
+    jobTitle: string;
+  }>;
+}
+
 export default function RealTime() {
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [, setLocation] = useLocation();
 
   // Fetch all clients
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [] } = useQuery<any[]>({
     queryKey: ["/api/clients"],
   });
 
   // Fetch real-time data for selected client
-  const { data: realtimeData, isLoading } = useQuery({
+  const { data: realtimeData, isLoading } = useQuery<RealTimeData>({
     queryKey: ["/api/realtime/client", selectedClientId],
     enabled: !!selectedClientId,
   });
@@ -46,7 +77,7 @@ export default function RealTime() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Activity className="h-8 w-8 text-primary" />
+            <Activity className="h-8 w-8" style={{ color: '#2563eb' }} />
             Dashboard em Tempo Real
           </h1>
           <p className="text-muted-foreground mt-1">

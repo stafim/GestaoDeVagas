@@ -590,16 +590,16 @@ export default function Dashboard() {
                 title="Vagas abertas no mês"
                 value={metrics?.totalJobs || 0}
                 icon={Briefcase}
-                iconBgColor="bg-primary/10"
-                iconColor="text-primary"
+                iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                iconColor="text-blue-600 dark:text-blue-400"
                 description="Vagas abertas no período selecionado"
               />
               <MetricsCard
                 title="Total de vagas em aberto"
                 value={metrics?.openJobsCurrentMonth || 0}
                 icon={CheckCircle}
-                iconBgColor="bg-green-100 dark:bg-green-900/20"
-                iconColor="text-green-600 dark:text-green-400"
+                iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                iconColor="text-blue-700 dark:text-blue-300"
                 description="Vagas sem data de admissão"
               />
             </>
@@ -611,7 +611,7 @@ export default function Dashboard() {
           <Card className="shadow-sm hover:shadow-lg transition-shadow duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2563eb' }}></div>
                 Vagas por Status
               </CardTitle>
               <CardDescription>Distribuição das vagas por situação atual</CardDescription>

@@ -72,8 +72,8 @@ export default function Performance() {
                 title="Taxa de Conversão"
                 value="24.5%"
                 icon={TrendingUp}
-                iconBgColor="bg-primary/10"
-                iconColor="text-primary"
+                iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                iconColor="text-blue-600 dark:text-blue-400"
                 description="Candidatos convertidos em contratações"
                 trend={{ value: "+2.1%", isPositive: true }}
                 subtitle="vs. período anterior"
@@ -178,7 +178,7 @@ export default function Performance() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Target className="h-5 w-5 mr-2 text-primary" />
+                <Target className="h-5 w-5 mr-2" style={{ color: '#2563eb' }} />
                 Eficiência do Recrutamento
               </CardTitle>
             </CardHeader>
@@ -203,7 +203,7 @@ export default function Performance() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Users className="h-5 w-5 mr-2 text-primary" />
+                <Users className="h-5 w-5 mr-2" style={{ color: '#2563eb' }} />
                 Qualidade dos Candidatos
               </CardTitle>
             </CardHeader>
@@ -232,7 +232,7 @@ export default function Performance() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart3 className="h-5 w-5 mr-2 text-primary" />
+                <BarChart3 className="h-5 w-5 mr-2" style={{ color: '#2563eb' }} />
                 Métricas de Engajamento
               </CardTitle>
             </CardHeader>
@@ -270,42 +270,42 @@ export default function Performance() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h4 className="font-medium text-green-600 flex items-center">
+                <h4 className="font-medium flex items-center" style={{ color: '#1e40af' }}>
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Pontos Fortes
                 </h4>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start">
-                    <ArrowUp className="h-4 w-4 text-green-500 mr-2 mt-1" />
+                    <ArrowUp className="h-4 w-4 mr-2 mt-1" style={{ color: '#2563eb' }} />
                     Taxa de conversão 23% acima da média do setor
                   </li>
                   <li className="flex items-start">
-                    <ArrowUp className="h-4 w-4 text-green-500 mr-2 mt-1" />
+                    <ArrowUp className="h-4 w-4 mr-2 mt-1" style={{ color: '#2563eb' }} />
                     Tempo médio de contratação reduziu em 18% este mês
                   </li>
                   <li className="flex items-start">
-                    <ArrowUp className="h-4 w-4 text-green-500 mr-2 mt-1" />
+                    <ArrowUp className="h-4 w-4 mr-2 mt-1" style={{ color: '#2563eb' }} />
                     Alta satisfação dos candidatos (4.2/5)
                   </li>
                 </ul>
               </div>
               
               <div className="space-y-4">
-                <h4 className="font-medium text-orange-600 flex items-center">
+                <h4 className="font-medium flex items-center" style={{ color: '#3b82f6' }}>
                   <AlertTriangle className="h-4 w-4 mr-2" />
                   Oportunidades de Melhoria
                 </h4>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start">
-                    <ArrowDown className="h-4 w-4 text-orange-500 mr-2 mt-1" />
+                    <ArrowDown className="h-4 w-4 mr-2 mt-1" style={{ color: '#60a5fa' }} />
                     Reduzir taxa de abandono no processo de candidatura
                   </li>
                   <li className="flex items-start">
-                    <ArrowDown className="h-4 w-4 text-orange-500 mr-2 mt-1" />
+                    <ArrowDown className="h-4 w-4 mr-2 mt-1" style={{ color: '#60a5fa' }} />
                     Melhorar tempo de resposta para candidatos
                   </li>
                   <li className="flex items-start">
-                    <ArrowDown className="h-4 w-4 text-orange-500 mr-2 mt-1" />
+                    <ArrowDown className="h-4 w-4 mr-2 mt-1" style={{ color: '#60a5fa' }} />
                     Aumentar diversidade nas contratações
                   </li>
                 </ul>
