@@ -8,7 +8,30 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
-### Job Creation Form Field Organization (LATEST)
+### Work Scales Management System (LATEST)
+- **Schema Updates**:
+  - Added `startTime` field (varchar, format HH:MM) - Horário de entrada
+  - Added `endTime` field (varchar, format HH:MM) - Horário de saída
+  - Added `breakIntervals` field (text) - Intervalos em formato "HH:MM-HH:MM, HH:MM-HH:MM"
+- **Frontend Implementation**:
+  - Full CRUD interface in Settings → Escalas tab
+  - Form fields: Nome, Descrição, Horário de Entrada, Horário de Saída, Intervalos
+  - Time inputs for entry/exit times (type="time")
+  - Textarea for break intervals with format hint
+  - Updated table view: displays hours and break intervals
+- **Backend Support**:
+  - Existing API routes: GET/POST/PATCH/DELETE `/api/work-scales`
+  - Schema validation through Zod with new optional time fields
+- **User Experience**:
+  - Intuitive time pickers for entry/exit times
+  - Flexible break intervals format: "12:00-13:00, 15:00-15:15"
+  - Visual table showing all schedule details at a glance
+- **Technical Notes**:
+  - Times stored as strings in HH:MM format (5 chars max)
+  - Break intervals stored as plain text for flexibility
+  - Database schema pushed successfully with new columns
+
+### Job Creation Form Field Organization
 - **Field Order in "Informações Básicas" section**:
   1. Cliente
   2. Divisão

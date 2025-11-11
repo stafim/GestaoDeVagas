@@ -384,6 +384,9 @@ export const workScales = pgTable("work_scales", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 100 }).notNull().unique(), // e.g., "5x1", "5x2", "6x1", "12x36"
   description: text("description"), // Optional description
+  startTime: varchar("start_time", { length: 5 }), // Horário de entrada (formato HH:MM, ex: "08:00")
+  endTime: varchar("end_time", { length: 5 }), // Horário de saída (formato HH:MM, ex: "17:00")
+  breakIntervals: text("break_intervals"), // JSON com intervalos [{start: "12:00", end: "13:00"}]
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -1009,6 +1012,8 @@ export const insertWorkScaleSchema = createInsertSchema(workScales).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  breakIntervals: z.string().optional(),
 });
 
 export const insertBenefitSchema = createInsertSchema(benefits).omit({

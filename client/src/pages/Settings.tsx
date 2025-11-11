@@ -26,6 +26,9 @@ import { Switch } from "@/components/ui/switch";
 const workScaleFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   description: z.string().optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  breakIntervals: z.string().optional(),
 });
 
 const jobStatusFormSchema = z.object({
@@ -82,6 +85,9 @@ type WorkScale = {
   id: string;
   name: string;
   description?: string;
+  startTime?: string;
+  endTime?: string;
+  breakIntervals?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -597,6 +603,9 @@ export default function Settings() {
     workScaleForm.reset({
       name: workScale.name,
       description: workScale.description || "",
+      startTime: workScale.startTime || "",
+      endTime: workScale.endTime || "",
+      breakIntervals: workScale.breakIntervals || "",
     });
     setIsWorkScaleModalOpen(true);
   };
@@ -628,6 +637,9 @@ export default function Settings() {
     workScaleForm.reset({
       name: "",
       description: "",
+      startTime: "",
+      endTime: "",
+      breakIntervals: "",
     });
   };
 
@@ -1363,6 +1375,68 @@ export default function Settings() {
                     )}
                   />
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={workScaleForm.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Horário de Entrada</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="time"
+                              placeholder="08:00"
+                              data-testid="input-work-scale-start-time"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={workScaleForm.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Horário de Saída</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="time"
+                              placeholder="17:00"
+                              data-testid="input-work-scale-end-time"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={workScaleForm.control}
+                    name="breakIntervals"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Intervalos (opcional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Ex: 12:00-13:00, 15:00-15:15"
+                            rows={2}
+                            data-testid="input-work-scale-break-intervals"
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Digite os intervalos no formato HH:MM-HH:MM, separados por vírgula
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="flex gap-2 justify-end">
                     <Button
                       type="button"
@@ -1399,7 +1473,8 @@ export default function Settings() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Descrição</TableHead>
+                  <TableHead>Horários</TableHead>
+                  <TableHead>Intervalos</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -1408,10 +1483,28 @@ export default function Settings() {
                 {workScales.map((workScale) => (
                   <TableRow key={workScale.id} data-testid={`work-scale-row-${workScale.id}`}>
                     <TableCell className="font-medium" data-testid={`text-work-scale-name-${workScale.id}`}>
-                      {workScale.name}
+                      <div>
+                        <div className="font-semibold">{workScale.name}</div>
+                        {workScale.description && (
+                          <div className="text-sm text-muted-foreground">{workScale.description}</div>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell data-testid={`text-work-scale-description-${workScale.id}`}>
-                      {workScale.description || "-"}
+                    <TableCell data-testid={`text-work-scale-hours-${workScale.id}`}>
+                      {workScale.startTime && workScale.endTime ? (
+                        <div className="text-sm">
+                          {workScale.startTime} - {workScale.endTime}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell data-testid={`text-work-scale-breaks-${workScale.id}`}>
+                      {workScale.breakIntervals ? (
+                        <div className="text-sm">{workScale.breakIntervals}</div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge
