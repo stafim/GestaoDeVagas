@@ -1389,6 +1389,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import professions from Senior r024car table
+  app.post('/api/senior-integration/import-professions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Create Senior integration service
+      const { createSeniorIntegrationService } = await import('./services/seniorIntegration');
+      const seniorService = createSeniorIntegrationService({
+        apiUrl: settings.apiUrl,
+        apiKey: settings.apiKey,
+      });
+
+      // Query to fetch all professions/cargos from r024car
+      const seniorProfessions = await seniorService.executeQuery<{
+        numemp: number;
+        numcar: number;
+        nomcar: string;
+        codcbo: string;
+      }>(
+        'SELECT numemp, numcar, nomcar, codcbo FROM r024car ORDER BY nomcar'
+      );
+
+      if (!Array.isArray(seniorProfessions) || seniorProfessions.length === 0) {
+        return res.json({ 
+          success: true, 
+          imported: 0,
+          skipped: 0,
+          message: "Nenhuma profissão encontrada na tabela r024car" 
+        });
+      }
+
+      // Load existing professions once and create lookup map by senior_id
+      const existingProfessions = await storage.getProfessions();
+      const professionMap = new Map(
+        existingProfessions
+          .filter(p => p.seniorId)
+          .map(p => [p.seniorId, p])
+      );
+
+      let imported = 0;
+      let skipped = 0;
+      let updated = 0;
+      const errors: string[] = [];
+
+      // Import each profession
+      for (const seniorProf of seniorProfessions) {
+        try {
+          const seniorId = `${seniorProf.numemp}-${seniorProf.numcar}`;
+          const existing = professionMap.get(seniorId);
+
+          if (existing) {
+            // Update name if changed
+            if (existing.name !== seniorProf.nomcar || existing.cboCode !== seniorProf.codcbo) {
+              await storage.updateProfession(existing.id, {
+                name: seniorProf.nomcar,
+                cboCode: seniorProf.codcbo || undefined,
+                lastSyncedAt: new Date(),
+              });
+              updated++;
+            } else {
+              skipped++;
+            }
+            continue;
+          }
+
+          // Create profession in our system
+          await storage.createProfession({
+            name: seniorProf.nomcar,
+            cboCode: seniorProf.codcbo || undefined,
+            seniorId: seniorId,
+            seniorEstablishment: seniorProf.numemp.toString(),
+            importedFromSenior: true,
+            lastSyncedAt: new Date(),
+            isActive: true,
+          });
+          imported++;
+
+        } catch (error) {
+          console.error(`Error importing profession ${seniorProf.nomcar}:`, error);
+          errors.push(`${seniorProf.nomcar}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        imported,
+        updated,
+        skipped,
+        total: seniorProfessions.length,
+        errors: errors.length > 0 ? errors : undefined,
+        message: `Importação concluída: ${imported} profissões importadas, ${updated} atualizadas, ${skipped} já existentes`
+      });
+
+    } catch (error) {
+      console.error("Error importing professions from Senior:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao importar profissões" 
+      });
+    }
+  });
+
   // System Settings routes
   app.get('/api/settings', isAuthenticated, async (req, res) => {
     try {

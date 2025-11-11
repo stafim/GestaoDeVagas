@@ -60,6 +60,12 @@ const clientNavigationItems = [
     description: "Cadastro de empresas"
   },
   {
+    name: "Profissões",
+    href: "/professions",
+    icon: Briefcase,
+    description: "Cadastro de profissões"
+  },
+  {
     name: "Clientes",
     href: "/clients",
     icon: UserCheck,

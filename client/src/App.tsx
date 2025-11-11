@@ -14,6 +14,7 @@ import Companies from "@/pages/Companies";
 import Clients from "@/pages/Clients";
 import Users from "@/pages/Users";
 import Performance from "@/pages/Performance";
+import Professions from "@/pages/Professions";
 import Reports from "@/pages/Reports";
 import Permissions from "@/pages/Permissions";
 import Kanban from "@/pages/Kanban";
@@ -49,6 +50,7 @@ function Router() {
           <Route path="/financeiro" component={() => <Layout><Financeiro /></Layout>} />
           <Route path="/companies" component={() => <Layout><Companies /></Layout>} />
           <Route path="/clients" component={() => <Layout><Clients /></Layout>} />
+          <Route path="/professions" component={() => <Layout><Professions /></Layout>} />
           <Route path="/users" component={() => <Layout><Users /></Layout>} />
           <Route path="/permissions" component={() => <Layout><Permissions /></Layout>} />
           <Route path="/workflow" component={() => <Layout><Workflow /></Layout>} />
