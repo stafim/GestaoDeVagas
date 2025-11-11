@@ -15,7 +15,21 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertClientSchema, insertClientEmployeeSchema, type Client, type ClientEmployee, type SelectClientProfessionLimit, type Profession } from "@shared/schema";
 import { BRAZILIAN_CITIES, BRAZILIAN_STATES } from "@shared/constants";
-import { FileText, Upload, Download, Trash2, UserPlus, Pencil, Users, Search } from "lucide-react";
+import { FileText, Upload, Download, Trash2, UserPlus, Pencil, Users, Search, ChevronsUpDown, Check } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface ClientModalProps {
   clientId?: string;
@@ -47,6 +61,8 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
   const [selectedProfession, setSelectedProfession] = useState<string>("");
   const [maxJobsForProfession, setMaxJobsForProfession] = useState<number>(0);
+  const [professionSearchOpen, setProfessionSearchOpen] = useState(false);
+  const [professionSearchTerm, setProfessionSearchTerm] = useState("");
 
   const { data: client } = useQuery<Client>({
     queryKey: ["/api/clients", clientId],
@@ -619,23 +635,62 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
                 <div className="border rounded-lg p-4 bg-muted/30">
                   <h4 className="text-sm font-medium mb-3">Adicionar Limite</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Select
-                      value={selectedProfession}
-                      onValueChange={setSelectedProfession}
-                    >
-                      <SelectTrigger data-testid="select-profession-limit">
-                        <SelectValue placeholder="Selecione a profissão" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {professions
-                          .filter((prof) => !professionLimits.some((limit) => limit.professionId === prof.id))
-                          .map((profession) => (
-                            <SelectItem key={profession.id} value={profession.id}>
-                              {profession.name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={professionSearchOpen} onOpenChange={setProfessionSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={professionSearchOpen}
+                          className="justify-between"
+                          data-testid="select-profession-limit"
+                        >
+                          {selectedProfession
+                            ? professions.find((prof) => prof.id === selectedProfession)?.name
+                            : "Buscar profissão..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Buscar profissão..." 
+                            value={professionSearchTerm}
+                            onValueChange={setProfessionSearchTerm}
+                          />
+                          <CommandList>
+                            <CommandEmpty>Nenhuma profissão encontrada.</CommandEmpty>
+                            <CommandGroup>
+                              {professions
+                                .filter((prof) => 
+                                  !professionLimits.some((limit) => limit.professionId === prof.id) &&
+                                  (professionSearchTerm === "" || 
+                                   prof.name.toLowerCase().includes(professionSearchTerm.toLowerCase()))
+                                )
+                                .slice(0, 100)
+                                .map((profession) => (
+                                  <CommandItem
+                                    key={profession.id}
+                                    value={profession.name}
+                                    onSelect={() => {
+                                      setSelectedProfession(profession.id);
+                                      setProfessionSearchOpen(false);
+                                      setProfessionSearchTerm("");
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedProfession === profession.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {profession.name}
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
 
                     <Input
                       type="number"

@@ -4,6 +4,16 @@ VagasPro is a job management system built with React and Express, designed to st
 
 ## Recent Updates (Nov 11, 2025)
 
+### UI Performance Improvements - Profession Search (LATEST)
+- **Component**: ClientModal - Profession Limits section
+- **Change**: Replaced dropdown Select with searchable Combobox for professions
+- **Benefits**:
+  - Loads only 100 results initially (down from 923 professions)
+  - Real-time search filtering as user types
+  - Better performance with large datasets
+  - Improved UX with instant feedback
+- **Pattern**: Using Command + Popover components (same pattern as work positions in JobModal)
+
 ### Senior HCM Client Synchronization (LATEST)
 - **Objective**: Import client data from Senior HCM API into VagasPro
 - **Database Schema**:
@@ -54,7 +64,24 @@ VagasPro is a job management system built with React and Express, designed to st
   - Fields: estcar, codcar, titcar, titred, codcbo/codcb2
   - Primary source for organizational job positions
 
-### Work Positions Integration ⭐ (LATEST)
+### Employee Status Filter & Data Correction
+- **Issue Fixed**: All 5,981 imported employees incorrectly showing as "Desligado"
+- **Root Cause**: 
+  - Senior uses `sitafa = 1` for active employees (not documented value of 7)
+  - Placeholder date `1900-12-31` in `datafa` field was treated as real termination
+- **Solution**:
+  - Updated status mapping: sitafa 1 or 7 → Ativo
+  - Ignore termination dates before year 1901 (placeholder detection)
+  - Real termination only when `sitafa = 4` OR valid `datafa > 1900`
+- **Result After Reimport**:
+  - **184 employees** marked as **Ativo** ✅
+  - **5,797 employees** marked as **Desligado** ✅
+  - Total: 5,981 employees
+- **Frontend**: Added status filter dropdown in employee list modal
+  - Filter by: Todos, Ativo, Desligado, Férias, Afastamento
+  - Combines with name/position/cost center search
+
+### Work Positions Integration
 - **Objective**: Import work position data from Senior HCM r017pos table and integrate into job creation workflow with search capabilities
 - **Database Schema**: Extended `workPositions` table with Senior integration fields
   - `seniorId` (varchar) - Senior position code (codpos)
