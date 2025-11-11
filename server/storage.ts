@@ -3531,52 +3531,136 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Workflow step not found');
     }
 
-    // Record approval in history
-    await db.insert(jobApprovalHistory).values({
-      jobId,
-      workflowStepId: currentStep.id,
-      stepName: `Etapa ${currentStep.stepOrder}`,
-      stepOrder: currentStep.stepOrder,
-      status: 'approved',
-      approvedBy: userId,
-      comments: comments || null,
-      approvedAt: new Date(),
-    });
+    // Check if this is a dual approval step
+    const isDualApproval = currentStep.stepType === 'dual';
 
-    // Get all workflow steps for this workflow
-    const allSteps = await db
-      .select()
-      .from(approvalWorkflowSteps)
-      .where(eq(approvalWorkflowSteps.workflowId, job.approvalWorkflowId!))
-      .orderBy(approvalWorkflowSteps.stepOrder);
+    if (isDualApproval) {
+      // Check if there's already a history record for this step
+      const [existingHistory] = await db
+        .select()
+        .from(jobApprovalHistory)
+        .where(and(
+          eq(jobApprovalHistory.jobId, jobId),
+          eq(jobApprovalHistory.workflowStepId, currentStep.id)
+        ));
 
-    const isLastStep = currentStep.stepOrder === allSteps.length;
+      if (existingHistory) {
+        // There's already one approval - check if this is the second approver
+        if (existingHistory.approvedBy === userId) {
+          throw new Error('You have already approved this step');
+        }
 
-    if (isLastStep) {
-      // All steps completed - approve the job and change status
-      await db
-        .update(jobs)
-        .set({
-          approvalStatus: 'approved',
+        // This is the second approval - update the existing record
+        await db
+          .update(jobApprovalHistory)
+          .set({
+            approvedBy2: userId,
+            approvedAt2: new Date(),
+            status: 'approved',
+            updatedAt: new Date(),
+          })
+          .where(eq(jobApprovalHistory.id, existingHistory.id));
+
+        // Both approvers have approved - proceed to next step or complete
+        const allSteps = await db
+          .select()
+          .from(approvalWorkflowSteps)
+          .where(eq(approvalWorkflowSteps.workflowId, job.approvalWorkflowId!))
+          .orderBy(approvalWorkflowSteps.stepOrder);
+
+        const isLastStep = currentStep.stepOrder === allSteps.length;
+
+        if (isLastStep) {
+          // All steps completed - approve the job and change status
+          await db
+            .update(jobs)
+            .set({
+              approvalStatus: 'approved',
+              approvedBy: userId,
+              approvedAt: new Date(),
+              status: 'aprovada',
+              updatedAt: new Date(),
+            })
+            .where(eq(jobs.id, jobId));
+
+          return { success: true, message: 'Vaga aprovada com sucesso! Ambos aprovadores concordaram.', approved: true };
+        } else {
+          // Move to next step
+          await db
+            .update(jobs)
+            .set({
+              currentApprovalStep: currentStep.stepOrder + 1,
+              updatedAt: new Date(),
+            })
+            .where(eq(jobs.id, jobId));
+
+          return { success: true, message: 'Etapa aprovada! Ambos aprovadores concordaram. Avançando para próxima etapa.', approved: false };
+        }
+      } else {
+        // This is the first approval - create a pending record
+        await db.insert(jobApprovalHistory).values({
+          jobId,
+          workflowStepId: currentStep.id,
+          stepName: `Etapa ${currentStep.stepOrder}`,
+          stepOrder: currentStep.stepOrder,
+          status: 'pending', // Still pending second approval
           approvedBy: userId,
+          comments: comments || null,
           approvedAt: new Date(),
-          status: 'aprovada', // Change status from "Nova Vaga" to "Aprovada"
-          updatedAt: new Date(),
-        })
-        .where(eq(jobs.id, jobId));
+        });
 
-      return { success: true, message: 'Job approved successfully', approved: true };
+        return { 
+          success: true, 
+          message: 'Sua aprovação foi registrada. Aguardando aprovação do segundo aprovador.', 
+          approved: false,
+          waitingSecondApproval: true
+        };
+      }
     } else {
-      // Move to next step
-      await db
-        .update(jobs)
-        .set({
-          currentApprovalStep: currentStep.stepOrder + 1,
-          updatedAt: new Date(),
-        })
-        .where(eq(jobs.id, jobId));
+      // Single approval - original logic
+      await db.insert(jobApprovalHistory).values({
+        jobId,
+        workflowStepId: currentStep.id,
+        stepName: `Etapa ${currentStep.stepOrder}`,
+        stepOrder: currentStep.stepOrder,
+        status: 'approved',
+        approvedBy: userId,
+        comments: comments || null,
+        approvedAt: new Date(),
+      });
 
-      return { success: true, message: 'Approval recorded, moved to next step', approved: false };
+      const allSteps = await db
+        .select()
+        .from(approvalWorkflowSteps)
+        .where(eq(approvalWorkflowSteps.workflowId, job.approvalWorkflowId!))
+        .orderBy(approvalWorkflowSteps.stepOrder);
+
+      const isLastStep = currentStep.stepOrder === allSteps.length;
+
+      if (isLastStep) {
+        await db
+          .update(jobs)
+          .set({
+            approvalStatus: 'approved',
+            approvedBy: userId,
+            approvedAt: new Date(),
+            status: 'aprovada',
+            updatedAt: new Date(),
+          })
+          .where(eq(jobs.id, jobId));
+
+        return { success: true, message: 'Job approved successfully', approved: true };
+      } else {
+        await db
+          .update(jobs)
+          .set({
+            currentApprovalStep: currentStep.stepOrder + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(jobs.id, jobId));
+
+        return { success: true, message: 'Approval recorded, moved to next step', approved: false };
+      }
     }
   }
 

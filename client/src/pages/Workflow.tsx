@@ -81,11 +81,8 @@ export default function Workflow() {
     queryKey: ["/api/workflow-steps/all", workflowIds],
     queryFn: async () => {
       if (!workflows || workflows.length === 0) {
-        console.log("No workflows found for loading steps");
         return {};
       }
-      
-      console.log(`Loading steps for ${workflows.length} workflows:`, workflows.map(w => w.id));
       
       const stepsMap: Record<string, ApprovalWorkflowStep[]> = {};
       for (const workflow of workflows) {
@@ -94,15 +91,11 @@ export default function Workflow() {
           if (response.ok) {
             const steps = await response.json();
             stepsMap[workflow.id] = steps;
-            console.log(`Loaded ${steps.length} steps for workflow ${workflow.id}:`, steps);
-          } else {
-            console.error(`Failed to load steps for workflow ${workflow.id}:`, response.status);
           }
         } catch (error) {
           console.error(`Error loading steps for workflow ${workflow.id}:`, error);
         }
       }
-      console.log("Final stepsMap:", stepsMap);
       return stepsMap;
     },
     enabled: !!workflows && workflows.length > 0,
@@ -130,8 +123,6 @@ export default function Workflow() {
 
   const createWorkflowMutation = useMutation({
     mutationFn: async (data: CreateWorkflowForm) => {
-      console.log("Creating workflow with data:", data);
-      
       const workflowRes = await apiRequest("POST", "/api/workflows", {
         name: data.name,
         description: data.description,
@@ -146,7 +137,6 @@ export default function Workflow() {
       }
       
       const workflow = await workflowRes.json();
-      console.log("Workflow created:", workflow);
 
       for (const step of data.steps) {
         const stepName = step.approvalType === "dual" 
@@ -166,8 +156,6 @@ export default function Workflow() {
           role: step.requiredRole,
           role2: step.requiredRole2, // Segundo cargo para dupla alçada
         };
-        
-        console.log("Creating step:", stepData);
         
         const stepRes = await apiRequest("POST", "/api/workflow-steps", stepData);
         
@@ -338,13 +326,6 @@ export default function Workflow() {
           {workflows.map((workflow) => {
             const steps = workflowStepsData?.[workflow.id] || [];
             const isExpanded = expandedWorkflows.has(workflow.id);
-            
-            console.log(`Rendering workflow ${workflow.id} (${workflow.name}):`, {
-              isExpanded,
-              stepsCount: steps.length,
-              steps,
-              allStepsData: workflowStepsData
-            });
             
             return (
               <Card key={workflow.id} className="hover-elevate">

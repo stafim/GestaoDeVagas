@@ -596,9 +596,11 @@ export const jobApprovalHistory = pgTable("job_approval_history", {
   stepName: varchar("step_name", { length: 255 }).notNull(), // Nome da etapa no momento da aprovação
   stepOrder: integer("step_order").notNull(), // Ordem da etapa
   status: approvalWorkflowStepStatusEnum("status").notNull(), // Status: pending, approved, rejected, skipped
-  approvedBy: varchar("approved_by").references(() => users.id), // Usuário que aprovou/rejeitou
+  approvedBy: varchar("approved_by").references(() => users.id), // Primeiro usuário que aprovou/rejeitou
   comments: text("comments"), // Comentários do aprovador
-  approvedAt: timestamp("approved_at"), // Data/hora da aprovação/rejeição
+  approvedAt: timestamp("approved_at"), // Data/hora da aprovação/rejeição do primeiro aprovador
+  approvedBy2: varchar("approved_by_2").references(() => users.id), // Segundo usuário que aprovou (dupla alçada)
+  approvedAt2: timestamp("approved_at_2"), // Data/hora da aprovação do segundo aprovador (dupla alçada)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
