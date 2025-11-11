@@ -144,7 +144,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const [cities] = useState(getAllCities());
   const [professionPopoverOpen, setProfessionPopoverOpen] = useState(false);
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
-  const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientHasNoPositions, setClientHasNoPositions] = useState(false);
   const [userAwareOfIrregularity, setUserAwareOfIrregularity] = useState(false);
@@ -381,36 +380,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     queryKey: ["/api/clients", selectedClientId],
     enabled: !!selectedClientId && !isEditing,
   });
-
-  const { data: clientEmployees = [] } = useQuery<Employee[]>({
-    queryKey: ["/api/clients", selectedClientId, "employees"],
-    enabled: !!selectedClientId && !isEditing && openingReason === "substituicao",
-  });
-
-  // Filter employees for replacement based on cost center and work position
-  const filteredEmployeesForReplacement = React.useMemo(() => {
-    if (openingReason !== "substituicao") return [];
-    if (!clientEmployees || clientEmployees.length === 0) return [];
-    
-    let filtered = [...clientEmployees];
-    
-    // Filter by cost center if selected
-    if (selectedCostCenterId) {
-      filtered = filtered.filter((emp: any) => emp.costCenterId === selectedCostCenterId);
-    }
-    
-    // Filter by work position if selected
-    if (selectedWorkPosition) {
-      filtered = filtered.filter((emp: any) => emp.position === selectedWorkPosition);
-    }
-    
-    return filtered;
-  }, [openingReason, clientEmployees, selectedCostCenterId, selectedWorkPosition]);
-
-  // Use appropriate employee list based on opening reason
-  const displayedEmployees = openingReason === "substituicao" 
-    ? filteredEmployeesForReplacement 
-    : employees;
 
   // Get profession limits for selected client
   const { data: professionLimits = [] } = useQuery<SelectClientProfessionLimit[]>({
@@ -1162,93 +1131,15 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                     control={form.control}
                     name="replacementEmployeeName"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                      <FormItem>
                         <FormLabel>Colaborador a Substituir</FormLabel>
-                        <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={employeePopoverOpen}
-                                className={cn(
-                                  "w-full justify-between",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                                data-testid="select-replacement-employee"
-                              >
-                                {field.value
-                                  ? (() => {
-                                      const employee = displayedEmployees.find(
-                                        (emp: any) => emp.name === field.value
-                                      );
-                                      if (!employee) return field.value;
-                                      
-                                      // Check if employee has employeeCode (from employees table)
-                                      if ('employeeCode' in employee && employee.employeeCode) {
-                                        return `${employee.employeeCode} - ${employee.name} (${employee.position || ''})`;
-                                      }
-                                      // Otherwise it's from client_employees table
-                                      return `${employee.name} (${employee.position || ''})`;
-                                    })()
-                                  : "Selecione o funcionário"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0" align="start">
-                            <Command>
-                              <CommandInput 
-                                placeholder="Buscar funcionário por nome..." 
-                                data-testid="input-search-employee"
-                              />
-                              <CommandList>
-                                <CommandEmpty>
-                                  {!selectedClientId 
-                                    ? "Selecione um cliente primeiro"
-                                    : !selectedWorkPosition
-                                    ? "Selecione um posto de trabalho primeiro"
-                                    : !selectedCostCenterId
-                                    ? "Selecione um centro de custo primeiro"
-                                    : "Nenhum funcionário encontrado com este posto de trabalho e centro de custo"}
-                                </CommandEmpty>
-                                <CommandGroup>
-                                  {displayedEmployees && displayedEmployees.length > 0 && displayedEmployees.map((employee: any) => {
-                                    const hasEmployeeCode = 'employeeCode' in employee && employee.employeeCode;
-                                    const displayText = hasEmployeeCode
-                                      ? `${employee.employeeCode} - ${employee.name} (${employee.position || ''})`
-                                      : `${employee.name} (${employee.position || ''})`;
-                                    const searchValue = hasEmployeeCode
-                                      ? `${employee.employeeCode} ${employee.name} ${employee.position || ''}`
-                                      : `${employee.name} ${employee.position || ''}`;
-                                    
-                                    return (
-                                      <CommandItem
-                                        key={employee.id}
-                                        value={searchValue}
-                                        onSelect={() => {
-                                          form.setValue("replacementEmployeeName", employee.name);
-                                          setEmployeePopoverOpen(false);
-                                        }}
-                                        data-testid={`option-employee-${employee.id}`}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === employee.name
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                        {displayText}
-                                      </CommandItem>
-                                    );
-                                  })}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
+                        <FormControl>
+                          <Input
+                            placeholder="Digite o nome do colaborador a ser substituído"
+                            {...field}
+                            data-testid="input-replacement-employee"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

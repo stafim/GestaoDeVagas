@@ -6,6 +6,14 @@ VagasPro is a job management system built with React and Express, designed to st
 
 Preferred communication style: Simple, everyday language.
 
+# Recent Updates (Nov 11, 2025)
+
+### Employee Replacement Field - Free Text Input
+- **Change**: "Colaborador a Substituir" field converted from searchable dropdown to free text input
+- **Implementation**: Simple text Input component for manual entry of employee name to be replaced
+- **Reason**: Simplified workflow - users can type employee names directly without navigating complex filters
+- **Impact**: Removed employee list queries, filtering logic, and popover state management for better performance
+
 # System Architecture
 
 ## Frontend
