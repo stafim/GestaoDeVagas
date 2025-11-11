@@ -1,138 +1,6 @@
 # Overview
 
-VagasPro is a job management system built with React and Express, designed to streamline recruitment workflows for companies. It facilitates the management of job postings and applications, offers a comprehensive dashboard for tracking hiring metrics, and enables the analysis of recruitment performance through various reports and visualizations. The system includes robust role-based permission management, detailed job status tracking, admission data management, and integration capabilities with external HCM Senior databases.
-
-## Recent Updates (Nov 11, 2025)
-
-### Employee Replacement Workflow - Cost Center Filtering (LATEST)
-- **Feature**: Smart employee filtering for staff replacement scenarios
-- **Implementation**:
-  - When creating a job with "Substituição de Quadro" reason
-  - System now shows only employees from the selected cost center
-  - Uses `clientEmployees` table (imported from Senior) instead of company employees
-  - Dynamic filtering: Employee list updates when cost center selection changes
-- **UX Improvements**:
-  - Clear messaging: "Selecione um centro de custo primeiro"
-  - No employees shown until cost center is selected
-  - Prevents confusion by limiting choices to relevant employees only
-- **Technical Details**:
-  - Filters `client_employees` by `costCenterId` field
-  - 184 active employees available across 328 Localiza cost centers
-  - Uses React.useMemo for performance optimization
-
-### UI Performance Improvements - Profession Search
-- **Component**: ClientModal - Profession Limits section
-- **Change**: Replaced dropdown Select with searchable Combobox for professions
-- **Benefits**:
-  - Loads only 100 results initially (down from 923 professions)
-  - Real-time search filtering as user types
-  - Better performance with large datasets
-  - Improved UX with instant feedback
-- **Pattern**: Using Command + Popover components (same pattern as work positions in JobModal)
-
-### Senior HCM Client Synchronization (LATEST)
-- **Objective**: Import client data from Senior HCM API into VagasPro
-- **Database Schema**:
-  - Added `importedFromSenior` (boolean) - Tracks imported clients
-  - Added `seniorId` (varchar) - Senior system ID for duplicate prevention
-  - Added `lastSyncedAt` (timestamp) - Last synchronization timestamp
-- **Backend Implementation**:
-  - `getClients()` method in `seniorIntegration.ts` - Queries Senior E085CLI table
-  - `POST /api/senior/sync-clients` endpoint - Handles batch import with duplicate detection
-  - Smart sync: Creates new clients or updates existing ones based on `seniorId`
-- **Frontend Features**:
-  - "Importar da Senior" button on Clients page with loading state
-  - Success/error toasts showing import statistics (imported, updated, errors)
-  - Automatic client list refresh after import
-- **Technical Notes**:
-  - Uses Senior E085CLI table (main client registry)
-  - SQL query: `SELECT CODCLI, NOMCLI, ENDCLI, CEPCLI, CGCCPF FROM E085CLI`
-  - Temporary mock data (8 clients) while API query format is resolved with Senior support
-  - Infrastructure ready for real data integration
-
-### Cost Center Integration
-- **Backend**: Added `GET /api/cost-centers` endpoint to fetch all cost centers
-- **Storage**: Implemented `getCostCenters()` method for retrieving all cost centers across companies
-- **Frontend**: Added cost center selection field in job creation form
-  - Automatically filters cost centers based on selected company
-  - Displays cost centers in format: "CODE - Name" (e.g., "ADM001 - Administrativo")
-  - Field is disabled until a company is selected
-- **Database**: 2,593 cost centers imported from Senior r018ccu table across 12 companies
-
-### Profession/Position Integration
-- **Objective**: Import profession/position data from Senior HCM r024car table into VagasPro
-- **Database Schema Extended**:
-  - `seniorId` (varchar) - Código do cargo no Senior (codcar)
-  - `seniorEstablishment` (varchar) - Estabelecimento no Senior (estcar)
-  - `importedFromSenior` (boolean) - Tracks imported professions
-  - `lastSyncedAt` (timestamp) - Last synchronization timestamp
-  - `cboCode` (varchar) - Código CBO oficial (Classificação Brasileira de Ocupações)
-- **Import Script**: `server/scripts/import-professions.ts`
-  - Queries Senior r024car table for profession data
-  - Maps fields: titcar (full name), titred (description), codcbo/codcb2 (CBO code)
-  - Duplicate prevention using seniorEstablishment + seniorId composite key
-- **Import Results**:
-  - **923 professions successfully imported** from 1,200 records in Senior
-  - 277 skipped due to duplicate names (unique constraint)
-  - Examples: AUXILIAR DE PRODUCAO (CBO 784205), TECNICO SEGURANCA DO TRABALHO (CBO 351605), BORRACHEIRO (CBO 992115)
-- **Senior Source Table**: r024car
-  - 1,200 total profession records
-  - Fields: estcar, codcar, titcar, titred, codcbo/codcb2
-  - Primary source for organizational job positions
-
-### Employee Status Filter & Data Correction
-- **Issue Fixed**: All 5,981 imported employees incorrectly showing as "Desligado"
-- **Root Cause**: 
-  - Senior uses `sitafa = 1` for active employees (not documented value of 7)
-  - Placeholder date `1900-12-31` in `datafa` field was treated as real termination
-- **Solution**:
-  - Updated status mapping: sitafa 1 or 7 → Ativo
-  - Ignore termination dates before year 1901 (placeholder detection)
-  - Real termination only when `sitafa = 4` OR valid `datafa > 1900`
-- **Result After Reimport**:
-  - **184 employees** marked as **Ativo** ✅
-  - **5,797 employees** marked as **Desligado** ✅
-  - Total: 5,981 employees
-- **Frontend**: Added status filter dropdown in employee list modal
-  - Filter by: Todos, Ativo, Desligado, Férias, Afastamento
-  - Combines with name/position/cost center search
-
-### Work Positions Integration
-- **Objective**: Import work position data from Senior HCM r017pos table and integrate into job creation workflow with search capabilities
-- **Database Schema**: Extended `workPositions` table with Senior integration fields
-  - `seniorId` (varchar) - Senior position code (codpos)
-  - `seniorEstablishment` (varchar) - Senior establishment code (estpos)
-  - `seniorCompany` (varchar) - Senior company code (emppos)
-  - `seniorCostCenter` (varchar) - Senior cost center code (ccupos)
-  - `seniorLocal` (varchar) - Senior local code (locpos)
-  - `importedFromSenior` (boolean) - Tracks imported positions
-  - `lastSyncedAt` (timestamp) - Last synchronization timestamp
-- **Import Script**: `server/scripts/import-work-positions.ts`
-  - Queries Senior r017pos table for work position data
-  - Maps fields: nompos (name), abrpos (abbreviation), codpos (code)
-  - Duplicate prevention using composite key (establishment + company + cost center + local)
-- **Import Results**:
-  - **3,055 work positions successfully imported** from Senior database
-  - Examples: ANALISTA DE DP, ASSISTENTE DEPTO PESSOAL, TECNICO SEGURANCA TRABALHO
-- **Backend Implementation**:
-  - `GET /api/work-positions` endpoint with query params:
-    - `search` (optional) - Filter by name using case-insensitive LIKE
-    - `limit` (optional, default: 100) - Limit number of results
-  - `getWorkPositions(search?, limit)` storage method with filtering
-  - Smart query: Loads first 100 positions by default, supports dynamic search
-- **Frontend Integration** ✅:
-  - JobModal uses searchable Combobox component (replacing simple Select)
-  - Real-time search: Query updates as user types
-  - Loads first 100 positions initially for performance
-  - Search filters 3,055 positions dynamically
-  - Clear UX with "Buscar posto de trabalho..." placeholder
-- **Performance**:
-  - Initial load: 100 positions (~5KB)
-  - Search response: <100ms with indexed queries
-  - Prevents overwhelming UI with 3,000+ options
-- **Senior Source Table**: r017pos
-  - Fields: estpos, emppos, ccupos, locpos, codpos, nompos, abrpos
-  - Linked to professions via r017car mapping table
+VagasPro is a job management system built with React and Express, designed to streamline recruitment workflows for companies. It facilitates the management of job postings and applications, offers a comprehensive dashboard for tracking hiring metrics, and enables the analysis of recruitment performance through various reports and visualizations. The system includes robust role-based permission management, detailed job status tracking, admission data management, and integration capabilities with external HCM Senior databases. Its purpose is to enhance recruitment efficiency, provide actionable insights, and ensure compliance with hiring policies.
 
 # User Preferences
 
@@ -146,87 +14,30 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: TanStack Query.
 - **Routing**: Wouter.
 - **Forms**: React Hook Form with Zod validation.
+- **UI/UX Decisions**: Consistent design system using shadcn/ui, mobile-first responsiveness, Recharts for data visualization, tabbed modals, enhanced search components (e.g., searchable Combobox for large datasets), comprehensive PDF generation, and unified Kanban board creation.
 
 ## Backend
 - **Runtime**: Node.js with Express.js.
 - **Language**: TypeScript (ES modules).
 - **API Pattern**: RESTful API (JSON).
 - **Database**: PostgreSQL (Neon serverless) with Drizzle ORM.
+- **System Design Choices**: Repository pattern for data access, Zod for API input validation, well-defined foreign key relationships, and configurable parameters for work scales, benefits, and job statuses.
 
 ## Authentication & Authorization
 - **Multi-Tenant Architecture**: Supports multiple client organizations with data isolation.
-- **Super Admin Role**: Global access across all organizations.
-- **Role-Based Permissions**: 8 predefined roles and 17 granular permissions, including user-specific menu access and job status permissions.
-- **Organization Isolation**: Data access is restricted by `organizationId`.
+- **Role-Based Permissions**: Granular permissions across 8 predefined roles, including super admin, and organization-specific data access via `organizationId`.
 
-## Data Layer
-- **Pattern**: Repository pattern (IStorage interface).
-- **Validation**: Zod schemas for API input.
-- **Relationships**: Well-defined foreign key relationships.
-- **Parametrization**: Configurable work scales, benefits, and job statuses.
-
-## UI/UX
-- **Design System**: Consistent component library using shadcn/ui.
-- **Responsiveness**: Mobile-first design.
-- **Charts & Visualization**: Recharts for dashboard analytics.
-- **Key Features**: Tabbed job details modal, enhanced employee search, comprehensive job status change tracking, client contract management, comprehensive PDF generation (admission dossier, candidate reports), unified Kanban board creation, and organized settings.
-- **Client Dashboard Permissions**: Granular control over client access to various dashboard types.
-- **Real-Time Client Dashboard**: Dedicated client-specific dashboards with key metrics.
-
-## Notifications System
-- **Multi-Channel**: Email and WhatsApp notifications for job status changes.
-- **Configurability**: Independent toggles for Email/WhatsApp per status, smart recipient logic.
-- **Integrations Management**: User-friendly interface for configuring SMTP and WhatsApp API settings.
-
-## Organization Management
-- **Entity**: `Organization` with attributes like name, slug, CNPJ, contact, logo, plan type, and user limits.
-- **Functionality**: CRUD operations, automated admin creation, active/inactive status, plan-based limits.
-
-## Kanban Management
-- **Unified Creation**: Create Kanban boards with multiple stages in one form.
-- **Flexibility**: Per-job Kanban selection, with fallback to default.
-
-## Workflow Approval System
-- **Purpose**: Approves new job vacancies (transition from "Nova Vaga" to "Aprovada").
-- **Approval Types**: Supports dual authorization, approval by specific users, and approval by permission types.
-- **Multi-Step Workflows**: Configure sequential approval steps for job approval.
-- **Status Management**: Active/inactive workflows with default workflow designation.
-- **Integration**: Seamlessly integrates with job vacancy creation and quota validation.
-
-## Sales Plan Management
-- **Plans**: CRUD for managing subscription plans with configurable features.
-- **Feature Toggles**: 12 system features that can be enabled/disabled per plan.
-- **Pricing**: Monthly and yearly pricing options.
-- **Limits**: Configurable user and job limits per plan.
-- **Access**: Super Admin only.
-
-## Financial Management
-- **Invoices**: CRUD for managing invoices with status tracking (pending, paid, overdue, cancelled).
-- **Payment History**: Tracks payment records.
-- **Billing**: Links invoices to specific organizations.
-- **Access**: Super Admin only.
-
-## Candidate Blacklist Management
-- **Purpose**: Manage candidates who cannot be hired by the organization.
-- **Entry Methods**: Manual entry and batch import via CSV or Excel files.
-- **Data Fields**: Full name, CPF, and reason for blacklisting.
-- **CRUD Operations**: Full create, read, update, and delete capabilities.
-- **Multi-Tenant**: Blacklist entries are isolated by organization.
-- **Location**: Accessible via Settings page, Blacklist tab.
-
-## Development Workflow
-- **Build**: Separate client (Vite) and server (esbuild) builds.
-- **Code Quality**: TypeScript strict mode, ESLint.
-
-## Job Quota System
-- **Migration**: From total job quota per client to profession-based quotas.
-- **New System**: `client_profession_limits` table stores max jobs per client per profession, allowing fine-grained control.
-- **Implementation**: Full CRUD operations in backend, updated frontend logic for quota checking and management.
-
-## Job Creation Validation System
-- **Feature**: Comprehensive validation system for job creation enforcing quota policies and profession-based limits.
-- **Validation Flow**: Policy check, profession limit lookup, active jobs count, and policy application (block, require approval, allow).
-- **Impact**: Enforces contract compliance and prevents quota violations.
+## Core Features & Implementations
+- **Employee Replacement Workflow**: Smart filtering of employees by work position and cost center from imported Senior data.
+- **Senior HCM Integration**: Synchronization of client data, cost centers, professions, work positions, and employee data (with status correction) from Senior HCM API.
+- **Job Quota System**: Profession-based quotas for clients, managed via `client_profession_limits` table, with comprehensive validation during job creation.
+- **Notifications System**: Multi-channel (Email, WhatsApp) for job status changes, with configurable settings and smart recipient logic.
+- **Organization Management**: CRUD operations for organizations, with admin creation, active/inactive status, and plan-based limits.
+- **Kanban Management**: Unified creation of Kanban boards with multiple stages, selectable per job.
+- **Workflow Approval System**: Multi-step approval workflows for job vacancies, supporting dual authorization, specific user/permission approval, and quota validation.
+- **Sales Plan Management**: CRUD for subscription plans with configurable features, pricing options, and user/job limits.
+- **Financial Management**: CRUD for invoices with status tracking and payment history.
+- **Candidate Blacklist Management**: CRUD and batch import for blacklisting candidates by organization.
 
 # External Dependencies
 
@@ -242,12 +53,6 @@ Preferred communication style: Simple, everyday language.
 - **Lucide Icons**: Icon library.
 - **Font Awesome**: Additional icon library.
 - **Google Fonts**: Inter font family.
-
-## Development & Build Tools
-- **Vite**: Frontend build tool.
-- **TypeScript**: Type checking and compilation.
-- **PostCSS**: CSS processing.
-- **ESBuild**: Fast JavaScript bundler for server-side.
 
 ## Data Visualization
 - **Recharts**: React charting library.

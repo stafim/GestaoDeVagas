@@ -340,6 +340,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
   const selectedClientId = form.watch("clientId");
   const openingReason = form.watch("openingReason");
   const selectedCostCenterId = form.watch("costCenterId");
+  const selectedWorkPosition = form.watch("workPosition");
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/companies", selectedCompanyId, "employees"],
@@ -386,18 +387,25 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     enabled: !!selectedClientId && !isEditing && openingReason === "substituicao",
   });
 
-  // Filter employees for replacement based on cost center
+  // Filter employees for replacement based on cost center and work position
   const filteredEmployeesForReplacement = React.useMemo(() => {
     if (openingReason !== "substituicao") return [];
     if (!clientEmployees || clientEmployees.length === 0) return [];
     
+    let filtered = [...clientEmployees];
+    
     // Filter by cost center if selected
     if (selectedCostCenterId) {
-      return clientEmployees.filter((emp: any) => emp.costCenterId === selectedCostCenterId);
+      filtered = filtered.filter((emp: any) => emp.costCenterId === selectedCostCenterId);
     }
     
-    return clientEmployees;
-  }, [openingReason, clientEmployees, selectedCostCenterId]);
+    // Filter by work position if selected
+    if (selectedWorkPosition) {
+      filtered = filtered.filter((emp: any) => emp.position === selectedWorkPosition);
+    }
+    
+    return filtered;
+  }, [openingReason, clientEmployees, selectedCostCenterId, selectedWorkPosition]);
 
   // Use appropriate employee list based on opening reason
   const displayedEmployees = openingReason === "substituicao" 
@@ -1193,9 +1201,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                                 <CommandEmpty>
                                   {!selectedClientId 
                                     ? "Selecione um cliente primeiro"
+                                    : !selectedWorkPosition
+                                    ? "Selecione um posto de trabalho primeiro"
                                     : !selectedCostCenterId
                                     ? "Selecione um centro de custo primeiro"
-                                    : "Nenhum funcionário encontrado neste centro de custo"}
+                                    : "Nenhum funcionário encontrado com este posto de trabalho e centro de custo"}
                                 </CommandEmpty>
                                 <CommandGroup>
                                   {displayedEmployees && displayedEmployees.length > 0 && displayedEmployees.map((employee) => (
