@@ -519,7 +519,15 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      // Invalidate all dashboard queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) && 
+                 typeof queryKey[0] === 'string' && 
+                 queryKey[0].startsWith('/api/dashboard');
+        }
+      });
       toast({
         title: "Sucesso",
         description: "Vaga criada com sucesso!",
@@ -580,7 +588,15 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
       queryClient.invalidateQueries({ queryKey: ["/api/jobs", jobId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      // Invalidate all dashboard queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) && 
+                 typeof queryKey[0] === 'string' && 
+                 queryKey[0].startsWith('/api/dashboard');
+        }
+      });
       toast({
         title: "Sucesso",
         description: "Vaga atualizada com sucesso!",
@@ -602,7 +618,15 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      // Invalidate all dashboard queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) && 
+                 typeof queryKey[0] === 'string' && 
+                 queryKey[0].startsWith('/api/dashboard');
+        }
+      });
       toast({
         title: "Sucesso",
         description: "Vaga excluída com sucesso!",
