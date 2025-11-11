@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { costCenters, companies } from '@shared/schema';
+import { costCenters, companies, divisions } from '@shared/schema';
 
 async function importCostCenters() {
   try {
@@ -28,9 +28,21 @@ async function importCostCenters() {
       }
     });
 
-    console.log(`✓ Found ${companyMap.size} companies with Senior ID mapping\n`);
+    console.log(`✓ Found ${companyMap.size} companies with Senior ID mapping`);
 
-    // Query cost centers from Senior
+    // Get all divisions with seniorCode
+    const allDivisions = await db.select().from(divisions);
+    const divisionMap = new Map<string, string>();
+    
+    allDivisions.forEach(division => {
+      if (division.code) {
+        divisionMap.set(division.code.toString(), division.id);
+      }
+    });
+
+    console.log(`✓ Found ${divisionMap.size} divisions with code mapping\n`);
+
+    // Query cost centers from Senior (including division)
     console.log('Fetching cost centers from Senior r018ccu table...');
     
     const queryResponse = await fetch(`${settings.apiUrl}/query`, {
@@ -40,7 +52,7 @@ async function importCostCenters() {
         'x-api-key': settings.apiKey,
       },
       body: JSON.stringify({ 
-        sqlText: 'SELECT numemp, codccu, nomccu FROM r018ccu ORDER BY numemp, codccu' 
+        sqlText: 'SELECT numemp, codccu, nomccu, usu_coddiv FROM r018ccu ORDER BY numemp, codccu' 
       }),
     });
 
@@ -72,6 +84,8 @@ async function importCostCenters() {
     let imported = 0;
     let skipped = 0;
     let errors = 0;
+    let withDivision = 0;
+    let withoutDivision = 0;
 
     console.log('Importing cost centers...\n');
 
@@ -95,11 +109,25 @@ async function importCostCenters() {
           continue;
         }
 
+        // Find division if usu_coddiv is set
+        let divisionId: string | undefined = undefined;
+        if (seniorCC.usu_coddiv && seniorCC.usu_coddiv !== 0) {
+          divisionId = divisionMap.get(seniorCC.usu_coddiv.toString());
+          if (divisionId) {
+            withDivision++;
+          }
+        }
+
+        if (!divisionId) {
+          withoutDivision++;
+        }
+
         // Import cost center
         await db.insert(costCenters).values({
           name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
           code: seniorCC.codccu,
           companyId: companyId,
+          divisionId: divisionId || null,
           seniorId: seniorCC.codccu,
           importedFromSenior: true,
           lastSyncedAt: new Date(),
@@ -123,6 +151,8 @@ async function importCostCenters() {
     console.log('Import completed!');
     console.log('='.repeat(50));
     console.log(`✓ Successfully imported: ${imported}`);
+    console.log(`  - With division: ${withDivision}`);
+    console.log(`  - Without division: ${withoutDivision}`);
     console.log(`⚠ Skipped (already exists or no company): ${skipped}`);
     console.log(`❌ Errors: ${errors}`);
     console.log(`📊 Total processed: ${seniorCostCenters.length}`);

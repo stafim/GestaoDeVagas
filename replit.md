@@ -10,14 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ### Division-Based Workflow and Cost Center Filtering (LATEST)
 - **Database Structure**:
-  - **divisions table**: Stores organizational divisions from Senior (code, name, isActive)
-  - **7 divisions imported**: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
+  - **divisions table**: Stores organizational divisions from Senior (`usu_tdivare.usu_coddiv`, `usu_desdiv`)
+  - **7 divisions imported**: ADMINISTRATIVO (1), FACILITIES (2), INDUSTRIAL (3), LOGISTICA (4), MANUTENCAO (5), ENGENHARIA (6), MOBILIDADE (7)
   - **approvalWorkflows.divisionId**: Required foreign key to divisions table (NOT NULL)
-  - **costCenters.divisionId**: Foreign key to divisions table - associates cost centers with specific divisions
+  - **costCenters.divisionId**: Foreign key to divisions table - associates cost centers with specific divisions from `r018ccu.usu_coddiv`
 - **Backend Implementation**:
-  - Import script: `server/scripts/import-divisions.ts` syncs divisions from Senior's `usu_tdivare` table
+  - Division import: `server/scripts/import-divisions.ts` syncs from `usu_tdivare` table
+  - Cost center import: `server/scripts/import-cost-centers.ts` syncs from `r018ccu` table WITH division relationship via `usu_coddiv` field
   - API endpoint: `GET /api/divisions` returns all active divisions
   - Storage method: `getDivisions()` queries divisions ordered by name
+  - **166 cost centers** have division assigned in Senior, **2,427** without division
 - **Frontend Features - Workflow Creation**:
   - Division selector in workflow creation form (required field)
   - Dropdown with 7 divisions: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
@@ -29,19 +31,20 @@ Preferred communication style: Simple, everyday language.
   - Ensures consistency between job divisions and workflow divisions
   - Division field positioned immediately after Client field in "Informações Básicas" section
   - **Workflow filtering**: Approval workflow dropdown shows only workflows matching the selected division
-  - **Cost Center filtering**: Cost center dropdown shows only cost centers matching both selected company AND division
-  - Both workflow and cost center fields disabled until division is selected
+  - **Cost Center filtering - STRICT MODE**: When division is selected, cost center dropdown shows ONLY cost centers that belong to that specific division (strict filtering)
+  - Workflow field disabled until division is selected
+  - Cost center field enabled after company is selected
   - Auto-clears workflow and cost center selections if division is changed to prevent mismatches
   - Informative placeholders guide users through the cascading selection process
-  - Warning messages displayed when no cost centers available for selected division
 - **Use Case**:
   - Each workflow must be associated with a specific division
-  - Cost centers are filtered by both company and division for better data organization
+  - Each cost center can optionally be associated with a specific division
   - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
-  - Ensures cost centers are appropriate for the division's context
+  - When creating a job for a division, only cost centers of that division are available
+  - Ensures organizational alignment between divisions, workflows, and cost centers
   - Enables customized approval processes per organizational area
   - To cover all divisions, create separate workflows for each
-  - Job creation form now uses same division source as workflows for data consistency
+  - **Example**: Selecting ENGENHARIA division shows only ENGENHARIA workflows and ENGENHARIA cost centers
 
 ### Dashboard Charts - Work Positions & Cost Centers
 - **New Charts Added**:

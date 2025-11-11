@@ -393,10 +393,8 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
           // Find the selected cost center
           const selectedCostCenter = costCenters.find(cc => cc.id === selectedCostCenterId);
           
-          // Only clear if cost center has a division AND it doesn't match the selected division
-          // Cost centers without division (divisionId = null) can be used with any division
+          // Clear if cost center doesn't belong to the selected division
           if (selectedDivision && selectedCostCenter && 
-              selectedCostCenter.divisionId !== null && 
               selectedCostCenter.divisionId !== selectedDivision.id) {
             form.setValue("costCenterId", "");
           }
@@ -940,13 +938,12 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                     const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
                     
                     // Filter cost centers by company and division
-                    // Show cost centers that either:
-                    // 1. Match the selected division, OR
-                    // 2. Don't have a division assigned yet (divisionId is null)
+                    // If division is selected, show ONLY cost centers of that division
+                    // If no division selected, show all cost centers of the company
                     const filteredCostCenters = selectedCompanyId && selectedDivision
                       ? costCenters.filter(cc => 
                           cc.companyId === selectedCompanyId && 
-                          (cc.divisionId === selectedDivision.id || cc.divisionId === null)
+                          cc.divisionId === selectedDivision.id
                         )
                       : selectedCompanyId
                         ? costCenters.filter(cc => cc.companyId === selectedCompanyId)
