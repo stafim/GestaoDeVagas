@@ -24,8 +24,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Clock, User, Building2, Calendar } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, Building2, Calendar, Eye } from "lucide-react";
 import { format } from "date-fns";
+import JobModal from "@/components/JobModal";
 
 interface PendingApproval {
   job: {
@@ -99,6 +100,7 @@ export default function Aprovacoes() {
   const [selectedJob, setSelectedJob] = useState<PendingApproval | null>(null);
   const [comments, setComments] = useState("");
   const [rejectReason, setRejectReason] = useState("");
+  const [viewJobId, setViewJobId] = useState<string | null>(null);
 
   // Fetch pending approvals
   const { data: pendingApprovals, isLoading: loadingPending } = useQuery<PendingApproval[]>({
@@ -281,6 +283,15 @@ export default function Aprovacoes() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setViewJobId(approval.job.id)}
+                                data-testid={`button-view-${approval.job.id}`}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                Ver Detalhes
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="default"
@@ -496,6 +507,15 @@ export default function Aprovacoes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Job Details Modal */}
+      {viewJobId && (
+        <JobModal
+          jobId={viewJobId}
+          isOpen={!!viewJobId}
+          onClose={() => setViewJobId(null)}
+        />
+      )}
     </div>
   );
 }
