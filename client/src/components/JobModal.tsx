@@ -3,7 +3,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertJobSchema, type InsertJob, type JobWithDetails, type CompaniesListResponse, type Profession, type Client, type WorkScale, type Employee, type SelectClientProfessionLimit } from "@shared/schema";
+import { insertJobSchema, type InsertJob, type JobWithDetails, type CompaniesListResponse, type Profession, type Client, type WorkScale, type Employee, type SelectClientProfessionLimit, type Division } from "@shared/schema";
 import { getAllCities } from "@shared/constants";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
@@ -199,6 +199,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
   const { data: workScales } = useQuery<WorkScale[]>({
     queryKey: ["/api/work-scales"],
+  });
+
+  const { data: divisions } = useQuery<Division[]>({
+    queryKey: ["/api/divisions"],
   });
 
   const { data: workflows } = useQuery<any[]>({
@@ -1237,12 +1241,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Facilities">Facilities</SelectItem>
-                          <SelectItem value="Engenharia">Engenharia</SelectItem>
-                          <SelectItem value="Manutenção">Manutenção</SelectItem>
-                          <SelectItem value="Indústria">Indústria</SelectItem>
-                          <SelectItem value="Mobilidade">Mobilidade</SelectItem>
-                          <SelectItem value="Administrativo">Administrativo</SelectItem>
+                          {divisions?.map((division) => (
+                            <SelectItem key={division.id} value={division.name}>
+                              {division.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

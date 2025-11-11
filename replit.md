@@ -17,16 +17,21 @@ Preferred communication style: Simple, everyday language.
   - Import script: `server/scripts/import-divisions.ts` syncs divisions from Senior's `usu_tdivare` table
   - API endpoint: `GET /api/divisions` returns all active divisions
   - Storage method: `getDivisions()` queries divisions ordered by name
-- **Frontend Features**:
+- **Frontend Features - Workflow Creation**:
   - Division selector in workflow creation form (required field)
   - Dropdown with 7 divisions: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
   - Validation: User must select a division before creating workflow
   - Description: "Este workflow será aplicado apenas para vagas desta divisão"
+- **Frontend Features - Job Creation**:
+  - Division selector in job creation form dynamically loaded from divisions API
+  - Replaces hardcoded division list with data from `usu_tdivare` table via divisions API
+  - Ensures consistency between job divisions and workflow divisions
 - **Use Case**:
   - Each workflow must be associated with a specific division
   - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
   - Enables customized approval processes per organizational area
   - To cover all divisions, create separate workflows for each
+  - Job creation form now uses same division source as workflows for data consistency
 
 ### Dashboard Charts - Work Positions & Cost Centers
 - **New Charts Added**:
