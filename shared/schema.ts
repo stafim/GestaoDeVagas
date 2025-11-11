@@ -433,11 +433,31 @@ export const integrationSettings = pgTable("integration_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Divisions table - Divisões organizacionais (Administrativo, Facilities, etc)
+export const divisions = pgTable("divisions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: integer("code").notNull().unique(), // Código da divisão na Senior (1, 2, 3, etc)
+  name: varchar("name", { length: 100 }).notNull(), // Nome da divisão (ADMINISTRATIVO, FACILITIES, etc)
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Division = typeof divisions.$inferSelect;
+export type InsertDivision = z.infer<typeof insertDivisionSchema>;
+
+export const insertDivisionSchema = createInsertSchema(divisions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Approval workflows - Define workflows de aprovação de vagas
 export const approvalWorkflows = pgTable("approval_workflows", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull(), // Nome do workflow (ex: "Aprovação Dupla Alçada")
   description: text("description"), // Descrição do workflow
+  divisionId: varchar("division_id").references(() => divisions.id), // Divisão associada (opcional)
   isActive: boolean("is_active").default(true), // Se o workflow está ativo
   isDefault: boolean("is_default").default(false), // Se é o workflow padrão para novas vagas
   createdAt: timestamp("created_at").defaultNow(),

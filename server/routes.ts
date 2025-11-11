@@ -4049,6 +4049,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Divisions routes
+  app.get('/api/divisions', isAuthenticated, async (req, res) => {
+    try {
+      const divisions = await storage.getDivisions();
+      res.json(divisions);
+    } catch (error) {
+      console.error("Error fetching divisions:", error);
+      res.status(500).json({ message: "Failed to fetch divisions" });
+    }
+  });
+
   // Approval Workflow routes
   app.get('/api/workflows', isAuthenticated, async (req, res) => {
     try {

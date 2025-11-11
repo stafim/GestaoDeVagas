@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import type { ApprovalWorkflow, ApprovalWorkflowStep, User } from "@shared/schema";
+import type { ApprovalWorkflow, ApprovalWorkflowStep, User, Division } from "@shared/schema";
 
 const workflowStepSchema = z.object({
   stepOrder: z.number().min(1),
@@ -46,6 +46,7 @@ const workflowStepSchema = z.object({
 const createWorkflowSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   description: z.string().optional(),
+  divisionId: z.string().optional(), // Divisão opcional
   isActive: z.boolean().default(true),
   isDefault: z.boolean().default(false),
   steps: z.array(workflowStepSchema).min(1, "Adicione pelo menos uma etapa de aprovação"),
@@ -95,11 +96,16 @@ export default function Workflow() {
     queryKey: ["/api/users"],
   });
 
+  const { data: divisions } = useQuery<Division[]>({
+    queryKey: ["/api/divisions"],
+  });
+
   const form = useForm<CreateWorkflowForm>({
     resolver: zodResolver(createWorkflowSchema),
     defaultValues: {
       name: "",
       description: "",
+      divisionId: undefined,
       isActive: true,
       isDefault: false,
       steps: [],
@@ -113,6 +119,7 @@ export default function Workflow() {
       const workflowRes = await apiRequest("POST", "/api/workflows", {
         name: data.name,
         description: data.description,
+        divisionId: data.divisionId,
         isActive: data.isActive,
         isDefault: data.isDefault,
       });
@@ -497,6 +504,35 @@ export default function Workflow() {
                           data-testid="input-workflow-description"
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="divisionId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Divisão (Opcional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-division">
+                            <SelectValue placeholder="Selecione uma divisão (ou deixe em branco para todas)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">Todas as divisões</SelectItem>
+                          {divisions?.map((division) => (
+                            <SelectItem key={division.id} value={division.id}>
+                              {division.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Associe este workflow a uma divisão específica (ADMINISTRATIVO, FACILITIES, etc)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

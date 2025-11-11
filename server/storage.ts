@@ -34,6 +34,7 @@ import {
   kanbanStages,
   systemSettings,
   jobStatusHistory,
+  divisions,
   approvalWorkflows,
   approvalWorkflowSteps,
   workflowJobStatusRules,
@@ -101,6 +102,7 @@ import {
   type InsertSystemSetting,
   type IntegrationSetting,
   type InsertIntegrationSetting,
+  type Division,
   type ApprovalWorkflow,
   type InsertApprovalWorkflow,
   type ApprovalWorkflowStep,
@@ -266,6 +268,9 @@ export interface IStorage {
   getSystemSetting(key: string): Promise<SystemSetting | undefined>;
   upsertSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
   updateSystemSettingValue(key: string, value: string): Promise<SystemSetting>;
+  
+  // Divisions operations
+  getDivisions(): Promise<Division[]>;
   
   // Approval Workflow operations
   getApprovalWorkflows(): Promise<ApprovalWorkflow[]>;
@@ -3255,6 +3260,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Approval Workflow operations
+  async getDivisions(): Promise<Division[]> {
+    const divisionsList = await db.select().from(divisions).orderBy(divisions.name);
+    return divisionsList;
+  }
+
   async getApprovalWorkflows(): Promise<ApprovalWorkflow[]> {
     const workflows = await db.select().from(approvalWorkflows).orderBy(desc(approvalWorkflows.createdAt));
     return workflows;
