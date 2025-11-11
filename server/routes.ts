@@ -2474,25 +2474,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Limite de profissão:', professionLimit);
       
-      if (!professionLimit) {
-        return res.status(400).json({ 
-          message: `Limite de vagas não configurado para a profissão "${profession.name}" neste cliente` 
-        });
+      // Se a política for "allow", não precisa validar limites
+      if (policy !== 'allow') {
+        if (!professionLimit) {
+          return res.status(400).json({ 
+            message: `Limite de vagas não configurado para a profissão "${profession.name}" neste cliente` 
+          });
+        }
       }
       
-      // 3. Contar vagas ativas desta profissão para este cliente
-      const activeJobsCount = await storage.countActiveJobsByClientAndProfession(
-        validatedData.clientId,
-        validatedData.professionId
-      );
-      
+      // 3. Contar vagas ativas desta profissão para este cliente (apenas se houver limite)
       const quantity = jobDataForDb.vacancyQuantity || 1;
-      const futureCount = activeJobsCount + quantity;
       
-      console.log(`Vagas ativas: ${activeJobsCount}, Novas: ${quantity}, Total futuro: ${futureCount}, Limite: ${professionLimit.maxJobs}`);
-      
-      // 4. Aplicar política de criação de vagas
-      if (futureCount > professionLimit.maxJobs) {
+      if (professionLimit) {
+        const activeJobsCount = await storage.countActiveJobsByClientAndProfession(
+          validatedData.clientId,
+          validatedData.professionId
+        );
+        
+        const futureCount = activeJobsCount + quantity;
+        
+        console.log(`Vagas ativas: ${activeJobsCount}, Novas: ${quantity}, Total futuro: ${futureCount}, Limite: ${professionLimit.maxJobs}`);
+        
+        // 4. Aplicar política de criação de vagas
+        if (futureCount > professionLimit.maxJobs) {
         const availableSlots = Math.max(0, professionLimit.maxJobs - activeJobsCount);
         
         if (policy === 'block') {
@@ -2511,6 +2516,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('Vaga será criada com irregularidade (requer aprovação)');
         }
         // Se policy === 'allow', continua normalmente mesmo excedendo o limite
+        }
+      } else {
+        console.log('Nenhum limite de profissão configurado, criando vaga sem validação de quota');
       }
       
       // If vacancyQuantity > 1, create multiple job records
