@@ -2796,21 +2796,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Skip permission checks in AUTH_BYPASS mode
       if (process.env.AUTH_BYPASS !== 'true') {
-        // Apenas GESTOR e Gerente de RH podem criar vagas
-        const userRoles = await storage.getUserCompanyRoles(userId);
-        const canCreateJobs = userRoles.some((r: any) => 
-          (r.role === 'manager' || r.role === 'hr_manager' || r.role === 'admin') && 
-          r.companyId === validatedData.companyId
-        );
+        // Get user's global role
+        const user = (req.session as any).user;
+        const isGlobalAdmin = user.role === 'admin' || user.role === 'super_admin';
         
-        if (!canCreateJobs) {
-          return res.status(403).json({ message: "Apenas Gestores e Gerentes de RH podem criar vagas" });
-        }
-        
-        // Check permission for the specific company
-        const hasPermission = await storage.checkUserPermission(userId, validatedData.companyId, 'create_jobs');
-        if (!hasPermission) {
-          return res.status(403).json({ message: "Sem permissão para criar vagas" });
+        // Apenas GESTOR, Gerente de RH e Admins globais podem criar vagas
+        if (!isGlobalAdmin) {
+          const userRoles = await storage.getUserCompanyRoles(userId);
+          const canCreateJobs = userRoles.some((r: any) => 
+            (r.role === 'manager' || r.role === 'hr_manager' || r.role === 'admin') && 
+            r.companyId === validatedData.companyId
+          );
+          
+          if (!canCreateJobs) {
+            return res.status(403).json({ message: "Apenas Gestores e Gerentes de RH podem criar vagas" });
+          }
+          
+          // Check permission for the specific company
+          const hasPermission = await storage.checkUserPermission(userId, validatedData.companyId, 'create_jobs');
+          if (!hasPermission) {
+            return res.status(403).json({ message: "Sem permissão para criar vagas" });
+          }
         }
       }
       
