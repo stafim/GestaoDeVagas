@@ -496,26 +496,15 @@ export default function Kanban() {
                 </Select>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setShowNewStageModal(true)}
-                data-testid="button-new-stage"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Etapa
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowNotesReport(true)}
-                data-testid="button-notes-report"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Relatório de Notas
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowNotesReport(true)}
+              data-testid="button-notes-report"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Relatório de Notas
+            </Button>
           </div>
         </div>
 
