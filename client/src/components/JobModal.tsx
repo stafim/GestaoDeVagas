@@ -1619,7 +1619,13 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                     <FormItem>
                       <FormLabel>Horário de Trabalho</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: 08:00 às 17:00" {...field} data-testid="input-work-hours" />
+                        <Input 
+                          placeholder="Selecione uma escala de trabalho" 
+                          {...field} 
+                          readOnly 
+                          className="bg-muted cursor-not-allowed"
+                          data-testid="input-work-hours" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
