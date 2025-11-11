@@ -1382,3 +1382,36 @@ export const insertBlacklistCandidateSchema = createInsertSchema(blacklistCandid
   createdAt: true,
   updatedAt: true,
 });
+
+// Senior HCM Integration Settings table
+export const seniorIntegrationSettings = pgTable("senior_integration_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull().unique(), // Uma configuração por organização
+  apiUrl: varchar("api_url", { length: 255 }).notNull().default("https://senior-sql.acelera-it.io"),
+  apiKey: varchar("api_key", { length: 255 }).notNull(), // API Key for authentication
+  isActive: boolean("is_active").default(true),
+  autoSync: boolean("auto_sync").default(false), // Sincronização automática
+  syncInterval: integer("sync_interval").default(60), // Intervalo em minutos
+  lastSyncAt: timestamp("last_sync_at"),
+  lastSyncStatus: varchar("last_sync_status", { length: 50 }), // success, error, in_progress
+  lastSyncError: text("last_sync_error"),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type SeniorIntegrationSetting = typeof seniorIntegrationSettings.$inferSelect;
+export type InsertSeniorIntegrationSetting = z.infer<typeof insertSeniorIntegrationSettingSchema>;
+
+export const insertSeniorIntegrationSettingSchema = createInsertSchema(seniorIntegrationSettings, {
+  apiUrl: z.string().url("URL da API deve ser válida"),
+  apiKey: z.string().min(10, "API Key deve ter no mínimo 10 caracteres"),
+  syncInterval: z.number().min(5, "Intervalo mínimo é de 5 minutos").max(1440, "Intervalo máximo é de 24 horas"),
+}).omit({
+  id: true,
+  lastSyncAt: true,
+  lastSyncStatus: true,
+  lastSyncError: true,
+  createdAt: true,
+  updatedAt: true,
+});
