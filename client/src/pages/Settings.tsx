@@ -259,10 +259,9 @@ export default function Settings() {
     queryKey: ["/api/settings"],
   });
 
-  // Professions queries - busca diretamente da API Senior HCM
-  const { data: professions = [], isLoading: isLoadingProfessions, error: professionsError } = useQuery<Profession[]>({
-    queryKey: ["/api/senior-integration/professions"],
-    retry: 1,
+  // Professions queries - busca do cadastro local
+  const { data: professions = [], isLoading: isLoadingProfessions } = useQuery<Profession[]>({
+    queryKey: ["/api/professions"],
   });
 
   const [professionsSearch, setProfessionsSearch] = useState("");
@@ -2018,27 +2017,26 @@ export default function Settings() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5" />
-                  Profissões da Senior HCM
+                  Cadastro de Profissões
                 </CardTitle>
                 <CardDescription>
-                  {isLoadingProfessions ? "Carregando..." : `${professions.length} profissões disponíveis na Senior HCM`}
+                  {professions.length} profissões cadastradas ({professions.filter(p => p.importedFromSenior).length} importadas da Senior HCM)
                 </CardDescription>
               </div>
               <Button
-                onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/senior-integration/professions"] })}
-                disabled={isLoadingProfessions}
-                variant="outline"
-                data-testid="button-refresh-professions"
+                onClick={() => importProfessionsMutation.mutate()}
+                disabled={importProfessionsMutation.isPending}
+                data-testid="button-import-professions"
               >
-                {isLoadingProfessions ? (
+                {importProfessionsMutation.isPending ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Atualizando...
+                    Sincronizando...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Atualizar
+                    <Download className="h-4 w-4 mr-2" />
+                    Sincronizar com Senior HCM
                   </>
                 )}
               </Button>
@@ -2053,24 +2051,7 @@ export default function Settings() {
                 />
               </div>
 
-              {professionsError ? (
-                <div className="p-12 text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
-                    <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">Erro ao carregar profissões</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Verifique se a integração com a Senior HCM está configurada corretamente
-                  </p>
-                  <Button
-                    variant="default"
-                    onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/senior-integration/professions"] })}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Tentar novamente
-                  </Button>
-                </div>
-              ) : isLoadingProfessions ? (
+              {isLoadingProfessions ? (
                 <div className="space-y-4">
                   {Array.from({ length: 10 }).map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
@@ -2166,8 +2147,18 @@ export default function Settings() {
                     <p className="text-muted-foreground mb-4">
                       {professionsSearch
                         ? "Nenhuma profissão corresponde à sua busca"
-                        : "Nenhuma profissão cadastrada na Senior HCM"}
+                        : "Comece sincronizando profissões da Senior HCM"}
                     </p>
+                    {!professionsSearch && (
+                      <Button
+                        variant="default"
+                        onClick={() => importProfessionsMutation.mutate()}
+                        disabled={importProfessionsMutation.isPending}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Sincronizar com Senior HCM
+                      </Button>
+                    )}
                   </div>
                 );
               })()}
