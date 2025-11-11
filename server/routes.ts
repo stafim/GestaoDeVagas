@@ -2768,6 +2768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/jobs/:id', isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
+      const { reason } = req.body;
       const userId = req.user?.id || (req.session as any).user?.id;
       
       // First load the job to get its actual companyId for authorization
@@ -2783,6 +2784,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasPermission = await storage.checkUserPermission(userId, existingJob.companyId, 'delete_jobs');
       if (!hasPermission) {
         return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      // Log deletion reason in status history
+      if (reason) {
+        await storage.createJobStatusHistory({
+          jobId: id,
+          previousStatus: existingJob.status || undefined,
+          newStatus: `Excluída - Motivo: ${reason}`,
+          changedBy: userId,
+        });
       }
       
       await storage.deleteJob(id);

@@ -1,4 +1,14 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { JobWithDetails } from "@shared/schema";
@@ -7,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, Clock, UserCheck, XCircle, StickyNote, Calendar, User, FileText, Briefcase, MapPin, Phone, CreditCard, Cake } from "lucide-react";
+import { CheckCircle, Clock, UserCheck, XCircle, StickyNote, Calendar, User, FileText, Briefcase, MapPin, Phone, CreditCard, Cake, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -24,6 +34,8 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
   const [isEditingAdmission, setIsEditingAdmission] = useState(false);
   const [admissionDate, setAdmissionDate] = useState("");
   const [hiredCandidateId, setHiredCandidateId] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -137,6 +149,52 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
       });
     }
   });
+
+  const deleteJobMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      const response = await apiRequest("DELETE", `/api/jobs/${jobId}`, { reason });
+      return response.json();
+    },
+    onSuccess: async () => {
+      toast({
+        title: "Vaga Excluída",
+        description: "A vaga foi excluída com sucesso",
+      });
+      await queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
+      // Invalidate all dashboard queries
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) && 
+                 typeof queryKey[0] === 'string' && 
+                 queryKey[0].startsWith('/api/dashboard');
+        }
+      });
+      setShowDeleteDialog(false);
+      setDeleteReason("");
+      onClose();
+    },
+    onError: (error) => {
+      console.error("Error deleting job:", error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir a vaga",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleDeleteJob = () => {
+    if (!deleteReason.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, informe o motivo da exclusão",
+        variant: "destructive",
+      });
+      return;
+    }
+    deleteJobMutation.mutate(deleteReason);
+  };
 
   const handleSaveNotes = () => {
     updateNotesMutation.mutate(notesText);
@@ -1008,6 +1066,19 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
                   </div>
                 </div>
               )}
+
+              {/* Botão Excluir Vaga */}
+              <div className="flex justify-end pt-4 border-t mt-6">
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={deleteJobMutation.isPending}
+                  data-testid="button-delete-job"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir Vaga
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         ) : (
@@ -1016,6 +1087,47 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
           </p>
         )}
       </DialogContent>
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent data-testid="dialog-delete-job">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Vaga</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Por favor, informe o motivo da exclusão desta vaga.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Motivo da Exclusão *</label>
+            <Textarea
+              placeholder="Digite o motivo da exclusão..."
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              className="min-h-[100px]"
+              data-testid="textarea-delete-reason"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setDeleteReason("");
+              }}
+              data-testid="button-cancel-delete"
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteJob}
+              disabled={deleteJobMutation.isPending || !deleteReason.trim()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              {deleteJobMutation.isPending ? "Excluindo..." : "Excluir Vaga"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
