@@ -695,7 +695,7 @@ export default function Dashboard() {
           <Card className="shadow-sm hover:shadow-lg transition-shadow duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2563eb' }}></div>
                 Produtividade das Vagas
               </CardTitle>
               <CardDescription>Vagas produtivas vs improdutivas</CardDescription>
@@ -706,7 +706,7 @@ export default function Dashboard() {
               ) : (
                 <div className="flex items-center justify-around h-64">
                   <div className="text-center">
-                    <div className="text-6xl font-bold mb-2" style={{ color: '#10b981' }}>
+                    <div className="text-6xl font-bold mb-2" style={{ color: '#2563eb' }}>
                       {jobsProductivity?.productive || 0}
                     </div>
                     <div className="text-sm text-muted-foreground font-medium">
@@ -718,7 +718,7 @@ export default function Dashboard() {
                   </div>
                   <div className="h-32 w-px bg-border"></div>
                   <div className="text-center">
-                    <div className="text-6xl font-bold mb-2" style={{ color: '#ef4444' }}>
+                    <div className="text-6xl font-bold mb-2" style={{ color: '#60a5fa' }}>
                       {jobsProductivity?.unproductive || 0}
                     </div>
                     <div className="text-sm text-muted-foreground font-medium">
@@ -1037,7 +1037,7 @@ export default function Dashboard() {
                         </TableCell>
                         <TableCell>
                           {job.status === "closed" ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white border border-green-600">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white border" style={{ backgroundColor: '#2563eb', borderColor: '#2563eb' }}>
                               {statusLabels[job.status] || job.status}
                             </span>
                           ) : (
@@ -1066,10 +1066,10 @@ export default function Dashboard() {
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <Button variant="ghost" size="sm" data-testid={`button-edit-job-${job.id}`}>
-                              <Eye className="h-4 w-4 text-primary" />
+                              <Eye className="h-4 w-4" style={{ color: '#2563eb' }} />
                             </Button>
                             <Button variant="ghost" size="sm">
-                              <Users className="h-4 w-4 text-success" />
+                              <Users className="h-4 w-4" style={{ color: '#2563eb' }} />
                             </Button>
                             <Button variant="ghost" size="sm">
                               <Calendar className="h-4 w-4 text-muted-foreground" />

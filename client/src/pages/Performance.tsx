@@ -263,7 +263,7 @@ export default function Performance() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
+              <Lightbulb className="h-5 w-5 mr-2" style={{ color: '#60a5fa' }} />
               Insights e Recomendações
             </CardTitle>
           </CardHeader>

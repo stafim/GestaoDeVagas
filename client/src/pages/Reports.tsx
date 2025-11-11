@@ -244,8 +244,8 @@ export default function Reports() {
                           </p>
                           <p className="text-sm text-muted-foreground">Vagas Ativas</p>
                         </div>
-                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                          <i className="fas fa-check-circle text-green-600 text-lg"></i>
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#dbeafe' }}>
+                          <i className="fas fa-check-circle text-lg" style={{ color: '#2563eb' }}></i>
                         </div>
                       </div>
                     </CardContent>
@@ -276,8 +276,8 @@ export default function Reports() {
                           </p>
                           <p className="text-sm text-muted-foreground">Empresas</p>
                         </div>
-                        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                          <i className="fas fa-building text-orange-600 text-lg"></i>
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#dbeafe' }}>
+                          <i className="fas fa-building text-lg" style={{ color: '#3b82f6' }}></i>
                         </div>
                       </div>
                     </CardContent>
@@ -415,7 +415,7 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600 mb-2">78.5%</div>
+                    <div className="text-3xl font-bold mb-2" style={{ color: '#2563eb' }}>78.5%</div>
                     <p className="text-sm text-muted-foreground">
                       Vagas preenchidas com sucesso
                     </p>
@@ -475,7 +475,7 @@ export default function Reports() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-green-600">85%</p>
+                          <p className="text-lg font-bold" style={{ color: '#2563eb' }}>85%</p>
                           <p className="text-xs text-muted-foreground">Taxa de sucesso</p>
                         </div>
                       </div>
@@ -496,19 +496,19 @@ export default function Reports() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Crescimento em vagas ativas</span>
-                      <span className="text-sm font-bold text-green-600">+15.2%</span>
+                      <span className="text-sm font-bold" style={{ color: '#1e40af' }}>+15.2%</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Aumento em candidaturas</span>
-                      <span className="text-sm font-bold text-blue-600">+23.1%</span>
+                      <span className="text-sm font-bold" style={{ color: '#2563eb' }}>+23.1%</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Redução no tempo de contratação</span>
-                      <span className="text-sm font-bold text-primary">-8.5%</span>
+                      <span className="text-sm font-bold" style={{ color: '#1e40af' }}>-8.5%</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Melhoria na qualidade dos candidatos</span>
-                      <span className="text-sm font-bold text-purple-600">+12.3%</span>
+                      <span className="text-sm font-bold" style={{ color: '#3b82f6' }}>+12.3%</span>
                     </div>
                   </div>
                 </CardContent>
@@ -528,19 +528,19 @@ export default function Reports() {
                         Previsão de 25% mais candidaturas baseado na tendência atual
                       </p>
                     </div>
-                    <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                      <h4 className="font-medium mb-2" style={{ color: '#1e40af' }}>
                         Trimestre
                       </h4>
-                      <p className="text-sm text-green-700 dark:text-green-300">
+                      <p className="text-sm" style={{ color: '#2563eb' }}>
                         Expectativa de redução de 15% no tempo médio de contratação
                       </p>
                     </div>
-                    <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                      <h4 className="font-medium mb-2" style={{ color: '#3b82f6' }}>
                         Semestre
                       </h4>
-                      <p className="text-sm text-orange-700 dark:text-orange-300">
+                      <p className="text-sm" style={{ color: '#60a5fa' }}>
                         Projeção de 40% de crescimento no número de vagas ativas
                       </p>
                     </div>
