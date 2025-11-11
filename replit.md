@@ -8,7 +8,25 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
-### Dashboard Charts - Work Positions & Cost Centers (LATEST)
+### Division-Based Workflow Approvals (LATEST)
+- **Database Structure**:
+  - **divisions table**: Stores organizational divisions from Senior (code, name, isActive)
+  - **7 divisions imported**: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
+  - **approvalWorkflows.divisionId**: Optional foreign key to divisions table
+- **Backend Implementation**:
+  - Import script: `server/scripts/import-divisions.ts` syncs divisions from Senior's `usu_tdivare` table
+  - API endpoint: `GET /api/divisions` returns all active divisions
+  - Storage method: `getDivisions()` queries divisions ordered by name
+- **Frontend Features**:
+  - Division selector in workflow creation form (optional field)
+  - Dropdown options: "Todas as divisões" (blank) or specific division (FACILITIES, ENGENHARIA, etc)
+  - Description: "Associe este workflow a uma divisão específica"
+- **Use Case**:
+  - Create approval workflows for all divisions (leave blank)
+  - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
+  - Enables customized approval processes per organizational area
+
+### Dashboard Charts - Work Positions & Cost Centers
 - **New Charts Added**:
   - **Vagas por Posto de Trabalho**: Horizontal bar chart showing top 10 work positions with most open jobs
   - **Vagas por Centro de Custos**: Horizontal bar chart showing top 10 cost centers with most open jobs
