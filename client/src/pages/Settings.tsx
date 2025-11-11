@@ -16,14 +16,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2, Briefcase } from "lucide-react";
+import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2, Briefcase, RefreshCw, Download } from "lucide-react";
 import { z } from "zod";
 import { ClientDashboardSettings } from "@/components/ClientDashboardSettings";
 import { BlacklistManager } from "@/components/BlacklistManager";
 import { SeniorIntegrationSettings } from "@/components/SeniorIntegrationSettings";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, RefreshCw } from "lucide-react";
 import type { Profession } from "@shared/schema";
 
 const workScaleFormSchema = z.object({
@@ -260,9 +259,10 @@ export default function Settings() {
     queryKey: ["/api/settings"],
   });
 
-  // Professions queries
-  const { data: professions = [], isLoading: isLoadingProfessions } = useQuery<Profession[]>({
-    queryKey: ["/api/professions"],
+  // Professions queries - busca diretamente da API Senior HCM
+  const { data: professions = [], isLoading: isLoadingProfessions, error: professionsError } = useQuery<Profession[]>({
+    queryKey: ["/api/senior-integration/professions"],
+    retry: 1,
   });
 
   const [professionsSearch, setProfessionsSearch] = useState("");
@@ -2018,26 +2018,27 @@ export default function Settings() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5" />
-                  Cadastro de Profissões
+                  Profissões da Senior HCM
                 </CardTitle>
                 <CardDescription>
-                  {professions.length} profissões cadastradas ({professions.filter(p => p.importedFromSenior).length} da Senior HCM)
+                  {isLoadingProfessions ? "Carregando..." : `${professions.length} profissões disponíveis na Senior HCM`}
                 </CardDescription>
               </div>
               <Button
-                onClick={() => importProfessionsMutation.mutate()}
-                disabled={importProfessionsMutation.isPending}
-                data-testid="button-import-professions"
+                onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/senior-integration/professions"] })}
+                disabled={isLoadingProfessions}
+                variant="outline"
+                data-testid="button-refresh-professions"
               >
-                {importProfessionsMutation.isPending ? (
+                {isLoadingProfessions ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Importando...
+                    Atualizando...
                   </>
                 ) : (
                   <>
-                    <Download className="h-4 w-4 mr-2" />
-                    Importar da Senior HCM
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Atualizar
                   </>
                 )}
               </Button>
@@ -2052,7 +2053,24 @@ export default function Settings() {
                 />
               </div>
 
-              {isLoadingProfessions ? (
+              {professionsError ? (
+                <div className="p-12 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+                    <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Erro ao carregar profissões</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Verifique se a integração com a Senior HCM está configurada corretamente
+                  </p>
+                  <Button
+                    variant="default"
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/senior-integration/professions"] })}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Tentar novamente
+                  </Button>
+                </div>
+              ) : isLoadingProfessions ? (
                 <div className="space-y-4">
                   {Array.from({ length: 10 }).map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
@@ -2148,18 +2166,8 @@ export default function Settings() {
                     <p className="text-muted-foreground mb-4">
                       {professionsSearch
                         ? "Nenhuma profissão corresponde à sua busca"
-                        : "Comece importando profissões da Senior HCM"}
+                        : "Nenhuma profissão cadastrada na Senior HCM"}
                     </p>
-                    {!professionsSearch && (
-                      <Button
-                        variant="default"
-                        onClick={() => importProfessionsMutation.mutate()}
-                        disabled={importProfessionsMutation.isPending}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Importar da Senior HCM
-                      </Button>
-                    )}
                   </div>
                 );
               })()}

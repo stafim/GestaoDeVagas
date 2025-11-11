@@ -1389,6 +1389,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get professions from Senior API (real-time)
+  app.get('/api/senior-integration/professions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Create Senior integration service
+      const { createSeniorIntegrationService } = await import('./services/seniorIntegration');
+      const seniorService = createSeniorIntegrationService({
+        apiUrl: settings.apiUrl,
+        apiKey: settings.apiKey,
+      });
+
+      // Query to fetch all professions/cargos from r024car
+      const seniorProfessions = await seniorService.executeQuery<{
+        estcar: number;
+        codcar: string;
+        titcar: string;
+        codcb2: string;
+      }>(
+        'SELECT estcar, codcar, titcar, codcb2 FROM r024car ORDER BY titcar'
+      );
+
+      if (!Array.isArray(seniorProfessions)) {
+        return res.json([]);
+      }
+
+      // Transform to match our Profession interface
+      const professions = seniorProfessions.map(p => ({
+        id: `${p.estcar}-${p.codcar}`,
+        name: p.titcar,
+        cboCode: p.codcb2 || null,
+        category: null,
+        description: null,
+        seniorId: `${p.estcar}-${p.codcar}`,
+        seniorEstablishment: p.estcar.toString(),
+        importedFromSenior: true,
+        isActive: true,
+        lastSyncedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }));
+
+      res.json(professions);
+
+    } catch (error) {
+      console.error("Error fetching professions from Senior:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao buscar profissões da Senior HCM" 
+      });
+    }
+  });
+
   // Import professions from Senior r024car table
   app.post('/api/senior-integration/import-professions', isAuthenticated, async (req, res) => {
     try {
@@ -1417,12 +1484,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Query to fetch all professions/cargos from r024car
       const seniorProfessions = await seniorService.executeQuery<{
-        numemp: number;
-        numcar: number;
-        nomcar: string;
-        codcbo: string;
+        estcar: number;
+        codcar: string;
+        titcar: string;
+        codcb2: string;
       }>(
-        'SELECT numemp, numcar, nomcar, codcbo FROM r024car ORDER BY nomcar'
+        'SELECT estcar, codcar, titcar, codcb2 FROM r024car ORDER BY titcar'
       );
 
       if (!Array.isArray(seniorProfessions) || seniorProfessions.length === 0) {
@@ -1450,15 +1517,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import each profession
       for (const seniorProf of seniorProfessions) {
         try {
-          const seniorId = `${seniorProf.numemp}-${seniorProf.numcar}`;
+          const seniorId = `${seniorProf.estcar}-${seniorProf.codcar}`;
           const existing = professionMap.get(seniorId);
 
           if (existing) {
             // Update name if changed
-            if (existing.name !== seniorProf.nomcar || existing.cboCode !== seniorProf.codcbo) {
+            if (existing.name !== seniorProf.titcar || existing.cboCode !== seniorProf.codcb2) {
               await storage.updateProfession(existing.id, {
-                name: seniorProf.nomcar,
-                cboCode: seniorProf.codcbo || undefined,
+                name: seniorProf.titcar,
+                cboCode: seniorProf.codcb2 || undefined,
                 lastSyncedAt: new Date(),
               });
               updated++;
@@ -1470,10 +1537,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Create profession in our system
           await storage.createProfession({
-            name: seniorProf.nomcar,
-            cboCode: seniorProf.codcbo || undefined,
+            name: seniorProf.titcar,
+            cboCode: seniorProf.codcb2 || undefined,
             seniorId: seniorId,
-            seniorEstablishment: seniorProf.numemp.toString(),
+            seniorEstablishment: seniorProf.estcar.toString(),
             importedFromSenior: true,
             lastSyncedAt: new Date(),
             isActive: true,
@@ -1481,8 +1548,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           imported++;
 
         } catch (error) {
-          console.error(`Error importing profession ${seniorProf.nomcar}:`, error);
-          errors.push(`${seniorProf.nomcar}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+          console.error(`Error importing profession ${seniorProf.titcar}:`, error);
+          errors.push(`${seniorProf.titcar}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         }
       }
 
