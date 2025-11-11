@@ -125,7 +125,7 @@ export default function Dashboard() {
   });
 
   const { data: metrics, isLoading: metricsLoading} = useQuery<DashboardMetrics>({
-    queryKey: ["/api/dashboard/metrics", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/metrics", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -133,6 +133,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/metrics?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch metrics');
       return await res.json();
@@ -140,7 +141,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsByStatus, isLoading: jobsByStatusLoading } = useQuery<JobsByStatusResponse>({
-    queryKey: ["/api/dashboard/jobs-by-status", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-by-status", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -148,6 +149,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-by-status?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by status');
       return await res.json();
@@ -163,7 +165,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsByCreator, isLoading: jobsByCreatorLoading } = useQuery<JobsByCreatorResponse>({
-    queryKey: ["/api/dashboard/jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -171,6 +173,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-by-creator?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by creator');
       return await res.json();
@@ -178,7 +181,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsByCompany, isLoading: jobsByCompanyLoading } = useQuery<JobsByCompanyResponse>({
-    queryKey: ["/api/dashboard/jobs-by-company", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-by-company", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -186,6 +189,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-by-company?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by company');
       return await res.json();
@@ -193,7 +197,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsByClient, isLoading: jobsByClientLoading } = useQuery<Array<{ clientId: string; clientName: string; count: number }>>({
-    queryKey: ["/api/dashboard/jobs-by-client", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-by-client", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -201,6 +205,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-by-client?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by client');
       return await res.json();
@@ -208,7 +213,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsSLA, isLoading: jobsSLALoading } = useQuery<JobsSLAResponse>({
-    queryKey: ["/api/dashboard/jobs-sla", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-sla", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -216,6 +221,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-sla?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs SLA');
       return await res.json();
@@ -223,7 +229,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsProductivity, isLoading: jobsProductivityLoading } = useQuery<{ productive: number; unproductive: number }>({
-    queryKey: ["/api/dashboard/jobs-productivity", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-productivity", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -231,6 +237,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-productivity?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs productivity');
       return await res.json();
@@ -238,7 +245,7 @@ export default function Dashboard() {
   });
 
   const { data: allJobsByCreator, isLoading: allJobsByCreatorLoading } = useQuery<JobsByCreatorResponse>({
-    queryKey: ["/api/dashboard/all-jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/all-jobs-by-creator", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -246,6 +253,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/all-jobs-by-creator?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch all jobs by creator');
       return await res.json();
@@ -253,7 +261,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsByWorkPosition, isLoading: jobsByWorkPositionLoading } = useQuery<JobsByWorkPositionResponse>({
-    queryKey: ["/api/dashboard/jobs-by-work-position", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-by-work-position", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -261,6 +269,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-by-work-position?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by work position');
       return await res.json();
@@ -268,7 +277,7 @@ export default function Dashboard() {
   });
 
   const { data: jobsByCostCenter, isLoading: jobsByCostCenterLoading } = useQuery<JobsByCostCenterResponse>({
-    queryKey: ["/api/dashboard/jobs-by-cost-center", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes],
+    queryKey: ["/api/dashboard/jobs-by-cost-center", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters, selectedJobTypes, selectedOpeningReasons],
     queryFn: async () => {
       const params = new URLSearchParams();
       selectedMonths.forEach(month => params.append("month", month));
@@ -276,6 +285,7 @@ export default function Dashboard() {
       selectedDivisions.forEach(div => params.append("division", div));
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       selectedJobTypes.forEach(type => params.append("jobType", type));
+      selectedOpeningReasons.forEach(reason => params.append("openingReason", reason));
       const res = await fetch(`/api/dashboard/jobs-by-cost-center?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch jobs by cost center');
       return await res.json();
