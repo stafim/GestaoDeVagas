@@ -8,7 +8,19 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
-### Division-Based Workflow and Cost Center Filtering (LATEST)
+### Job Creation Form Field Organization (LATEST)
+- **Field Order in "Informações Básicas" section**:
+  1. Cliente
+  2. Divisão
+  3. Centro de Custo
+  4. Empresa (auto-filled when cost center is selected)
+  5. Posto de Trabalho
+  6. Profissão
+  7. Workflow de Aprovação
+- Organization facilitates logical workflow: Division → Cost Center → Auto-filled Company
+- Ensures division-based filtering works seamlessly in the new order
+
+### Division-Based Workflow and Cost Center Filtering
 - **Database Structure**:
   - **divisions table**: Stores organizational divisions from Senior (`usu_tdivare.usu_coddiv`, `usu_desdiv`)
   - **7 divisions imported**: ADMINISTRATIVO (1), FACILITIES (2), INDUSTRIAL (3), LOGISTICA (4), MANUTENCAO (5), ENGENHARIA (6), MOBILIDADE (7)

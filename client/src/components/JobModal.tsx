@@ -681,6 +681,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
             <div>
               <h3 className="text-lg font-semibold mb-4">Informações Básicas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 1. Cliente */}
                 <FormField
                   control={form.control}
                   name="clientId"
@@ -706,6 +707,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   )}
                 />
 
+                {/* 2. Divisão */}
                 <FormField
                   control={form.control}
                   name="department"
@@ -731,6 +733,186 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   )}
                 />
 
+                {/* 3. Centro de Custo */}
+                <FormField
+                  control={form.control}
+                  name="costCenterId"
+                  render={({ field }) => {
+                    const selectedDepartment = form.watch("department");
+                    
+                    // Find division ID by name
+                    const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
+                    
+                    // Filter cost centers ONLY by division
+                    // Show only cost centers that belong to the selected division
+                    const filteredCostCenters = selectedDivision
+                      ? costCenters.filter(cc => cc.divisionId === selectedDivision.id)
+                      : [];
+
+                    const isDisabled = !selectedDepartment;
+
+                    // Auto-fill company when cost center is selected
+                    const handleCostCenterChange = (costCenterId: string) => {
+                      field.onChange(costCenterId);
+                      
+                      // Find the selected cost center and auto-fill the company
+                      const selectedCostCenter = costCenters.find(cc => cc.id === costCenterId);
+                      if (selectedCostCenter && selectedCostCenter.companyId) {
+                        form.setValue('companyId', selectedCostCenter.companyId);
+                      }
+                    };
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Centro de Custo</FormLabel>
+                        <Select 
+                          onValueChange={handleCostCenterChange} 
+                          value={field.value || ""}
+                          disabled={isDisabled}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-cost-center">
+                              <SelectValue placeholder={
+                                !selectedDepartment 
+                                  ? "Selecione primeiro uma divisão" 
+                                  : filteredCostCenters.length === 0
+                                    ? "Nenhum centro de custo disponível para esta divisão"
+                                    : "Selecione um centro de custo"
+                              } />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {filteredCostCenters.length > 0 ? (
+                              filteredCostCenters.map((costCenter) => (
+                                <SelectItem key={costCenter.id} value={costCenter.id}>
+                                  {costCenter.code} - {costCenter.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="py-6 text-center text-sm text-muted-foreground">
+                                Nenhum centro de custo disponível para a divisão {selectedDepartment}
+                              </div>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {isDisabled && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Selecione uma divisão para ver os centros de custo
+                          </p>
+                        )}
+                        {!isDisabled && filteredCostCenters.length === 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            ⚠️ Não há centros de custo cadastrados para a divisão {selectedDepartment}
+                          </p>
+                        )}
+                        {!isDisabled && filteredCostCenters.length > 0 && (
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            💡 A empresa será preenchida automaticamente ao selecionar o centro de custo
+                          </p>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+
+                {/* 4. Empresa */}
+                <FormField
+                  control={form.control}
+                  name="companyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Empresa</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-company">
+                            <SelectValue placeholder="Selecione uma empresa" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.isArray(companies) && companies.map((company: any) => (
+                            <SelectItem key={company.id} value={company.id}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* 5. Posto de Trabalho */}
+                <FormField
+                  control={form.control}
+                  name="workPosition"
+                  render={({ field }) => {
+                    const selectedPosition = workPositions?.find(p => p.name === field.value);
+                    return (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Posto de Trabalho</FormLabel>
+                        <Popover open={workPositionPopoverOpen} onOpenChange={setWorkPositionPopoverOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                data-testid="button-work-position"
+                                className={cn(
+                                  "justify-between font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {selectedPosition?.name || "Buscar posto de trabalho..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-0">
+                            <Command shouldFilter={false}>
+                              <CommandInput
+                                placeholder="Digite para buscar..."
+                                value={workPositionSearch}
+                                onValueChange={setWorkPositionSearch}
+                                data-testid="input-work-position-search"
+                              />
+                              <CommandList>
+                                <CommandEmpty>Nenhum posto de trabalho encontrado.</CommandEmpty>
+                                <CommandGroup>
+                                  {Array.isArray(workPositions) && workPositions.map((position: any) => (
+                                    <CommandItem
+                                      key={position.id}
+                                      value={position.name}
+                                      onSelect={() => {
+                                        form.setValue("workPosition", position.name);
+                                        setWorkPositionPopoverOpen(false);
+                                        setWorkPositionSearch("");
+                                      }}
+                                      data-testid={`option-work-position-${position.id}`}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          position.name === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {position.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+
+                {/* 6. Profissão */}
                 <FormField
                   control={form.control}
                   name="professionId"
@@ -825,182 +1007,7 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   </FormItem>
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="workPosition"
-                  render={({ field }) => {
-                    const selectedPosition = workPositions?.find(p => p.name === field.value);
-                    return (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Posto de Trabalho</FormLabel>
-                        <Popover open={workPositionPopoverOpen} onOpenChange={setWorkPositionPopoverOpen}>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                data-testid="button-work-position"
-                                className={cn(
-                                  "justify-between font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {selectedPosition?.name || "Buscar posto de trabalho..."}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[400px] p-0">
-                            <Command shouldFilter={false}>
-                              <CommandInput
-                                placeholder="Digite para buscar..."
-                                value={workPositionSearch}
-                                onValueChange={setWorkPositionSearch}
-                                data-testid="input-work-position-search"
-                              />
-                              <CommandList>
-                                <CommandEmpty>Nenhum posto de trabalho encontrado.</CommandEmpty>
-                                <CommandGroup>
-                                  {Array.isArray(workPositions) && workPositions.map((position: any) => (
-                                    <CommandItem
-                                      key={position.id}
-                                      value={position.name}
-                                      onSelect={() => {
-                                        form.setValue("workPosition", position.name);
-                                        setWorkPositionPopoverOpen(false);
-                                        setWorkPositionSearch("");
-                                      }}
-                                      data-testid={`option-work-position-${position.id}`}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          position.name === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {position.name}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="companyId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Empresa</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-company">
-                            <SelectValue placeholder="Selecione uma empresa" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.isArray(companies) && companies.map((company: any) => (
-                            <SelectItem key={company.id} value={company.id}>
-                              {company.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="costCenterId"
-                  render={({ field }) => {
-                    const selectedDepartment = form.watch("department");
-                    
-                    // Find division ID by name
-                    const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
-                    
-                    // Filter cost centers ONLY by division
-                    // Show only cost centers that belong to the selected division
-                    const filteredCostCenters = selectedDivision
-                      ? costCenters.filter(cc => cc.divisionId === selectedDivision.id)
-                      : [];
-
-                    const isDisabled = !selectedDepartment;
-
-                    // Auto-fill company when cost center is selected
-                    const handleCostCenterChange = (costCenterId: string) => {
-                      field.onChange(costCenterId);
-                      
-                      // Find the selected cost center and auto-fill the company
-                      const selectedCostCenter = costCenters.find(cc => cc.id === costCenterId);
-                      if (selectedCostCenter && selectedCostCenter.companyId) {
-                        form.setValue('companyId', selectedCostCenter.companyId);
-                      }
-                    };
-
-                    return (
-                      <FormItem>
-                        <FormLabel>Centro de Custo</FormLabel>
-                        <Select 
-                          onValueChange={handleCostCenterChange} 
-                          value={field.value || ""}
-                          disabled={isDisabled}
-                        >
-                          <FormControl>
-                            <SelectTrigger data-testid="select-cost-center">
-                              <SelectValue placeholder={
-                                !selectedDepartment 
-                                  ? "Selecione primeiro uma divisão" 
-                                  : filteredCostCenters.length === 0
-                                    ? "Nenhum centro de custo disponível para esta divisão"
-                                    : "Selecione um centro de custo"
-                              } />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {filteredCostCenters.length > 0 ? (
-                              filteredCostCenters.map((costCenter) => (
-                                <SelectItem key={costCenter.id} value={costCenter.id}>
-                                  {costCenter.code} - {costCenter.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <div className="py-6 text-center text-sm text-muted-foreground">
-                                Nenhum centro de custo disponível para a divisão {selectedDepartment}
-                              </div>
-                            )}
-                          </SelectContent>
-                        </Select>
-                        {isDisabled && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Selecione uma divisão para ver os centros de custo
-                          </p>
-                        )}
-                        {!isDisabled && filteredCostCenters.length === 0 && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                            ⚠️ Não há centros de custo cadastrados para a divisão {selectedDepartment}
-                          </p>
-                        )}
-                        {!isDisabled && filteredCostCenters.length > 0 && (
-                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                            💡 A empresa será preenchida automaticamente ao selecionar o centro de custo
-                          </p>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-
+                {/* 7. Workflow de Aprovação */}
                 <FormField
                   control={form.control}
                   name="approvalWorkflowId"
