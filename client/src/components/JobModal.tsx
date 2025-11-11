@@ -936,11 +936,22 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
                     const isDisabled = !selectedDepartment;
 
+                    // Auto-fill company when cost center is selected
+                    const handleCostCenterChange = (costCenterId: string) => {
+                      field.onChange(costCenterId);
+                      
+                      // Find the selected cost center and auto-fill the company
+                      const selectedCostCenter = costCenters.find(cc => cc.id === costCenterId);
+                      if (selectedCostCenter && selectedCostCenter.companyId) {
+                        form.setValue('companyId', selectedCostCenter.companyId);
+                      }
+                    };
+
                     return (
                       <FormItem>
                         <FormLabel>Centro de Custo</FormLabel>
                         <Select 
-                          onValueChange={field.onChange} 
+                          onValueChange={handleCostCenterChange} 
                           value={field.value || ""}
                           disabled={isDisabled}
                         >
@@ -977,6 +988,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                         {!isDisabled && filteredCostCenters.length === 0 && (
                           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                             ⚠️ Não há centros de custo cadastrados para a divisão {selectedDepartment}
+                          </p>
+                        )}
+                        {!isDisabled && filteredCostCenters.length > 0 && (
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            💡 A empresa será preenchida automaticamente ao selecionar o centro de custo
                           </p>
                         )}
                         <FormMessage />

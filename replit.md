@@ -34,6 +34,7 @@ Preferred communication style: Simple, everyday language.
   - **Workflow filtering**: Approval workflow dropdown shows only workflows matching the selected division
   - **Cost Center filtering - DIVISION-ONLY MODE**: When division is selected, cost center dropdown shows ONLY cost centers that belong to that specific division
   - Cost center field is **enabled immediately** after division selection (no dependency on company)
+  - **Auto-fill Company**: When a cost center is selected, the Company field is automatically filled with the company associated with that cost center
   - Workflow field disabled until division is selected
   - Auto-clears cost center selection if division is changed to prevent mismatches
   - Cost center list loads all centers once, filtered by division in the UI
