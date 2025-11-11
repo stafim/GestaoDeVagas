@@ -1179,12 +1179,17 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                               >
                                 {field.value
                                   ? (() => {
-                                      const employee = employees.find(
-                                        (emp) => emp.name === field.value
+                                      const employee = displayedEmployees.find(
+                                        (emp: any) => emp.name === field.value
                                       );
-                                      return employee
-                                        ? `${employee.employeeCode} - ${employee.name} (${employee.position})`
-                                        : field.value;
+                                      if (!employee) return field.value;
+                                      
+                                      // Check if employee has employeeCode (from employees table)
+                                      if ('employeeCode' in employee && employee.employeeCode) {
+                                        return `${employee.employeeCode} - ${employee.name} (${employee.position || ''})`;
+                                      }
+                                      // Otherwise it's from client_employees table
+                                      return `${employee.name} (${employee.position || ''})`;
                                     })()
                                   : "Selecione o funcionário"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1208,27 +1213,37 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                                     : "Nenhum funcionário encontrado com este posto de trabalho e centro de custo"}
                                 </CommandEmpty>
                                 <CommandGroup>
-                                  {displayedEmployees && displayedEmployees.length > 0 && displayedEmployees.map((employee) => (
-                                    <CommandItem
-                                      key={employee.id}
-                                      value={`${employee.employeeCode} ${employee.name} ${employee.position}`}
-                                      onSelect={() => {
-                                        form.setValue("replacementEmployeeName", employee.name);
-                                        setEmployeePopoverOpen(false);
-                                      }}
-                                      data-testid={`option-employee-${employee.employeeCode}`}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          field.value === employee.name
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {employee.employeeCode} - {employee.name} ({employee.position})
-                                    </CommandItem>
-                                  ))}
+                                  {displayedEmployees && displayedEmployees.length > 0 && displayedEmployees.map((employee: any) => {
+                                    const hasEmployeeCode = 'employeeCode' in employee && employee.employeeCode;
+                                    const displayText = hasEmployeeCode
+                                      ? `${employee.employeeCode} - ${employee.name} (${employee.position || ''})`
+                                      : `${employee.name} (${employee.position || ''})`;
+                                    const searchValue = hasEmployeeCode
+                                      ? `${employee.employeeCode} ${employee.name} ${employee.position || ''}`
+                                      : `${employee.name} ${employee.position || ''}`;
+                                    
+                                    return (
+                                      <CommandItem
+                                        key={employee.id}
+                                        value={searchValue}
+                                        onSelect={() => {
+                                          form.setValue("replacementEmployeeName", employee.name);
+                                          setEmployeePopoverOpen(false);
+                                        }}
+                                        data-testid={`option-employee-${employee.id}`}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === employee.name
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {displayText}
+                                      </CommandItem>
+                                    );
+                                  })}
                                 </CommandGroup>
                               </CommandList>
                             </Command>
