@@ -3624,7 +3624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get pending approvals for the logged-in user
   app.get('/api/approvals/pending', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = (req.session as any)?.user?.id;
       if (!userId) {
         res.status(401).json({ message: "User not authenticated" });
         return;
@@ -3641,7 +3641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/approvals/:jobId/approve', isAuthenticated, async (req, res) => {
     try {
       const { jobId } = req.params;
-      const userId = req.user?.id;
+      const userId = (req.session as any)?.user?.id;
       const { comments } = req.body;
 
       if (!userId) {
@@ -3661,7 +3661,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/approvals/:jobId/reject', isAuthenticated, async (req, res) => {
     try {
       const { jobId } = req.params;
-      const userId = req.user?.id;
+      const userId = (req.session as any)?.user?.id;
       const { reason } = req.body;
 
       if (!userId) {

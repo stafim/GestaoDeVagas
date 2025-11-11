@@ -27,12 +27,12 @@ export function getSessionForSimpleAuth() {
   });
 }
 
-// Demo user for bypass mode
+// Demo user for bypass mode (using Grazieli Peres from database)
 const DEMO_USER = {
-  id: "demo-user-bypass",
-  email: "demo@example.com", 
-  firstName: "Demo",
-  lastName: "User",
+  id: "3ee816bb-0cd2-493c-b6a5-6f4d566de07c",
+  email: "grazieli.peres@grupoopus.com", 
+  firstName: "Grazieli Peres",
+  lastName: "Grazieli Peres",
   role: "admin" as const,
   profileImageUrl: null,
   createdAt: new Date(),

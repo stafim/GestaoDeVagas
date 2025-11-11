@@ -3250,8 +3250,8 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(jobs.approvalStatus, 'pending'),
         or(
-          eq(approvalWorkflowSteps.approverId, userId),
-          eq(approvalWorkflowSteps.approverId2, userId)
+          eq(approvalWorkflowSteps.userId, userId),
+          eq(approvalWorkflowSteps.userId2, userId)
         )
       ));
     
