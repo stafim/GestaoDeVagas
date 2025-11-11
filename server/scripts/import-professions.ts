@@ -145,10 +145,10 @@ async function importProfessions() {
       console.log('\n📝 Exemplos de profissões importadas:');
       console.log('-'.repeat(80));
       
-      const samples = await db.select()
-        .from(professions)
-        .where((professions, { eq }) => eq(professions.importedFromSenior, true))
-        .limit(5);
+      const samples = await db.query.professions.findMany({
+        where: (p, { eq }) => eq(p.importedFromSenior, true),
+        limit: 5,
+      });
       
       samples.forEach((prof, idx) => {
         console.log(`${idx + 1}. ${prof.name}`);
