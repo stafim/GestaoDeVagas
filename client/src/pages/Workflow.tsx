@@ -75,8 +75,10 @@ export default function Workflow() {
     queryKey: ["/api/workflows"],
   });
 
+  const workflowIds = workflows?.map(w => w.id).sort().join(',') || '';
+  
   const { data: workflowStepsData } = useQuery<Record<string, ApprovalWorkflowStep[]>>({
-    queryKey: ["/api/workflow-steps/all", workflows],
+    queryKey: ["/api/workflow-steps/all", workflowIds],
     queryFn: async () => {
       if (!workflows || workflows.length === 0) return {};
       
