@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
   - Division selector in job creation form dynamically loaded from divisions API
   - Replaces hardcoded division list with data from `usu_tdivare` table via divisions API
   - Ensures consistency between job divisions and workflow divisions
-  - Division field positioned as second field in form (after "Data de Abertura")
+  - Division field positioned immediately after Client field in "Informações Básicas" section
 - **Use Case**:
   - Each workflow must be associated with a specific division
   - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
