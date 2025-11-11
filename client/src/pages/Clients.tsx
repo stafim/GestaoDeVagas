@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { UserCircle, MapPin, Phone, Mail, Pencil, Trash2, FileText, CheckCircle, Briefcase, Users, Search } from "lucide-react";
+import { UserCircle, MapPin, Phone, Mail, Pencil, Trash2, FileText, CheckCircle, Briefcase, Users, Search, Download, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function Clients() {
@@ -77,6 +77,26 @@ export default function Clients() {
       toast({
         title: "Erro",
         description: "Erro ao excluir cliente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncClientsMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/senior/sync-clients");
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: "Sincronização Concluída",
+        description: data.message || `${data.imported || 0} clientes importados, ${data.updated || 0} atualizados`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro na Sincronização",
+        description: error.message || "Erro ao sincronizar clientes da Senior",
         variant: "destructive",
       });
     },
@@ -160,8 +180,18 @@ export default function Clients() {
               <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => syncClientsMutation.mutate()}
+                disabled={syncClientsMutation.isPending}
+                data-testid="button-sync-senior-clients"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${syncClientsMutation.isPending ? 'animate-spin' : ''}`} />
+                Importar da Senior
+              </Button>
               <Button variant="outline" size="sm">
-                <i className="fas fa-download mr-2"></i>
+                <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
             </div>

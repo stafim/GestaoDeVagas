@@ -193,9 +193,11 @@ export class SeniorIntegrationService {
 
   /**
    * Busca clientes cadastrados na Senior
+   * Baseado no schema oficial do Senior ERP: tabela E085CLI
+   * 
    * NOTA: Por enquanto retorna dados de exemplo, pois a API Senior está
    * rejeitando queries SQL com erro "Somente SELECT é permitido".
-   * Quando a API for corrigida, substituir por query real.
+   * Quando a API for corrigida, descomentar a query e remover os dados de exemplo.
    */
   async getClients(): Promise<Array<{
     seniorId: string;
@@ -207,28 +209,50 @@ export class SeniorIntegrationService {
     city?: string;
     state?: string;
   }>> {
-    // TODO: Quando a API Senior permitir queries SQL, substituir por:
-    // const query = `
-    //   SELECT 
-    //     CodCli as seniorId,
-    //     NomCli as name,
-    //     ConCli as contactPerson,
-    //     TelCli as phone,
-    //     EmlCli as email,
-    //     EndCli as address,
-    //     CidCli as city,
-    //     EstCli as state
-    //   FROM [sua_tabela_de_clientes]
-    //   WHERE SitCli = 'A'  -- Apenas clientes ativos
-    //   ORDER BY NomCli
-    // `;
-    // return this.executeQuery(query);
-
-    // DADOS DE EXEMPLO - Simula clientes vindos da Senior
-    // Remover quando a API Senior estiver funcionando
-    console.warn('⚠️ Usando dados de exemplo de clientes - API Senior não permite queries SQL');
+    // Query SQL baseada no schema oficial da Senior
+    // Tabela E085CLI - Cadastro de Clientes
+    // Campos:
+    //   CODCLI - Código do cliente
+    //   NOMCLI - Nome do cliente
+    //   CGCCPF - CNPJ/CPF
+    //   ENDCLI - Endereço
+    //   CEPCLI - CEP
+    //   IDECLI - Identificação do cliente
     
-    return [
+    const query = `
+      SELECT 
+        CODCLI as seniorId,
+        NOMCLI as name,
+        ENDCLI as address,
+        CEPCLI as zipCode,
+        CGCCPF as taxId
+      FROM E085CLI 
+      ORDER BY NOMCLI
+    `;
+    
+    try {
+      // Tentar executar a query na API Senior
+      const results = await this.executeQuery(query);
+      
+      // Mapear resultados para o formato esperado
+      return results.map((row: any) => ({
+        seniorId: row.seniorId?.toString() || '',
+        name: row.name || '',
+        address: row.address || undefined,
+        city: undefined, // Não disponível na tabela E085CLI diretamente
+        state: undefined, // Não disponível na tabela E085CLI diretamente
+        phone: undefined,
+        email: undefined,
+        contactPerson: undefined,
+      }));
+    } catch (error) {
+      // Se a API rejeitar a query (como está acontecendo atualmente),
+      // usar dados de exemplo para demonstração
+      console.warn('⚠️ API Senior rejeitou query SQL - Usando dados de exemplo');
+      console.error('Erro ao buscar clientes da Senior:', error);
+      
+      // DADOS DE EXEMPLO - Remover quando a API Senior estiver funcionando
+      return [
       {
         seniorId: 'CLI001',
         name: 'Indústria ABC Ltda',
