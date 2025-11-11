@@ -15,7 +15,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertClientSchema, insertClientEmployeeSchema, type Client, type ClientEmployee, type SelectClientProfessionLimit, type Profession } from "@shared/schema";
 import { BRAZILIAN_CITIES, BRAZILIAN_STATES } from "@shared/constants";
-import { FileText, Upload, Download, Trash2, UserPlus, Pencil, Users, Search, ChevronsUpDown, Check } from "lucide-react";
+import { FileText, Upload, Download, Trash2, UserPlus, Pencil, Users, Search, ChevronsUpDown, Check, Eye } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -60,6 +60,7 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
   const [editingEmployee, setEditingEmployee] = useState<ClientEmployee | null>(null);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
   const [employeeStatusFilter, setEmployeeStatusFilter] = useState<string>("todos");
+  const [viewingEmployee, setViewingEmployee] = useState<ClientEmployee | null>(null);
   const [selectedProfession, setSelectedProfession] = useState<string>("");
   const [maxJobsForProfession, setMaxJobsForProfession] = useState<number>(0);
   const [professionSearchOpen, setProfessionSearchOpen] = useState(false);
@@ -446,6 +447,7 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
   }).slice(0, 100); // Limita a 100 primeiros funcionários
 
   return (
+    <>
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -1148,6 +1150,15 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
                                       type="button"
                                       variant="ghost"
                                       size="sm"
+                                      onClick={() => setViewingEmployee(employee)}
+                                      data-testid={`button-view-employee-${employee.id}`}
+                                    >
+                                      <Eye className="h-4 w-4 text-blue-600" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
                                       onClick={() => handleEditEmployee(employee)}
                                       data-testid={`button-edit-employee-${employee.id}`}
                                     >
@@ -1223,5 +1234,151 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
         </Form>
       </DialogContent>
     </Dialog>
+
+    {/* Dialog de Detalhes do Funcionário */}
+    <Dialog open={!!viewingEmployee} onOpenChange={() => setViewingEmployee(null)}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-blue-600" />
+            Detalhes do Funcionário
+          </DialogTitle>
+          <DialogDescription>
+            Informações completas do funcionário
+          </DialogDescription>
+        </DialogHeader>
+
+        {viewingEmployee && (
+          <div className="space-y-6">
+            {/* Informações Básicas */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
+                Informações Básicas
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Nome</label>
+                  <p className="text-sm font-semibold" data-testid="detail-employee-name">
+                    {viewingEmployee.name}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Cargo</label>
+                  <p className="text-sm" data-testid="detail-employee-position">
+                    {viewingEmployee.position || "-"}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Centro de Custo</label>
+                  <p className="text-sm" data-testid="detail-employee-cost-center">
+                    {(() => {
+                      const costCenter = costCenters.find((cc: any) => cc.id === (viewingEmployee as any).costCenterId);
+                      return costCenter ? costCenter.name : "-";
+                    })()}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <div data-testid="detail-employee-status">
+                    {getStatusBadge(viewingEmployee.status)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Datas */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
+                Datas
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Data de Admissão</label>
+                  <p className="text-sm" data-testid="detail-employee-admission">
+                    {viewingEmployee.admissionDate
+                      ? new Date(viewingEmployee.admissionDate).toLocaleDateString("pt-BR")
+                      : "-"}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Data de Desligamento</label>
+                  <p className="text-sm" data-testid="detail-employee-termination">
+                    {viewingEmployee.terminationDate
+                      ? new Date(viewingEmployee.terminationDate).toLocaleDateString("pt-BR")
+                      : "-"}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Cadastrado em</label>
+                  <p className="text-sm text-muted-foreground" data-testid="detail-employee-created">
+                    {viewingEmployee.createdAt
+                      ? new Date(viewingEmployee.createdAt).toLocaleDateString("pt-BR") +
+                        " às " +
+                        new Date(viewingEmployee.createdAt).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "-"}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Última Atualização</label>
+                  <p className="text-sm text-muted-foreground" data-testid="detail-employee-updated">
+                    {viewingEmployee.updatedAt
+                      ? new Date(viewingEmployee.updatedAt).toLocaleDateString("pt-BR") +
+                        " às " +
+                        new Date(viewingEmployee.updatedAt).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Observações */}
+            {viewingEmployee.notes && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
+                  Observações
+                </h3>
+                <div className="bg-muted/30 p-4 rounded-lg border">
+                  <p className="text-sm whitespace-pre-wrap" data-testid="detail-employee-notes">
+                    {viewingEmployee.notes}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Ações */}
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setViewingEmployee(null)}
+                data-testid="button-close-details"
+              >
+                Fechar
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (viewingEmployee) {
+                    handleEditEmployee(viewingEmployee);
+                    setViewingEmployee(null);
+                  }
+                }}
+                data-testid="button-edit-from-details"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }
