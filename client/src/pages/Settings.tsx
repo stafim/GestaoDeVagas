@@ -16,10 +16,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban } from "lucide-react";
+import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { ClientDashboardSettings } from "@/components/ClientDashboardSettings";
 import { BlacklistManager } from "@/components/BlacklistManager";
+import { SeniorIntegrationSettings } from "@/components/SeniorIntegrationSettings";
+import { Switch } from "@/components/ui/switch";
 
 const workScaleFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -50,11 +52,20 @@ const systemSettingFormSchema = z.object({
   value: z.string().min(1, "Valor é obrigatório"),
 });
 
+const seniorIntegrationFormSchema = z.object({
+  apiUrl: z.string().url("URL da API deve ser válida"),
+  apiKey: z.string().min(10, "API Key deve ter no mínimo 10 caracteres"),
+  isActive: z.boolean().default(true),
+  autoSync: z.boolean().default(false),
+  syncInterval: z.number().min(5, "Intervalo mínimo é de 5 minutos").max(1440, "Intervalo máximo é de 24 horas").default(60),
+});
+
 type WorkScaleFormData = z.infer<typeof workScaleFormSchema>;
 type JobStatusFormData = z.infer<typeof jobStatusFormSchema>;
 type KanbanBoardFormData = z.infer<typeof kanbanBoardFormSchema>;
 type KanbanStageFormData = z.infer<typeof kanbanStageFormSchema>;
 type SystemSettingFormData = z.infer<typeof systemSettingFormSchema>;
+type SeniorIntegrationFormData = z.infer<typeof seniorIntegrationFormSchema>;
 
 type SystemSetting = {
   id: string;
@@ -107,6 +118,21 @@ type KanbanStage = {
   createdAt: string;
 };
 
+type SeniorIntegrationSetting = {
+  id: string;
+  organizationId: string;
+  apiUrl: string;
+  apiKey: string;
+  isActive: boolean;
+  autoSync: boolean;
+  syncInterval: number;
+  lastSyncAt?: string;
+  lastSyncStatus?: string;
+  lastSyncError?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export default function Settings() {
   // Work Scale state
   const [isWorkScaleModalOpen, setIsWorkScaleModalOpen] = useState(false);
@@ -123,6 +149,11 @@ export default function Settings() {
   const [editingKanbanBoard, setEditingKanbanBoard] = useState<KanbanBoard | null>(null);
   const [deletingKanbanBoardId, setDeletingKanbanBoardId] = useState<string | undefined>();
   const [managingStagesKanbanId, setManagingStagesKanbanId] = useState<string | undefined>();
+  
+  // Senior Integration state
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [connectionTestResult, setConnectionTestResult] = useState<any>(null);
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
   const [editingStage, setEditingStage] = useState<KanbanStage | null>(null);
   
@@ -172,6 +203,17 @@ export default function Settings() {
       name: "",
       color: "bg-blue-500",
       order: 1,
+    },
+  });
+
+  const seniorIntegrationForm = useForm<SeniorIntegrationFormData>({
+    resolver: zodResolver(seniorIntegrationFormSchema),
+    defaultValues: {
+      apiUrl: "https://senior-sql.acelera-it.io",
+      apiKey: "",
+      isActive: true,
+      autoSync: false,
+      syncInterval: 60,
     },
   });
 
@@ -725,7 +767,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-7 lg:w-auto">
           <TabsTrigger value="general" className="flex items-center gap-2" data-testid="tab-general">
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
@@ -741,6 +783,10 @@ export default function Settings() {
           <TabsTrigger value="kanban" className="flex items-center gap-2" data-testid="tab-kanban">
             <LayoutGrid className="h-4 w-4" />
             <span className="hidden sm:inline">Kanban</span>
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="flex items-center gap-2" data-testid="tab-integrations">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Integrações</span>
           </TabsTrigger>
           <TabsTrigger value="dashboards" className="flex items-center gap-2" data-testid="tab-dashboards">
             <Monitor className="h-4 w-4" />
@@ -1839,6 +1885,11 @@ export default function Settings() {
         {/* Aba Dashboards */}
         <TabsContent value="dashboards">
           <ClientDashboardSettings />
+        </TabsContent>
+
+        {/* Aba Integrações */}
+        <TabsContent value="integrations">
+          <SeniorIntegrationSettings />
         </TabsContent>
 
         {/* Aba Blacklist */}
