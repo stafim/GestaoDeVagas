@@ -27,14 +27,14 @@ export function getSessionForSimpleAuth() {
   });
 }
 
-// Demo user for bypass mode (using Ricardo Stafim from database)
+// Demo user for bypass mode (using Fernando Lacerda from database)
 const DEMO_USER = {
-  id: "2e8d4227-c3f6-4daa-af9e-1f6cbd04d8b4",
+  id: "37612170-8e14-40cd-ac66-3c6a6ffd093a",
   organizationId: "a6b0e84d-df56-45ab-810b-310f100cd760",
-  email: "ricardo.stafim@grupoopus.com", 
-  firstName: "Ricardo",
-  lastName: "Stafim",
-  role: "admin" as const,
+  email: "fernando.lacerda@gmail.com", 
+  firstName: "Fernando lacerda",
+  lastName: "Fernando lacerda",
+  role: "manager" as const,
   profileImageUrl: null,
   createdAt: new Date(),
   updatedAt: new Date()
