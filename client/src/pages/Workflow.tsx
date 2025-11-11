@@ -515,14 +515,13 @@ export default function Workflow() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Divisão (Opcional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
                         <FormControl>
                           <SelectTrigger data-testid="select-division">
-                            <SelectValue placeholder="Selecione uma divisão (ou deixe em branco para todas)" />
+                            <SelectValue placeholder="Todas as divisões (deixe em branco)" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Todas as divisões</SelectItem>
                           {divisions?.map((division) => (
                             <SelectItem key={division.id} value={division.id}>
                               {division.name}
@@ -531,7 +530,7 @@ export default function Workflow() {
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        Associe este workflow a uma divisão específica (ADMINISTRATIVO, FACILITIES, etc)
+                        Deixe em branco para aplicar a todas as divisões, ou selecione uma específica (ADMINISTRATIVO, FACILITIES, etc)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
