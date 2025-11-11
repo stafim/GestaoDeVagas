@@ -968,6 +968,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import companies from Senior r030emp table
+  app.post('/api/senior-integration/import-companies', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Query to fetch all companies from r030emp
+      const queryResponse = await fetch(`${settings.apiUrl}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+        },
+        body: JSON.stringify({ 
+          sqlText: 'SELECT numemp, nomemp, apeemp, sigemp, numtel, numfax, dddtel, dditel FROM r030emp ORDER BY numemp' 
+        }),
+      });
+
+      if (!queryResponse.ok) {
+        throw new Error(`Query falhou: ${queryResponse.status}`);
+      }
+
+      const seniorCompanies = await queryResponse.json();
+
+      if (!Array.isArray(seniorCompanies) || seniorCompanies.length === 0) {
+        return res.json({ 
+          success: true, 
+          imported: 0,
+          skipped: 0,
+          message: "Nenhuma empresa encontrada na tabela r030emp" 
+        });
+      }
+
+      let imported = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      // Import each company
+      for (const seniorCompany of seniorCompanies) {
+        try {
+          // Check if company already exists in our system
+          const existingCompanies = await storage.getCompanies();
+          const exists = existingCompanies.some(c => 
+            c.name === seniorCompany.nomemp || 
+            (c as any).seniorId === seniorCompany.numemp.toString()
+          );
+
+          if (exists) {
+            skipped++;
+            continue;
+          }
+
+          // Format phone number
+          let phone = '';
+          if (seniorCompany.numtel) {
+            const ddd = seniorCompany.dddtel || seniorCompany.dditel || '';
+            phone = ddd ? `(${ddd}) ${seniorCompany.numtel}` : seniorCompany.numtel;
+          }
+
+          // Create company in our system
+          const companyData = {
+            organizationId: user.organizationId,
+            name: seniorCompany.nomemp || `Empresa ${seniorCompany.numemp}`,
+            phone: phone,
+            description: seniorCompany.apeemp || '',
+            seniorId: seniorCompany.numemp.toString(),
+            importedFromSenior: true,
+            lastSyncedAt: new Date(),
+          };
+
+          await storage.createCompany(companyData);
+          imported++;
+
+        } catch (error) {
+          console.error(`Error importing company ${seniorCompany.nomemp}:`, error);
+          errors.push(`${seniorCompany.nomemp}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        imported,
+        skipped,
+        total: seniorCompanies.length,
+        errors: errors.length > 0 ? errors : undefined,
+        message: `Importação concluída: ${imported} empresas importadas, ${skipped} já existentes`
+      });
+
+    } catch (error) {
+      console.error("Error importing companies from Senior:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao importar empresas" 
+      });
+    }
+  });
+
   // System Settings routes
   app.get('/api/settings', isAuthenticated, async (req, res) => {
     try {

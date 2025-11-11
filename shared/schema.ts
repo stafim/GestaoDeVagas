@@ -126,6 +126,10 @@ export const companies = pgTable("companies", {
   logo: varchar("logo"),
   color: varchar("color", { length: 7 }).default("#10b981"), // Cor para gráficos
   jobCounter: integer("job_counter").default(0), // Contador para IDs de vagas
+  // Senior Integration fields
+  importedFromSenior: boolean("imported_from_senior").default(false), // Se foi importado da API Senior
+  seniorId: varchar("senior_id", { length: 100 }), // ID da empresa na Senior (r030emp.numemp)
+  lastSyncedAt: timestamp("last_synced_at"), // Data da última sincronização com Senior
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
