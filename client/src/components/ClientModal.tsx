@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertClientSchema, insertClientEmployeeSchema, type Client, type ClientEmployee, type SelectClientProfessionLimit, type Profession } from "@shared/schema";
-import { getAllCities, BRAZILIAN_STATES } from "@shared/constants";
+import { BRAZILIAN_CITIES, BRAZILIAN_STATES } from "@shared/constants";
 import { FileText, Upload, Download, Trash2, UserPlus, Pencil, Users, Search } from "lucide-react";
 
 interface ClientModalProps {
@@ -38,7 +38,6 @@ type FormData = z.infer<typeof formSchema>;
 export default function ClientModal({ clientId, onClose }: ClientModalProps) {
   const { toast } = useToast();
   const isEditing = !!clientId;
-  const [cities] = useState(getAllCities());
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [uploadingContract, setUploadingContract] = useState(false);
   const [deletingContract, setDeletingContract] = useState(false);
@@ -92,6 +91,14 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
       notes: "",
     },
   });
+
+  // Estado selecionado para filtrar cidades
+  const selectedState = form.watch("state");
+  
+  // Filtra cidades baseado no estado selecionado
+  const filteredCities = selectedState && BRAZILIAN_CITIES[selectedState as keyof typeof BRAZILIAN_CITIES]
+    ? BRAZILIAN_CITIES[selectedState as keyof typeof BRAZILIAN_CITIES]
+    : [];
 
   useEffect(() => {
     if (client) {
@@ -540,20 +547,27 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="city"
+                  name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cidade</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <FormLabel>Estado</FormLabel>
+                      <Select 
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          // Limpa a cidade quando o estado mudar
+                          form.setValue("city", "");
+                        }} 
+                        value={field.value}
+                      >
                         <FormControl>
-                          <SelectTrigger data-testid="select-city">
-                            <SelectValue placeholder="Selecione a cidade" />
+                          <SelectTrigger data-testid="select-state">
+                            <SelectValue placeholder="Selecione o estado" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {cities.map((city) => (
-                            <SelectItem key={city} value={city}>
-                              {city}
+                          {BRAZILIAN_STATES.map((state) => (
+                            <SelectItem key={state.value} value={state.value}>
+                              {state.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -565,20 +579,24 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
 
                 <FormField
                   control={form.control}
-                  name="state"
+                  name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estado</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <FormLabel>Cidade</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        disabled={!selectedState}
+                      >
                         <FormControl>
-                          <SelectTrigger data-testid="select-state">
-                            <SelectValue placeholder="Selecione o estado" />
+                          <SelectTrigger data-testid="select-city">
+                            <SelectValue placeholder={selectedState ? "Selecione a cidade" : "Selecione o estado primeiro"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {BRAZILIAN_STATES.map((state) => (
-                            <SelectItem key={state.value} value={state.value}>
-                              {state.label}
+                          {filteredCities.map((city) => (
+                            <SelectItem key={city} value={city}>
+                              {city}
                             </SelectItem>
                           ))}
                         </SelectContent>
