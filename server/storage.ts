@@ -3626,7 +3626,10 @@ export class DatabaseStorage implements IStorage {
       // Create new settings
       const [created] = await db
         .insert(seniorIntegrationSettings)
-        .values(settingsData)
+        .values({
+          organizationId,
+          ...settingsData,
+        })
         .returning();
       return created;
     }
