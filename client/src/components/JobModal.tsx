@@ -832,12 +832,17 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Nenhum</SelectItem>
-                            {filteredCostCenters.map((costCenter) => (
-                              <SelectItem key={costCenter.id} value={costCenter.id}>
-                                {costCenter.code} - {costCenter.name}
-                              </SelectItem>
-                            ))}
+                            {filteredCostCenters.length > 0 ? (
+                              filteredCostCenters.map((costCenter) => (
+                                <SelectItem key={costCenter.id} value={costCenter.id}>
+                                  {costCenter.code} - {costCenter.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="py-6 text-center text-sm text-muted-foreground">
+                                Nenhum centro de custo disponível para esta empresa
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
