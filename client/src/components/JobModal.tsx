@@ -108,6 +108,7 @@ const jobFormSchema = z.object({
   hasChartered: z.boolean().default(false),
   
   kanbanBoardId: z.string().optional(),
+  approvalWorkflowId: z.string().optional(),
 }).refine((data) => {
   // Se o motivo for substituição, a quantidade deve ser 1
   if (data.openingReason === "substituicao") {
@@ -175,6 +176,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
   const { data: workScales } = useQuery<WorkScale[]>({
     queryKey: ["/api/work-scales"],
+  });
+
+  const { data: workflows } = useQuery<any[]>({
+    queryKey: ["/api/workflows"],
   });
 
   type KanbanBoard = {
@@ -796,6 +801,43 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="approvalWorkflowId"
+                  render={({ field }) => {
+                    // Sort workflows - default workflow first
+                    const sortedWorkflows = Array.isArray(workflows) 
+                      ? [...workflows].sort((a, b) => {
+                          if (a.isDefault && !b.isDefault) return -1;
+                          if (!a.isDefault && b.isDefault) return 1;
+                          return a.name.localeCompare(b.name);
+                        })
+                      : [];
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Workflow de Aprovação</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-approval-workflow">
+                              <SelectValue placeholder="Selecione o workflow (opcional)" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="">Nenhum workflow</SelectItem>
+                            {sortedWorkflows.map((workflow) => (
+                              <SelectItem key={workflow.id} value={workflow.id}>
+                                {workflow.name} {workflow.isDefault ? "(Padrão)" : ""}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
 
