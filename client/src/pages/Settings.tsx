@@ -794,7 +794,7 @@ export default function Settings() {
           </TabsTrigger>
           <TabsTrigger value="blacklist" className="flex items-center gap-2" data-testid="tab-blacklist">
             <Ban className="h-4 w-4" />
-            <span className="hidden sm:inline">Blacklist</span>
+            <span className="hidden sm:inline">Lista de banimento</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1892,7 +1892,7 @@ export default function Settings() {
           <SeniorIntegrationSettings />
         </TabsContent>
 
-        {/* Aba Blacklist */}
+        {/* Aba Lista de banimento */}
         <TabsContent value="blacklist">
           <BlacklistManager />
         </TabsContent>
