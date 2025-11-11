@@ -27,14 +27,14 @@ export function getSessionForSimpleAuth() {
   });
 }
 
-// Demo user for bypass mode (using Super Admin from database)
+// Demo user for bypass mode (using Ricardo Stafim from database)
 const DEMO_USER = {
-  id: "0d51d559-d0ea-4767-ac6e-3ca403168c20",
-  organizationId: null,
-  email: "admin@sistema.com", 
-  firstName: "Admin",
-  lastName: "Sistema",
-  role: "super_admin" as const,
+  id: "2e8d4227-c3f6-4daa-af9e-1f6cbd04d8b4",
+  organizationId: "a6b0e84d-df56-45ab-810b-310f100cd760",
+  email: "ricardo.stafim@grupoopus.com", 
+  firstName: "Ricardo",
+  lastName: "Stafim",
+  role: "admin" as const,
   profileImageUrl: null,
   createdAt: new Date(),
   updatedAt: new Date()

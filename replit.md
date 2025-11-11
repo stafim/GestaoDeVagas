@@ -26,6 +26,7 @@ Preferred communication style: Simple, everyday language.
 ## Authentication & Authorization
 - **Multi-Tenant Architecture**: Supports multiple client organizations with data isolation.
 - **Role-Based Permissions**: Granular permissions across 8 predefined roles, including super admin, and organization-specific data access via `organizationId`.
+- **Super Admin Role**: System-wide administrator with restricted access to only Organizations, Plans, and Financial modules. Identified by `role="super_admin"` and `organizationId=null`. Super admins do not see client-specific menus (Dashboard, Jobs, Kanban, etc.).
 
 ## Core Features & Implementations
 - **Employee Replacement Workflow**: Smart filtering of employees by work position and cost center from imported Senior data.
