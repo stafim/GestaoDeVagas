@@ -59,6 +59,7 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<ClientEmployee | null>(null);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
+  const [employeeStatusFilter, setEmployeeStatusFilter] = useState<string>("todos");
   const [selectedProfession, setSelectedProfession] = useState<string>("");
   const [maxJobsForProfession, setMaxJobsForProfession] = useState<number>(0);
   const [professionSearchOpen, setProfessionSearchOpen] = useState(false);
@@ -419,8 +420,14 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  // Filtra funcionários com base no termo de busca
+  // Filtra funcionários com base no termo de busca e status
   const filteredEmployees = employees.filter((employee) => {
+    // Filtro por status
+    if (employeeStatusFilter !== "todos" && employee.status !== employeeStatusFilter) {
+      return false;
+    }
+    
+    // Filtro por busca
     if (!employeeSearchTerm) return true;
     
     const searchLower = employeeSearchTerm.toLowerCase();
@@ -436,7 +443,7 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
       costCenterName.includes(searchLower) ||
       statusLabel.includes(searchLower)
     );
-  });
+  }).slice(0, 100); // Limita a 100 primeiros funcionários
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -1068,18 +1075,45 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
 
                 {employees.length > 0 ? (
                   <div className="space-y-3">
-                    {/* Campo de busca */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder="Buscar funcionários por nome, cargo, centro de custo ou status..."
-                        value={employeeSearchTerm}
-                        onChange={(e) => setEmployeeSearchTerm(e.target.value)}
-                        className="pl-10"
-                        data-testid="input-search-employees"
-                      />
+                    {/* Filtros */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Filtro por Status */}
+                      <div>
+                        <Select value={employeeStatusFilter} onValueChange={setEmployeeStatusFilter}>
+                          <SelectTrigger data-testid="select-employee-status-filter">
+                            <SelectValue placeholder="Filtrar por status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todos">Todos os Status</SelectItem>
+                            <SelectItem value="ativo">Apenas Ativos</SelectItem>
+                            <SelectItem value="desligado">Apenas Desligados</SelectItem>
+                            <SelectItem value="ferias">Apenas em Férias</SelectItem>
+                            <SelectItem value="afastamento">Apenas Afastados</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Campo de busca */}
+                      <div className="relative md:col-span-2">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="text"
+                          placeholder="Buscar funcionários por nome, cargo ou centro de custo..."
+                          value={employeeSearchTerm}
+                          onChange={(e) => setEmployeeSearchTerm(e.target.value)}
+                          className="pl-10"
+                          data-testid="input-search-employees"
+                        />
+                      </div>
                     </div>
+                    
+                    {/* Contador de resultados */}
+                    {(employeeSearchTerm || employeeStatusFilter !== "todos") && (
+                      <p className="text-xs text-muted-foreground">
+                        Mostrando {filteredEmployees.length} de {employees.length} funcionários
+                        {filteredEmployees.length === 100 && " (limite de 100 resultados)"}
+                      </p>
+                    )}
 
                     {/* Tabela de funcionários */}
                     {filteredEmployees.length > 0 ? (

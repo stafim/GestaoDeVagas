@@ -8,6 +8,26 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
+### ClientModal Employee List - Status Filter & Pagination (LATEST)
+- **Features Added**:
+  - **Status Filter**: Dropdown to filter employees by status (Todos, Ativo, Desligado, Férias, Afastamento)
+  - **100-Item Limit**: Shows only first 100 employees to improve performance
+  - **Search Bar**: Retained for finding specific employees within filtered results
+  - **Results Counter**: Displays "Mostrando X de Y funcionários" with limit notification
+- **Implementation**:
+  - Grid layout: Status filter (1 column) + Search bar (2 columns) on desktop
+  - Filter applies before 100-item limit for better results
+  - Status filter state: `employeeStatusFilter` (default: "todos")
+  - Combined filtering logic: status → search → limit (100)
+- **User Experience**:
+  - Select status → See up to 100 matching employees
+  - Use search bar → Further refine results within status filter
+  - Clear visual feedback on filter state and result count
+- **Technical Impact**:
+  - Modified `filteredEmployees` logic to include status filter
+  - Added `.slice(0, 100)` to limit results
+  - Responsive grid layout for filters
+
 ### Employee Replacement Field - Free Text Input
 - **Change**: "Colaborador a Substituir" field converted from searchable dropdown to free text input
 - **Implementation**: Simple text Input component for manual entry of employee name to be replaced
