@@ -35,12 +35,6 @@ const clientNavigationItems = [
     description: "Visão geral do sistema"
   },
   {
-    name: "Tempo Real",
-    href: "/realtime",
-    icon: Monitor,
-    description: "Dashboard do cliente"
-  },
-  {
     name: "Vagas",
     href: "/jobs",
     icon: Briefcase,
@@ -58,12 +52,6 @@ const clientNavigationItems = [
     href: "/companies",
     icon: Building2,
     description: "Cadastro de empresas"
-  },
-  {
-    name: "Profissões",
-    href: "/professions",
-    icon: Briefcase,
-    description: "Cadastro de profissões"
   },
   {
     name: "Clientes",

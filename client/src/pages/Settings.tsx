@@ -16,12 +16,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2, Briefcase } from "lucide-react";
 import { z } from "zod";
 import { ClientDashboardSettings } from "@/components/ClientDashboardSettings";
 import { BlacklistManager } from "@/components/BlacklistManager";
 import { SeniorIntegrationSettings } from "@/components/SeniorIntegrationSettings";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Download, RefreshCw } from "lucide-react";
+import type { Profession } from "@shared/schema";
 
 const workScaleFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -256,6 +259,13 @@ export default function Settings() {
   const { data: systemSettings = [], isLoading: isLoadingSettings } = useQuery<SystemSetting[]>({
     queryKey: ["/api/settings"],
   });
+
+  // Professions queries
+  const { data: professions = [], isLoading: isLoadingProfessions } = useQuery<Profession[]>({
+    queryKey: ["/api/professions"],
+  });
+
+  const [professionsSearch, setProfessionsSearch] = useState("");
 
   // System Settings mutations
   const updateSystemSettingMutation = useMutation({
@@ -582,6 +592,28 @@ export default function Settings() {
     },
   });
 
+  // Professions mutations
+  const importProfessionsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/senior-integration/import-professions");
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/professions"] });
+      toast({
+        title: "Importação concluída",
+        description: data.message,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro na importação",
+        description: error.message || "Erro ao importar profissões da Senior HCM",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmitWorkScale = (data: WorkScaleFormData) => {
     if (editingWorkScale) {
       updateWorkScaleMutation.mutate({ id: editingWorkScale.id, data });
@@ -779,7 +811,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-8 lg:w-auto">
           <TabsTrigger value="general" className="flex items-center gap-2" data-testid="tab-general">
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
@@ -791,6 +823,10 @@ export default function Settings() {
           <TabsTrigger value="scales" className="flex items-center gap-2" data-testid="tab-scales">
             <Clock className="h-4 w-4" />
             <span className="hidden sm:inline">Escalas</span>
+          </TabsTrigger>
+          <TabsTrigger value="professions" className="flex items-center gap-2" data-testid="tab-professions">
+            <Briefcase className="h-4 w-4" />
+            <span className="hidden sm:inline">Profissões</span>
           </TabsTrigger>
           <TabsTrigger value="kanban" className="flex items-center gap-2" data-testid="tab-kanban">
             <LayoutGrid className="h-4 w-4" />
@@ -1973,6 +2009,162 @@ export default function Settings() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+        </TabsContent>
+
+        {/* Aba Profissões */}
+        <TabsContent value="professions">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />
+                  Cadastro de Profissões
+                </CardTitle>
+                <CardDescription>
+                  {professions.length} profissões cadastradas ({professions.filter(p => p.importedFromSenior).length} da Senior HCM)
+                </CardDescription>
+              </div>
+              <Button
+                onClick={() => importProfessionsMutation.mutate()}
+                disabled={importProfessionsMutation.isPending}
+                data-testid="button-import-professions"
+              >
+                {importProfessionsMutation.isPending ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Importando...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    Importar da Senior HCM
+                  </>
+                )}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <Input
+                  placeholder="Buscar profissões ou código CBO..."
+                  value={professionsSearch}
+                  onChange={(e) => setProfessionsSearch(e.target.value)}
+                  data-testid="input-search-professions"
+                />
+              </div>
+
+              {isLoadingProfessions ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (() => {
+                const filteredProfessions = professions.filter((profession) =>
+                  profession.name.toLowerCase().includes(professionsSearch.toLowerCase()) ||
+                  profession.cboCode?.toLowerCase().includes(professionsSearch.toLowerCase())
+                );
+
+                return filteredProfessions.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[400px]">Profissão</TableHead>
+                        <TableHead className="w-[150px]">Código CBO</TableHead>
+                        <TableHead className="w-[150px]">Categoria</TableHead>
+                        <TableHead className="w-[120px]">Origem</TableHead>
+                        <TableHead className="text-center w-[100px]">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredProfessions.map((profession) => (
+                        <TableRow key={profession.id} data-testid={`row-profession-${profession.id}`}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium" data-testid={`text-profession-name-${profession.id}`}>
+                                  {profession.name}
+                                </div>
+                                {profession.description && (
+                                  <div className="text-xs text-muted-foreground line-clamp-1">
+                                    {profession.description}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {profession.cboCode ? (
+                              <Badge variant="outline" className="font-mono">
+                                {profession.cboCode}
+                              </Badge>
+                            ) : (
+                              <span className="text-sm text-muted-foreground italic">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {profession.category ? (
+                              <Badge variant="secondary">
+                                {profession.category}
+                              </Badge>
+                            ) : (
+                              <span className="text-sm text-muted-foreground italic">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {profession.importedFromSenior ? (
+                              <Badge variant="default" className="bg-purple-600">
+                                Senior HCM
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">
+                                Manual
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {profession.isActive ? (
+                              <Badge variant="default" className="bg-green-600">
+                                Ativo
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">
+                                Inativo
+                              </Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="p-12 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                      <Briefcase className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Nenhuma profissão encontrada</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {professionsSearch
+                        ? "Nenhuma profissão corresponde à sua busca"
+                        : "Comece importando profissões da Senior HCM"}
+                    </p>
+                    {!professionsSearch && (
+                      <Button
+                        variant="default"
+                        onClick={() => importProfessionsMutation.mutate()}
+                        disabled={importProfessionsMutation.isPending}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Importar da Senior HCM
+                      </Button>
+                    )}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Aba Dashboards */}

@@ -44,7 +44,6 @@ function Router() {
           <Route path="/dashboard" component={() => <Layout><Dashboard /></Layout>} />
           <Route path="/jobs" component={() => <Layout><Jobs /></Layout>} />
           <Route path="/kanban" component={() => <Layout><Kanban /></Layout>} />
-          <Route path="/realtime" component={() => <Layout><RealTime /></Layout>} />
           <Route path="/organizations" component={() => <Layout><Organizations /></Layout>} />
           <Route path="/planos" component={() => <Layout><Planos /></Layout>} />
           <Route path="/financeiro" component={() => <Layout><Financeiro /></Layout>} />
