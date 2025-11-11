@@ -1078,6 +1078,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import cost centers from Senior r018ccu table
+  app.post('/api/senior-integration/import-cost-centers', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Get all companies from our system to map numemp -> company ID
+      const companies = await storage.getCompanies();
+      const companyMap = new Map();
+      companies.forEach(company => {
+        if ((company as any).seniorId) {
+          companyMap.set((company as any).seniorId, company.id);
+        }
+      });
+
+      // Query to fetch all cost centers from r018ccu
+      const queryResponse = await fetch(`${settings.apiUrl}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+        },
+        body: JSON.stringify({ 
+          sqlText: 'SELECT numemp, codccu, nomccu FROM r018ccu ORDER BY numemp, codccu' 
+        }),
+      });
+
+      if (!queryResponse.ok) {
+        throw new Error(`Query falhou: ${queryResponse.status}`);
+      }
+
+      const seniorCostCenters = await queryResponse.json();
+
+      if (!Array.isArray(seniorCostCenters) || seniorCostCenters.length === 0) {
+        return res.json({ 
+          success: true, 
+          imported: 0,
+          skipped: 0,
+          message: "Nenhum centro de custo encontrado na tabela r018ccu" 
+        });
+      }
+
+      let imported = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      // Import each cost center
+      for (const seniorCC of seniorCostCenters) {
+        try {
+          // Find the corresponding company in our system
+          const companyId = companyMap.get(seniorCC.numemp.toString());
+          
+          if (!companyId) {
+            errors.push(`Centro de custo ${seniorCC.codccu}: Empresa ${seniorCC.numemp} não encontrada no sistema`);
+            skipped++;
+            continue;
+          }
+
+          // Check if cost center already exists
+          const existingCostCenters = await storage.getCostCenters();
+          const exists = existingCostCenters.some(cc => 
+            (cc as any).seniorId === seniorCC.codccu && cc.companyId === companyId
+          );
+
+          if (exists) {
+            skipped++;
+            continue;
+          }
+
+          // Create cost center in our system
+          const costCenterData = {
+            name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
+            code: seniorCC.codccu,
+            companyId: companyId,
+            seniorId: seniorCC.codccu,
+            importedFromSenior: true,
+            lastSyncedAt: new Date(),
+          };
+
+          await storage.createCostCenter(costCenterData);
+          imported++;
+
+        } catch (error) {
+          console.error(`Error importing cost center ${seniorCC.codccu}:`, error);
+          errors.push(`${seniorCC.codccu}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        imported,
+        skipped,
+        total: seniorCostCenters.length,
+        errors: errors.length > 0 ? errors : undefined,
+        message: `Importação concluída: ${imported} centros de custo importados, ${skipped} já existentes ou sem empresa`
+      });
+
+    } catch (error) {
+      console.error("Error importing cost centers from Senior:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao importar centros de custo" 
+      });
+    }
+  });
+
   // System Settings routes
   app.get('/api/settings', isAuthenticated, async (req, res) => {
     try {
