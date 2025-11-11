@@ -105,3 +105,10 @@
 [x] 3. Criar usuário demo no banco de dados com organizationId
 [x] 4. Atualizar DEMO_USER no código com organizationId
 [x] 5. Reiniciar aplicação e testar gravação de API key
+
+## Busca de Tabelas na API Senior
+[x] 1. Criar rota GET /api/senior-integration/tables
+[x] 2. Implementar chamada para endpoint /tables da API Senior
+[x] 3. Testar endpoint e buscar tabelas disponíveis
+[x] 4. Analisar e catalogar 4.046 tabelas encontradas
+[x] 5. Salvar lista completa em arquivo para consulta

@@ -875,6 +875,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/senior-integration/tables', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      const tablesResponse = await fetch(`${settings.apiUrl}/tables`, {
+        headers: {
+          'x-api-key': settings.apiKey,
+        },
+      });
+
+      if (!tablesResponse.ok) {
+        throw new Error(`Falha ao buscar tabelas: ${tablesResponse.status}`);
+      }
+
+      const tablesData = await tablesResponse.json();
+      res.json({
+        success: true,
+        tables: tablesData.tables || tablesData || [],
+      });
+
+    } catch (error) {
+      console.error("Error fetching Senior tables:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao buscar tabelas" 
+      });
+    }
+  });
+
   app.post('/api/senior-integration/query', isAuthenticated, async (req, res) => {
     try {
       const userId = req.user?.id || (req.session as any).user?.id;
