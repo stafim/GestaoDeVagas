@@ -271,6 +271,8 @@ export interface IStorage {
   
   // Divisions operations
   getDivisions(): Promise<Division[]>;
+  createDivision(divisionData: { code: number; name: string; isActive: boolean }): Promise<Division>;
+  updateDivisionName(id: string, name: string): Promise<Division>;
   
   // Approval Workflow operations
   getApprovalWorkflows(): Promise<ApprovalWorkflow[]>;
@@ -3323,6 +3325,20 @@ export class DatabaseStorage implements IStorage {
   async getDivisions(): Promise<Division[]> {
     const divisionsList = await db.select().from(divisions).orderBy(divisions.name);
     return divisionsList;
+  }
+
+  async createDivision(divisionData: { code: number; name: string; isActive: boolean }): Promise<Division> {
+    const [division] = await db.insert(divisions).values(divisionData).returning();
+    return division;
+  }
+
+  async updateDivisionName(id: string, name: string): Promise<Division> {
+    const [division] = await db
+      .update(divisions)
+      .set({ name, updatedAt: new Date() })
+      .where(eq(divisions.id, id))
+      .returning();
+    return division;
   }
 
   async getApprovalWorkflows(): Promise<ApprovalWorkflow[]> {

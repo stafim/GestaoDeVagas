@@ -148,7 +148,18 @@
 ## Criação de Dados Básicos: Divisões, Profissões e Centros de Custo
 [x] 1. Identificar problema: API retornando arrays vazios para divisões, profissões e centros de custo
 [x] 2. Verificar estrutura das tabelas no schema
-[x] 3. Criar 5 divisões: Administrativo, Operacional, Comercial, Tecnologia, RH
-[x] 4. Criar 10 profissões com categorias e códigos CBO
-[x] 5. Criar 10 centros de custo associados às divisões
-[x] 6. Confirmar dados no banco de dados (5 divisões, 10 profissões, 10 centros de custo)
+[x] 3. ~~Criar 5 divisões manualmente~~ (REVERTIDO - dados devem vir da Senior)
+[x] 4. ~~Criar 10 profissões~~ (REVERTIDO)
+[x] 5. ~~Criar 10 centros de custo~~ (REVERTIDO)
+[x] 6. Remover dados criados manualmente
+
+## Implementação: Importação Automática de Divisões da Senior HCM
+[x] 1. Identificar que já existe script de importação (server/scripts/import-divisions.ts)
+[x] 2. Criar rota de API POST /api/senior-integration/import-divisions
+[x] 3. Implementar correções sugeridas pelo Architect:
+      - Usar createSeniorIntegrationService ao invés de fetch direto
+      - Carregar divisões uma vez e criar Map (evitar O(n²))
+      - Usar métodos do storage (createDivision, updateDivisionName)
+[x] 4. Adicionar métodos createDivision e updateDivisionName ao storage
+[x] 5. Testar importação: 7 divisões importadas com sucesso da Senior HCM
+[x] 6. Confirmar dados: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE

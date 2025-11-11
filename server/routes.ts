@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import { setupSimpleAuth, isAuthenticated } from "./simpleAuth";
 import { getWorkPositions } from "./hcm-connection";
 import { emailService } from "./emailService";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { 
   insertOrganizationSchema,
   insertOrganizationWithAdminSchema,
@@ -29,7 +31,8 @@ import {
   insertApprovalWorkflowSchema,
   insertApprovalWorkflowStepSchema,
   insertJobApprovalHistorySchema,
-  insertBlacklistCandidateSchema
+  insertBlacklistCandidateSchema,
+  divisions
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -1241,6 +1244,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: error instanceof Error ? error.message : "Erro ao importar centros de custo" 
+      });
+    }
+  });
+
+  // Import divisions from Senior usu_tdivare table
+  app.post('/api/senior-integration/import-divisions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Integração Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Create Senior integration service
+      const { createSeniorIntegrationService } = await import('./services/seniorIntegration');
+      const seniorService = createSeniorIntegrationService({
+        apiUrl: settings.apiUrl,
+        apiKey: settings.apiKey,
+      });
+
+      // Query to fetch all divisions from usu_tdivare
+      const seniorDivisions = await seniorService.executeQuery<{usu_coddiv: number; usu_desdiv: string}>(
+        'SELECT usu_coddiv, usu_desdiv FROM usu_tdivare ORDER BY usu_coddiv'
+      );
+
+      if (!Array.isArray(seniorDivisions) || seniorDivisions.length === 0) {
+        return res.json({ 
+          success: true, 
+          imported: 0,
+          skipped: 0,
+          message: "Nenhuma divisão encontrada na tabela usu_tdivare" 
+        });
+      }
+
+      // Load existing divisions once and create lookup map by code
+      const existingDivisions = await storage.getDivisions();
+      const divisionMap = new Map(existingDivisions.map(d => [d.code, d]));
+
+      let imported = 0;
+      let skipped = 0;
+      let updated = 0;
+      const errors: string[] = [];
+
+      // Import each division
+      for (const seniorDiv of seniorDivisions) {
+        try {
+          const existing = divisionMap.get(seniorDiv.usu_coddiv);
+
+          if (existing) {
+            // Update name if changed
+            if (existing.name !== seniorDiv.usu_desdiv) {
+              await storage.updateDivisionName(existing.id, seniorDiv.usu_desdiv);
+              updated++;
+            } else {
+              skipped++;
+            }
+            continue;
+          }
+
+          // Create division in our system
+          await storage.createDivision({
+            code: seniorDiv.usu_coddiv,
+            name: seniorDiv.usu_desdiv,
+            isActive: true,
+          });
+          imported++;
+
+        } catch (error) {
+          console.error(`Error importing division ${seniorDiv.usu_coddiv}:`, error);
+          errors.push(`${seniorDiv.usu_coddiv}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        imported,
+        updated,
+        skipped,
+        total: seniorDivisions.length,
+        errors: errors.length > 0 ? errors : undefined,
+        message: `Importação concluída: ${imported} divisões importadas, ${updated} atualizadas, ${skipped} já existentes`
+      });
+
+    } catch (error) {
+      console.error("Error importing divisions from Senior:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao importar divisões" 
       });
     }
   });
