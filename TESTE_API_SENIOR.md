@@ -67,12 +67,37 @@ Sincronização Automática: Desativada
      - Exemplos de uso
      - Limitações de segurança
 
+## Tentativa de Buscar Dados de Clientes
+
+### Tabelas Testadas
+Tentamos buscar dados de clientes testando os seguintes nomes de tabelas comuns:
+- `clientes`, `cliente`, `cli`
+- `customers`, `customer`
+- `geclien`, `r034cli`, `e070emp`
+- `fornecedores`, `parceiros`
+
+**Resultado**: Todas retornaram o mesmo erro `"Somente SELECT é permitido"`
+
+### Conclusão
+A API Senior atualmente **não permite queries SQL customizadas** através do endpoint `/query`, mesmo para comandos SELECT válidos. Isso impede a busca e sincronização de dados de clientes, funcionários, centros de custo e outros dados diretamente da API.
+
 ## Próximos Passos
 
-1. Consultar documentação oficial da API Senior
-2. Verificar com o fornecedor o formato correto das queries
-3. Testar endpoints alternativos documentados
-4. Considerar usar endpoints pré-definidos ao invés de queries customizadas
+1. **Contatar Suporte Senior**: Solicitar documentação oficial sobre:
+   - Formato correto de queries SQL aceitas
+   - Endpoints específicos para buscar clientes, funcionários, etc.
+   - Exemplos de uso da API
+   - Limitações e permissões necessárias
+
+2. **Verificar Endpoints Alternativos**: Testar se existem endpoints RESTful específicos como:
+   - `GET /clientes`
+   - `GET /funcionarios`
+   - `GET /centros-custo`
+
+3. **Considerar Integração Diferente**: Avaliar se a Senior oferece:
+   - API REST ao invés de queries SQL
+   - Webhooks para sincronização
+   - Exportação de dados em lote
 
 ## Interface Implementada
 
