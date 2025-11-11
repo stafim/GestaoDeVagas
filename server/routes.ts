@@ -1514,6 +1514,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Work Positions routes
+  app.get('/api/work-positions', isAuthenticated, async (req, res) => {
+    try {
+      const workPositions = await storage.getWorkPositions();
+      res.json(workPositions);
+    } catch (error) {
+      console.error("Error fetching work positions:", error);
+      res.status(500).json({ message: "Failed to fetch work positions" });
+    }
+  });
+
   // Employee Routes
   app.get('/api/companies/:companyId/employees', isAuthenticated, async (req, res) => {
     try {

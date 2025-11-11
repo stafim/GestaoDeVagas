@@ -1122,6 +1122,12 @@ export const insertProfessionSchema = createInsertSchema(professions).omit({
   updatedAt: true,
 });
 
+export const insertWorkPositionSchema = createInsertSchema(workPositions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   id: true,
   createdAt: true,
@@ -1203,6 +1209,9 @@ export type InsertRoleJobStatusPermission = z.infer<typeof insertRoleJobStatusPe
 
 export type Profession = typeof professions.$inferSelect;
 export type InsertProfession = z.infer<typeof insertProfessionSchema>;
+
+export type WorkPosition = typeof workPositions.$inferSelect;
+export type InsertWorkPosition = z.infer<typeof insertWorkPositionSchema>;
 
 export type WorkScale = typeof workScales.$inferSelect;
 export type InsertWorkScale = z.infer<typeof insertWorkScaleSchema>;

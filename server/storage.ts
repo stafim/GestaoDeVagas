@@ -23,6 +23,7 @@ import {
   userMenuPermissions,
   roleJobStatusPermissions,
   professions,
+  workPositions,
   workScales,
   benefits,
   jobStatuses,
@@ -92,6 +93,8 @@ import {
   type InsertRoleJobStatusPermission,
   type Profession,
   type InsertProfession,
+  type WorkPosition,
+  type InsertWorkPosition,
   type SelectionProcessMetrics,
   type InterviewCalendarResponse,
   type SystemSetting,
@@ -139,6 +142,7 @@ export interface IStorage {
   // Cost Center operations
   getCostCenters(): Promise<CostCenter[]>;
   getCostCentersByCompany(companyId: string): Promise<CostCenter[]>;
+  getWorkPositions(): Promise<WorkPosition[]>;
   createCostCenter(costCenter: InsertCostCenter): Promise<CostCenter>;
   updateCostCenter(id: string, costCenter: Partial<InsertCostCenter>): Promise<CostCenter>;
   deleteCostCenter(id: string): Promise<void>;
@@ -586,6 +590,14 @@ export class DatabaseStorage implements IStorage {
       .from(costCenters)
       .where(eq(costCenters.companyId, companyId))
       .orderBy(costCenters.name);
+  }
+
+  async getWorkPositions(): Promise<WorkPosition[]> {
+    return await db
+      .select()
+      .from(workPositions)
+      .where(eq(workPositions.isActive, true))
+      .orderBy(workPositions.name);
   }
 
   async createCostCenter(costCenter: InsertCostCenter): Promise<CostCenter> {
