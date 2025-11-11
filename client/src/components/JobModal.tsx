@@ -236,8 +236,8 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     queryKey: ["/api/job-statuses"],
   });
 
-  // Get default job status
-  const defaultJobStatus = jobStatuses.find(status => status.isDefault) || jobStatuses.find(status => status.key === "aberto");
+  // Get default job status (the one with displayOrder = 0)
+  const defaultJobStatus = jobStatuses.find(status => status.displayOrder === 0) || jobStatuses.find(status => status.key === "aberto");
   const defaultStatusKey = defaultJobStatus?.key || "aberto";
   const defaultStatusLabel = defaultJobStatus?.label || "ABERTO";
 
