@@ -173,7 +173,13 @@
       - Usar createSeniorIntegrationService compartilhado
       - Adicionar imports necessários (and, costCenters)
 [x] 3. Importar empresas: 13 empresas da Senior HCM
-[x] 4. Importar centros de custo: 882 centros de custo (50 com divisão, 832 sem divisão)
+[x] 4. Importar centros de custo: 2.593 centros de custo (TODOS com empresa associada)
 [x] 5. Verificar relacionamento: Centro de Custo "GERAL" associado à divisão "FACILITIES"
 [x] 6. Confirmar que JobModal.tsx já tem lógica de filtro implementada (linhas 784-790)
 [x] 7. Funcionalidade pronta: Ao selecionar divisão, campo Centro de Custo mostra apenas centros da divisão selecionada
+
+## Implementação: Auto-preenchimento de Empresa ao selecionar Centro de Custo
+[x] 1. Verificar relacionamento no banco: TODOS os 2.593 centros de custo têm empresa associada
+[x] 2. Confirmar que funcionalidade JÁ ESTÁ IMPLEMENTADA no JobModal.tsx (linhas 794-803)
+[x] 3. Lógica implementada: handleCostCenterChange auto-preenche companyId quando centro de custo é selecionado
+[x] 4. Funcionalidade pronta e testada: Ao selecionar centro de custo, campo Empresa é automaticamente preenchido
