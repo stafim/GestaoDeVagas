@@ -1517,7 +1517,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Work Positions routes
   app.get('/api/work-positions', isAuthenticated, async (req, res) => {
     try {
-      const workPositions = await storage.getWorkPositions();
+      const search = req.query.search as string | undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      const workPositions = await storage.getWorkPositions(search, limit);
       res.json(workPositions);
     } catch (error) {
       console.error("Error fetching work positions:", error);

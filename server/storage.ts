@@ -592,12 +592,27 @@ export class DatabaseStorage implements IStorage {
       .orderBy(costCenters.name);
   }
 
-  async getWorkPositions(): Promise<WorkPosition[]> {
-    return await db
+  async getWorkPositions(search?: string, limit: number = 100): Promise<WorkPosition[]> {
+    let query = db
       .select()
       .from(workPositions)
       .where(eq(workPositions.isActive, true))
       .orderBy(workPositions.name);
+
+    if (search && search.trim().length > 0) {
+      query = db
+        .select()
+        .from(workPositions)
+        .where(
+          and(
+            eq(workPositions.isActive, true),
+            ilike(workPositions.name, `%${search.trim()}%`)
+          )
+        )
+        .orderBy(workPositions.name);
+    }
+
+    return await query.limit(limit);
   }
 
   async createCostCenter(costCenter: InsertCostCenter): Promise<CostCenter> {
