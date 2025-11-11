@@ -755,37 +755,6 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
 
                 <FormField
                   control={form.control}
-                  name="costCenterId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Centro de Custo</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-cost-center">
-                            <SelectValue placeholder="Selecione um centro de custo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.isArray(costCenters) && costCenters.length > 0 ? (
-                            costCenters.map((center: any) => (
-                              <SelectItem key={center.id} value={center.id}>
-                                {center.name} ({center.code})
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <div className="py-6 text-center text-sm text-muted-foreground">
-                              Nenhum centro de custo disponível
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="companyId"
                   render={({ field }) => (
                     <FormItem>
