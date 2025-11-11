@@ -34,8 +34,15 @@ import {
 } from "@/components/ui/dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { UserCircle, MapPin, Phone, Mail, Pencil, Trash2, FileText, CheckCircle, Briefcase, Users, Search, Download, RefreshCw } from "lucide-react";
+import { UserCircle, MapPin, Phone, Mail, Pencil, Trash2, FileText, CheckCircle, Briefcase, Users, Search, Download, RefreshCw, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Clients() {
   const [showClientModal, setShowClientModal] = useState(false);
@@ -44,6 +51,7 @@ export default function Clients() {
   const [viewingEmployeesClientId, setViewingEmployeesClientId] = useState<string | undefined>();
   const [search, setSearch] = useState("");
   const [employeeSearch, setEmployeeSearch] = useState("");
+  const [employeeStatusFilter, setEmployeeStatusFilter] = useState<string>("all");
 
   const { toast } = useToast();
 
@@ -141,7 +149,12 @@ export default function Clients() {
     
     if (!isLocalizaCostCenter) return false;
     
-    // Filtro secundário: busca por nome, cargo, centro de custo ou status
+    // Filtro por status
+    if (employeeStatusFilter !== "all" && employee.status !== employeeStatusFilter) {
+      return false;
+    }
+    
+    // Filtro de busca por nome, cargo, centro de custo
     if (!employeeSearch) return true;
     
     const searchLower = employeeSearch.toLowerCase();
@@ -376,6 +389,7 @@ export default function Clients() {
       <Dialog open={!!viewingEmployeesClientId} onOpenChange={() => {
         setViewingEmployeesClientId(undefined);
         setEmployeeSearch("");
+        setEmployeeStatusFilter("all");
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -387,15 +401,32 @@ export default function Clients() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, cargo, centro de custo ou status..."
-              value={employeeSearch}
-              onChange={(e) => setEmployeeSearch(e.target.value)}
-              className="pl-9"
-              data-testid="input-employee-search"
-            />
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome, cargo ou centro de custo..."
+                value={employeeSearch}
+                onChange={(e) => setEmployeeSearch(e.target.value)}
+                className="pl-9"
+                data-testid="input-employee-search"
+              />
+            </div>
+            <div className="w-48">
+              <Select value={employeeStatusFilter} onValueChange={setEmployeeStatusFilter}>
+                <SelectTrigger data-testid="select-employee-status-filter">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filtrar por status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="ativo">Ativo</SelectItem>
+                  <SelectItem value="desligado">Desligado</SelectItem>
+                  <SelectItem value="ferias">Férias</SelectItem>
+                  <SelectItem value="afastamento">Afastamento</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {filteredEmployees.length > 0 ? (
