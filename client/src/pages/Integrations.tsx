@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Mail, MessageSquare, Save, Eye, EyeOff, Cloud } from "lucide-react";
+import { Mail, MessageSquare, Save, Eye, EyeOff, Cloud, Building2 } from "lucide-react";
 import type { IntegrationSetting } from "@shared/schema";
 
 export default function Integrations() {
@@ -36,6 +36,15 @@ export default function Integrations() {
     queryFn: async () => {
       const response = await fetch('/api/integration-settings?type=azure');
       if (!response.ok) throw new Error('Failed to fetch azure settings');
+      return response.json();
+    }
+  });
+
+  const { data: office365Settings = [], isLoading: office365Loading } = useQuery<IntegrationSetting[]>({
+    queryKey: ['/api/integration-settings', 'office365'],
+    queryFn: async () => {
+      const response = await fetch('/api/integration-settings?type=office365');
+      if (!response.ok) throw new Error('Failed to fetch office365 settings');
       return response.json();
     }
   });
@@ -129,11 +138,33 @@ export default function Integrations() {
     }
   };
 
+  const handleOffice365Submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const configs = [
+      { key: 'tenant_id', value: formData.get('tenant_id') as string },
+      { key: 'client_id', value: formData.get('client_id') as string },
+      { key: 'client_secret', value: formData.get('client_secret') as string },
+      { key: 'sender_email', value: formData.get('sender_email') as string },
+    ];
+
+    for (const config of configs) {
+      if (config.value) {
+        await saveMutation.mutateAsync({
+          integrationType: 'office365',
+          configKey: config.key,
+          configValue: config.value
+        });
+      }
+    }
+  };
+
   const togglePasswordVisibility = (field: string) => {
     setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
-  if (emailLoading || whatsappLoading || azureLoading) {
+  if (emailLoading || whatsappLoading || azureLoading || office365Loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-muted-foreground">Carregando configurações...</div>
@@ -425,6 +456,109 @@ export default function Integrations() {
           </CardContent>
         </Card>
 
+        {/* Office 365 Configuration */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-orange-600" />
+              <CardTitle>Configuração do Office 365</CardTitle>
+            </div>
+            <CardDescription>
+              Configure o Microsoft Graph API para envio de emails via Office 365
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleOffice365Submit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tenant_id">Tenant ID</Label>
+                  <Input
+                    id="tenant_id"
+                    name="tenant_id"
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    defaultValue={getSettingValue(office365Settings, 'tenant_id')}
+                    data-testid="input-office365-tenant-id"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    ID do locatário do Azure AD
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="client_id">Client ID (Application ID)</Label>
+                  <Input
+                    id="client_id"
+                    name="client_id"
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    defaultValue={getSettingValue(office365Settings, 'client_id')}
+                    data-testid="input-office365-client-id"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    ID do aplicativo registrado no Azure
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="client_secret">Client Secret</Label>
+                <div className="relative">
+                  <Input
+                    id="client_secret"
+                    name="client_secret"
+                    type={showPasswords.client_secret ? "text" : "password"}
+                    placeholder="••••••••"
+                    defaultValue={getSettingValue(office365Settings, 'client_secret')}
+                    data-testid="input-office365-client-secret"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3"
+                    onClick={() => togglePasswordVisibility('client_secret')}
+                    data-testid="button-toggle-client-secret"
+                  >
+                    {showPasswords.client_secret ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Secret do aplicativo (gerado no Azure Portal)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sender_email">Email Remetente</Label>
+                <Input
+                  id="sender_email"
+                  name="sender_email"
+                  type="email"
+                  placeholder="noreply@suaempresa.com"
+                  defaultValue={getSettingValue(office365Settings, 'sender_email')}
+                  data-testid="input-office365-sender"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Email válido do Office 365 que será usado para enviar mensagens
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button 
+                  type="submit" 
+                  disabled={saveMutation.isPending}
+                  data-testid="button-save-office365"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveMutation.isPending ? 'Salvando...' : 'Salvar Configurações'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Information Card */}
         <Card className="bg-muted/50">
           <CardHeader>
@@ -456,6 +590,17 @@ export default function Integrations() {
                 <li>Copie a Connection String do recurso criado</li>
                 <li>Ideal para envio de emails em alta escala (transacionais, marketing)</li>
                 <li>Suporta rastreamento de entrega, aberturas e cliques</li>
+              </ul>
+            </div>
+            <div>
+              <strong>Office 365 (Microsoft Graph API):</strong>
+              <ul className="list-disc list-inside ml-2 mt-1 space-y-1 text-muted-foreground">
+                <li>Acesse o Azure Portal e registre um novo aplicativo</li>
+                <li>Conceda permissões: Mail.Send (Application permission)</li>
+                <li>Gere um Client Secret para o aplicativo</li>
+                <li>Copie o Tenant ID e Client ID do aplicativo</li>
+                <li>Use um email válido do Office 365 como remetente</li>
+                <li>Ideal para envio de emails corporativos via Exchange Online</li>
               </ul>
             </div>
           </CardContent>
