@@ -204,19 +204,23 @@ export default function Workflow() {
       stepOrder: workflowSteps.length + 1,
       approvalType: "user",
     };
-    setWorkflowSteps([...workflowSteps, newStep]);
+    const updatedSteps = [...workflowSteps, newStep];
+    setWorkflowSteps(updatedSteps);
+    form.setValue("steps", updatedSteps);
   };
 
   const removeStep = (index: number) => {
     const updatedSteps = workflowSteps.filter((_, i) => i !== index);
     const reorderedSteps = updatedSteps.map((step, i) => ({ ...step, stepOrder: i + 1 }));
     setWorkflowSteps(reorderedSteps);
+    form.setValue("steps", reorderedSteps);
   };
 
   const updateStep = (index: number, field: keyof WorkflowStep, value: any) => {
     const updatedSteps = [...workflowSteps];
     updatedSteps[index] = { ...updatedSteps[index], [field]: value };
     setWorkflowSteps(updatedSteps);
+    form.setValue("steps", updatedSteps);
   };
 
   const handleSubmit = (data: CreateWorkflowForm) => {
