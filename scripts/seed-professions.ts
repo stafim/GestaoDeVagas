@@ -116,12 +116,25 @@ const unions = [
 async function seedProfessions() {
   console.log("🌱 Starting profession seeding...");
   
+  // Buscar profissões existentes
+  const existingProfessions = await db.select().from(professions);
+  const existingNames = new Set(existingProfessions.map(p => p.name));
+  
+  console.log(`📊 Found ${existingProfessions.length} existing professions`);
+  
   const professionsToInsert = [];
   let count = 0;
+  let skipped = 0;
   
   for (const [category, professionList] of Object.entries(professionCategories)) {
     for (const professionName of professionList) {
       if (count >= 200) break;
+      
+      // Pular se já existe
+      if (existingNames.has(professionName)) {
+        skipped++;
+        continue;
+      }
       
       const union = unions[Math.floor(Math.random() * unions.length)];
       
@@ -138,14 +151,18 @@ async function seedProfessions() {
     if (count >= 200) break;
   }
   
-  console.log(`📝 Inserting ${professionsToInsert.length} professions...`);
+  console.log(`⏭️  Skipped ${skipped} existing professions`);
+  console.log(`📝 Inserting ${professionsToInsert.length} new professions...`);
   
   try {
-    for (const profession of professionsToInsert) {
-      await db.insert(professions).values(profession);
+    if (professionsToInsert.length > 0) {
+      for (const profession of professionsToInsert) {
+        await db.insert(professions).values(profession);
+      }
+      console.log(`✅ Successfully inserted ${professionsToInsert.length} professions!`);
+    } else {
+      console.log(`ℹ️  No new professions to insert`);
     }
-    
-    console.log(`✅ Successfully inserted ${professionsToInsert.length} professions!`);
     
     const result = await db.select().from(professions);
     console.log(`📊 Total professions in database: ${result.length}`);
