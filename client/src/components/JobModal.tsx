@@ -135,6 +135,7 @@ type CostCenter = {
   name: string;
   code: string;
   companyId: string | null;
+  divisionId: string | null;
 };
 
 export default function JobModal({ isOpen, onClose, jobId, initialClientId }: JobModalProps) {
@@ -392,8 +393,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
           // Find the selected cost center
           const selectedCostCenter = costCenters.find(cc => cc.id === selectedCostCenterId);
           
-          // If cost center doesn't match the division, clear it
-          if (selectedDivision && selectedCostCenter && selectedCostCenter.divisionId !== selectedDivision.id) {
+          // Only clear if cost center has a division AND it doesn't match the selected division
+          // Cost centers without division (divisionId = null) can be used with any division
+          if (selectedDivision && selectedCostCenter && 
+              selectedCostCenter.divisionId !== null && 
+              selectedCostCenter.divisionId !== selectedDivision.id) {
             form.setValue("costCenterId", "");
           }
         }
@@ -935,17 +939,20 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                     // Find division ID by name
                     const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
                     
-                    // Filter cost centers by both company AND division
+                    // Filter cost centers by company and division
+                    // Show cost centers that either:
+                    // 1. Match the selected division, OR
+                    // 2. Don't have a division assigned yet (divisionId is null)
                     const filteredCostCenters = selectedCompanyId && selectedDivision
                       ? costCenters.filter(cc => 
                           cc.companyId === selectedCompanyId && 
-                          cc.divisionId === selectedDivision.id
+                          (cc.divisionId === selectedDivision.id || cc.divisionId === null)
                         )
                       : selectedCompanyId
                         ? costCenters.filter(cc => cc.companyId === selectedCompanyId)
                         : costCenters;
 
-                    const isDisabled = !selectedCompanyId || !selectedDepartment;
+                    const isDisabled = !selectedCompanyId;
 
                     return (
                       <FormItem>
@@ -960,11 +967,9 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                               <SelectValue placeholder={
                                 !selectedCompanyId 
                                   ? "Selecione primeiro uma empresa" 
-                                  : !selectedDepartment
-                                    ? "Selecione primeiro uma divisão"
-                                    : filteredCostCenters.length === 0
-                                      ? "Nenhum centro de custo disponível"
-                                      : "Selecione um centro de custo"
+                                  : filteredCostCenters.length === 0
+                                    ? "Nenhum centro de custo disponível"
+                                    : "Selecione um centro de custo"
                               } />
                             </SelectTrigger>
                           </FormControl>
@@ -977,19 +982,14 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                               ))
                             ) : (
                               <div className="py-6 text-center text-sm text-muted-foreground">
-                                Nenhum centro de custo disponível para esta empresa e divisão
+                                Nenhum centro de custo disponível para esta empresa{selectedDepartment ? ' e divisão' : ''}
                               </div>
                             )}
                           </SelectContent>
                         </Select>
                         {isDisabled && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            Selecione empresa e divisão para ver os centros de custo
-                          </p>
-                        )}
-                        {!isDisabled && filteredCostCenters.length === 0 && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                            ⚠️ Não há centros de custo para a divisão {selectedDepartment}
+                            Selecione uma empresa para ver os centros de custo
                           </p>
                         )}
                         <FormMessage />
