@@ -350,9 +350,16 @@ export const professions = pgTable("professions", {
   description: text("description"),
   category: varchar("category", { length: 100 }), // e.g., "Tecnologia", "Marketing", "Vendas"
   union: varchar("union", { length: 255 }), // Sindicato
+  cboCode: varchar("cbo_code", { length: 20 }), // Código CBO oficial
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  
+  // Senior HCM Integration fields
+  seniorId: varchar("senior_id", { length: 100 }), // Código do cargo no Senior (codcar)
+  seniorEstablishment: varchar("senior_establishment", { length: 50 }), // Estabelecimento no Senior (estcar)
+  importedFromSenior: boolean("imported_from_senior").default(false),
+  lastSyncedAt: timestamp("last_synced_at"),
 });
 
 // Work Scales table - Parametrized work scales
