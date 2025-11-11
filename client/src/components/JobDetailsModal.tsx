@@ -176,13 +176,21 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
     onError: (error: any) => {
       console.error("Error deleting job:", error);
       const errorMessage = error?.message || "Falha ao excluir a vaga";
+      
       toast({
         title: "Erro ao Excluir",
         description: errorMessage,
         variant: "destructive",
       });
+      
       setShowDeleteDialog(false);
       setDeleteReason("");
+      
+      // Se a vaga não existe mais (404), feche a modal e atualize a lista
+      if (errorMessage.includes("not found") || errorMessage.includes("Job not found")) {
+        onClose();
+        queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
+      }
     }
   });
 
