@@ -24,9 +24,12 @@ Preferred communication style: Simple, everyday language.
 - **System Design Choices**: Repository pattern for data access, Zod for API input validation, well-defined foreign key relationships, and configurable parameters for work scales, benefits, and job statuses.
 
 ## Authentication & Authorization
-- **Multi-Tenant Architecture**: Supports multiple client organizations with data isolation.
+- **Multi-Tenant Architecture**: Complete data isolation per organization through `organizationId` filtering.
+  - All major list endpoints (companies, jobs, clients, cost centers) filter data by user's `organizationId`
+  - Organizations only see their own data (companies, jobs, clients, cost centers)
+  - Jobs filtered indirectly through `companies.organizationId` join (no direct organizationId on jobs table)
 - **Role-Based Permissions**: Granular permissions across 8 predefined roles, including super admin, and organization-specific data access via `organizationId`.
-- **Super Admin Role**: System-wide administrator with restricted access to only Organizations, Plans, and Financial modules. Identified by `role="super_admin"` and `organizationId=null`. Super admins do not see client-specific menus (Dashboard, Jobs, Kanban, etc.).
+- **Super Admin Role**: System-wide administrator with restricted access to only Organizations, Plans, and Financial modules. Identified by `role="super_admin"` and `organizationId=null`. Super admins do not see client-specific menus (Dashboard, Jobs, Kanban, etc.). Has unrestricted backend data access for system administration.
 
 ## Core Features & Implementations
 - **Employee Replacement Workflow**: Smart filtering of employees by work position and cost center from imported Senior data.
@@ -49,6 +52,12 @@ Preferred communication style: Simple, everyday language.
 - **Job Type Filter**: Dashboard filtering by job type (Produtiva/Improdutiva) across all metrics and charts, with backend support for jobType parameter in all dashboard endpoints.
 - **Opening Reason Filter**: Dashboard filtering by hiring type (Substituição/Aumento de quadro) across all metrics and charts, with backend support for openingReason parameter in all dashboard endpoints.
 - **Dynamic Approvals Badge**: Notification bell icon dynamically displays count of pending approvals from /api/approvals/pending endpoint, with click navigation to approvals page.
+- **Multi-Tenant Data Isolation**: Complete organizational data separation implemented in storage layer and API endpoints:
+  - `getCompanies(organizationId)` - Filters companies by organizationId
+  - `getCostCenters(organizationId)` - Filters cost centers by organizationId
+  - `getClients(organizationId)` - Filters clients by organizationId
+  - `getJobs(..., organizationId)` - Filters jobs via companies.organizationId join
+  - All list endpoints automatically pass user's organizationId from session
 
 # External Dependencies
 

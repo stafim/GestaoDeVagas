@@ -135,14 +135,14 @@ export interface IStorage {
   getRecruiters(): Promise<User[]>;
   
   // Company operations
-  getCompanies(): Promise<CompanyWithCostCenters[]>;
+  getCompanies(organizationId?: string | null): Promise<CompanyWithCostCenters[]>;
   getCompany(id: string): Promise<CompanyWithCostCenters | undefined>;
   createCompany(company: InsertCompany): Promise<Company>;
   updateCompany(id: string, company: Partial<InsertCompany>): Promise<Company>;
   deleteCompany(id: string): Promise<void>;
   
   // Cost Center operations
-  getCostCenters(): Promise<CostCenter[]>;
+  getCostCenters(organizationId?: string | null): Promise<CostCenter[]>;
   getCostCentersByCompany(companyId: string): Promise<CostCenter[]>;
   getWorkPositions(): Promise<WorkPosition[]>;
   createCostCenter(costCenter: InsertCostCenter): Promise<CostCenter>;
@@ -155,7 +155,7 @@ export interface IStorage {
   getEmployee(id: string): Promise<Employee | undefined>;
   
   // Client operations
-  getClients(): Promise<Client[]>;
+  getClients(organizationId?: string | null): Promise<Client[]>;
   getClient(id: string): Promise<Client | undefined>;
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: string, client: Partial<InsertClient>): Promise<Client>;
@@ -229,7 +229,7 @@ export interface IStorage {
   deleteCandidate(id: string): Promise<void>;
 
   // Job operations
-  getJobs(limit?: number, offset?: number, search?: string, status?: string, companyId?: string, professionId?: string, recruiterId?: string): Promise<JobWithDetails[]>;
+  getJobs(limit?: number, offset?: number, search?: string, status?: string, companyId?: string, professionId?: string, recruiterId?: string, organizationId?: string | null): Promise<JobWithDetails[]>;
   getJob(id: string): Promise<JobWithDetails | undefined>;
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: string, job: Partial<InsertJob>): Promise<Job>;
@@ -512,8 +512,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Company operations
-  async getCompanies(): Promise<CompanyWithCostCenters[]> {
-    const companiesWithCounts = await db
+  async getCompanies(organizationId?: string | null): Promise<CompanyWithCostCenters[]> {
+    let query = db
       .select({
         id: companies.id,
         name: companies.name,
@@ -528,10 +528,18 @@ export class DatabaseStorage implements IStorage {
         lastSyncedAt: companies.lastSyncedAt,
         createdAt: companies.createdAt,
         updatedAt: companies.updatedAt,
+        organizationId: companies.organizationId,
         jobsCount: count(jobs.id),
       })
       .from(companies)
-      .leftJoin(jobs, eq(companies.id, jobs.companyId))
+      .leftJoin(jobs, eq(companies.id, jobs.companyId));
+
+    // Filter by organization if specified
+    if (organizationId !== undefined) {
+      query = query.where(eq(companies.organizationId, organizationId)) as any;
+    }
+
+    const companiesWithCounts = await query
       .groupBy(companies.id)
       .orderBy(desc(companies.createdAt));
 
@@ -584,11 +592,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Cost Center operations
-  async getCostCenters(): Promise<CostCenter[]> {
-    return await db
+  async getCostCenters(organizationId?: string | null): Promise<CostCenter[]> {
+    let query = db
       .select()
-      .from(costCenters)
-      .orderBy(costCenters.name);
+      .from(costCenters);
+
+    // Filter by organization if specified
+    if (organizationId !== undefined) {
+      query = query.where(eq(costCenters.organizationId, organizationId)) as any;
+    }
+
+    return await query.orderBy(costCenters.name);
   }
 
   async getCostCentersByCompany(companyId: string): Promise<CostCenter[]> {
@@ -663,12 +677,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Client operations
-  async getClients(): Promise<Client[]> {
-    const clientsData = await db
+  async getClients(organizationId?: string | null): Promise<Client[]> {
+    let query = db
       .select()
       .from(clients)
-      .where(eq(clients.isActive, true))
-      .orderBy(clients.name);
+      .where(eq(clients.isActive, true));
+
+    // Filter by organization if specified
+    if (organizationId !== undefined) {
+      query = query.where(and(
+        eq(clients.isActive, true),
+        eq(clients.organizationId, organizationId)
+      )) as any;
+    }
+
+    const clientsData = await query.orderBy(clients.name);
     
     // Get job count for each client
     const clientsWithJobCount = await Promise.all(
@@ -1166,7 +1189,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Job operations
-  async getJobs(limit = 50, offset = 0, search?: string, status?: string, companyId?: string, professionId?: string, recruiterId?: string): Promise<JobWithDetails[]> {
+  async getJobs(limit = 50, offset = 0, search?: string, status?: string, companyId?: string, professionId?: string, recruiterId?: string, organizationId?: string | null): Promise<JobWithDetails[]> {
     let baseQuery = db
       .select({
         id: jobs.id,
@@ -1248,6 +1271,11 @@ export class DatabaseStorage implements IStorage {
       );
 
     const whereConditions = [];
+
+    // Filter by organization if specified (via companies.organizationId)
+    if (organizationId !== undefined) {
+      whereConditions.push(eq(companies.organizationId, organizationId));
+    }
 
     if (search) {
       whereConditions.push(

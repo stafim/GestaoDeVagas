@@ -1761,7 +1761,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Company routes
   app.get('/api/companies', isAuthenticated, async (req, res) => {
     try {
-      const companies = await storage.getCompanies();
+      const user = (req.session as any).user;
+      const organizationId = user.organizationId;
+      const companies = await storage.getCompanies(organizationId);
       res.json(companies);
     } catch (error) {
       console.error("Error fetching companies:", error);
@@ -1836,7 +1838,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cost Center routes
   app.get('/api/cost-centers', isAuthenticated, async (req, res) => {
     try {
-      const costCenters = await storage.getCostCenters();
+      const user = (req.session as any).user;
+      const organizationId = user.organizationId;
+      const costCenters = await storage.getCostCenters(organizationId);
       res.json(costCenters);
     } catch (error) {
       console.error("Error fetching all cost centers:", error);
@@ -1927,7 +1931,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Client Routes
   app.get('/api/clients', isAuthenticated, async (req, res) => {
     try {
-      const clients = await storage.getClients();
+      const user = (req.session as any).user;
+      const organizationId = user.organizationId;
+      const clients = await storage.getClients(organizationId);
       res.json(clients);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -2287,7 +2293,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const professionId = req.query.professionId as string === 'all' ? undefined : req.query.professionId as string;
       const recruiterId = req.query.recruiterId as string === 'all' ? undefined : req.query.recruiterId as string;
       
-      let jobs = await storage.getJobs(limit, offset, search, status, companyId, professionId, recruiterId);
+      const user = (req.session as any).user;
+      const organizationId = user.organizationId;
+      
+      let jobs = await storage.getJobs(limit, offset, search, status, companyId, professionId, recruiterId, organizationId);
       
       // Filter jobs based on user role
       const userId = req.user?.id || (req.session as any).user?.id;
