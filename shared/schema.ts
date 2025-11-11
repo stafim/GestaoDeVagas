@@ -362,6 +362,22 @@ export const professions = pgTable("professions", {
   lastSyncedAt: timestamp("last_synced_at"),
 });
 
+// Work Positions table - Postos de Trabalho
+export const workPositions = pgTable("work_positions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: varchar("code", { length: 100 }).notNull(), // Código do posto (postra)
+  name: varchar("name", { length: 255 }).notNull(), // Descrição completa (despos)
+  shortName: varchar("short_name", { length: 255 }), // Descrição reduzida (desred)
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  
+  // Senior HCM Integration fields
+  seniorEstablishment: varchar("senior_establishment", { length: 50 }), // Estabelecimento no Senior (estpos)
+  importedFromSenior: boolean("imported_from_senior").default(false),
+  lastSyncedAt: timestamp("last_synced_at"),
+});
+
 // Work Scales table - Parametrized work scales
 export const workScales = pgTable("work_scales", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
