@@ -178,6 +178,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     queryKey: ["/api/professions"],
   });
 
+  const { data: workPositions } = useQuery<any[]>({
+    queryKey: ["/api/work-positions"],
+  });
+
   const { data: clients } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
   });
@@ -762,16 +766,11 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="HCM Senior posto 1">HCM Senior posto 1</SelectItem>
-                          <SelectItem value="HCM Senior posto 2">HCM Senior posto 2</SelectItem>
-                          <SelectItem value="HCM Senior posto 3">HCM Senior posto 3</SelectItem>
-                          <SelectItem value="HCM Senior posto 4">HCM Senior posto 4</SelectItem>
-                          <SelectItem value="HCM Senior posto 5">HCM Senior posto 5</SelectItem>
-                          <SelectItem value="HCM Senior posto 6">HCM Senior posto 6</SelectItem>
-                          <SelectItem value="HCM Senior posto 7">HCM Senior posto 7</SelectItem>
-                          <SelectItem value="HCM Senior posto 8">HCM Senior posto 8</SelectItem>
-                          <SelectItem value="HCM Senior posto 9">HCM Senior posto 9</SelectItem>
-                          <SelectItem value="HCM Senior posto 10">HCM Senior posto 10</SelectItem>
+                          {Array.isArray(workPositions) && workPositions.map((position: any) => (
+                            <SelectItem key={position.id} value={position.name}>
+                              {position.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
