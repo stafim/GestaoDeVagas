@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Mail, MessageSquare, Save, Eye, EyeOff } from "lucide-react";
+import { Mail, MessageSquare, Save, Eye, EyeOff, Cloud } from "lucide-react";
 import type { IntegrationSetting } from "@shared/schema";
 
 export default function Integrations() {
@@ -27,6 +27,15 @@ export default function Integrations() {
     queryFn: async () => {
       const response = await fetch('/api/integration-settings?type=whatsapp');
       if (!response.ok) throw new Error('Failed to fetch whatsapp settings');
+      return response.json();
+    }
+  });
+
+  const { data: azureSettings = [], isLoading: azureLoading } = useQuery<IntegrationSetting[]>({
+    queryKey: ['/api/integration-settings', 'azure'],
+    queryFn: async () => {
+      const response = await fetch('/api/integration-settings?type=azure');
+      if (!response.ok) throw new Error('Failed to fetch azure settings');
       return response.json();
     }
   });
@@ -100,11 +109,31 @@ export default function Integrations() {
     }
   };
 
+  const handleAzureSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const configs = [
+      { key: 'connection_string', value: formData.get('connection_string') as string },
+      { key: 'sender_address', value: formData.get('sender_address') as string },
+    ];
+
+    for (const config of configs) {
+      if (config.value) {
+        await saveMutation.mutateAsync({
+          integrationType: 'azure',
+          configKey: config.key,
+          configValue: config.value
+        });
+      }
+    }
+  };
+
   const togglePasswordVisibility = (field: string) => {
     setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
-  if (emailLoading || whatsappLoading) {
+  if (emailLoading || whatsappLoading || azureLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-muted-foreground">Carregando configurações...</div>
@@ -323,6 +352,79 @@ export default function Integrations() {
           </CardContent>
         </Card>
 
+        {/* Azure Communication Services Configuration */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Cloud className="h-5 w-5 text-sky-600" />
+              <CardTitle>Configuração do Azure Communication Services</CardTitle>
+            </div>
+            <CardDescription>
+              Configure o Azure Communication Services para envio de emails em larga escala
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAzureSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="connection_string">Connection String</Label>
+                <div className="relative">
+                  <Input
+                    id="connection_string"
+                    name="connection_string"
+                    type={showPasswords.connection_string ? "text" : "password"}
+                    placeholder="endpoint=https://...;accesskey=..."
+                    defaultValue={getSettingValue(azureSettings, 'connection_string')}
+                    data-testid="input-azure-connection-string"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3"
+                    onClick={() => togglePasswordVisibility('connection_string')}
+                    data-testid="button-toggle-connection-string"
+                  >
+                    {showPasswords.connection_string ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  String de conexão do Azure Communication Services (encontrada no portal do Azure)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sender_address">Email Remetente</Label>
+                <Input
+                  id="sender_address"
+                  name="sender_address"
+                  type="email"
+                  placeholder="donotreply@seudominio.com"
+                  defaultValue={getSettingValue(azureSettings, 'sender_address')}
+                  data-testid="input-azure-sender"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Domínio verificado no Azure Communication Services
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button 
+                  type="submit" 
+                  disabled={saveMutation.isPending}
+                  data-testid="button-save-azure"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveMutation.isPending ? 'Salvando...' : 'Salvar Configurações'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Information Card */}
         <Card className="bg-muted/50">
           <CardHeader>
@@ -344,6 +446,16 @@ export default function Integrations() {
                 <li>Configure o WhatsApp Business API</li>
                 <li>Copie o Account SID e Auth Token do painel</li>
                 <li>Use o número de telefone do Twilio no formato internacional</li>
+              </ul>
+            </div>
+            <div>
+              <strong>Azure Communication Services:</strong>
+              <ul className="list-disc list-inside ml-2 mt-1 space-y-1 text-muted-foreground">
+                <li>Crie um recurso Azure Communication Services no portal do Azure</li>
+                <li>Configure um domínio de email (Azure-managed ou custom domain)</li>
+                <li>Copie a Connection String do recurso criado</li>
+                <li>Ideal para envio de emails em alta escala (transacionais, marketing)</li>
+                <li>Suporta rastreamento de entrega, aberturas e cliques</li>
               </ul>
             </div>
           </CardContent>
