@@ -98,3 +98,10 @@
 [x] 4. Corrigir erro ao desmarcar permissão inexistente
 [x] 5. Atualizar método toggleRolePermission no storage
 [x] 6. Verificar que permissões podem ser alteradas sem erros
+
+## Correção: Erro ao Gravar API Key Senior Integration
+[x] 1. Identificar problema: usuário demo sem organizationId
+[x] 2. Criar organização padrão no banco de dados
+[x] 3. Criar usuário demo no banco de dados com organizationId
+[x] 4. Atualizar DEMO_USER no código com organizationId
+[x] 5. Reiniciar aplicação e testar gravação de API key
