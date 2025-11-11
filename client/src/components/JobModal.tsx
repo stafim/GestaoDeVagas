@@ -439,6 +439,24 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     }
   }, [openingReason, form]);
 
+  // Clear workflow selection when division changes
+  React.useEffect(() => {
+    const selectedDepartment = form.watch("department");
+    const selectedWorkflowId = form.watch("approvalWorkflowId");
+    
+    if (selectedDepartment && selectedWorkflowId && workflows && divisions) {
+      // Find the selected division
+      const selectedDivision = divisions.find(d => d.name === selectedDepartment);
+      // Find the selected workflow
+      const selectedWorkflow = workflows.find(w => w.id === selectedWorkflowId);
+      
+      // If workflow doesn't match the division, clear it
+      if (selectedDivision && selectedWorkflow && selectedWorkflow.divisionId !== selectedDivision.id) {
+        form.setValue("approvalWorkflowId", "");
+      }
+    }
+  }, [form.watch("department"), workflows, divisions, form]);
+
   const createJobMutation = useMutation({
     mutationFn: async (data: JobFormData) => {
       // Convert form data to API format and remove invalid fields
@@ -930,32 +948,69 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   control={form.control}
                   name="approvalWorkflowId"
                   render={({ field }) => {
-                    // Sort workflows - default workflow first
-                    const sortedWorkflows = Array.isArray(workflows) 
-                      ? [...workflows].sort((a, b) => {
-                          if (a.isDefault && !b.isDefault) return -1;
-                          if (!a.isDefault && b.isDefault) return 1;
-                          return a.name.localeCompare(b.name);
-                        })
+                    // Get selected division name from form
+                    const selectedDepartment = form.watch("department");
+                    
+                    // Find division ID by name
+                    const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
+                    
+                    // Filter workflows by division - only show workflows for the selected division
+                    const filteredWorkflows = Array.isArray(workflows) && selectedDivision
+                      ? workflows.filter(w => w.divisionId === selectedDivision.id)
                       : [];
+
+                    // Sort workflows - default workflow first
+                    const sortedWorkflows = filteredWorkflows.sort((a, b) => {
+                      if (a.isDefault && !b.isDefault) return -1;
+                      if (!a.isDefault && b.isDefault) return 1;
+                      return a.name.localeCompare(b.name);
+                    });
+
+                    const isDisabled = !selectedDepartment;
 
                     return (
                       <FormItem>
                         <FormLabel>Workflow de Aprovação *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value}
+                          disabled={isDisabled}
+                        >
                           <FormControl>
                             <SelectTrigger data-testid="select-approval-workflow">
-                              <SelectValue placeholder="Selecione o workflow de aprovação" />
+                              <SelectValue placeholder={
+                                isDisabled 
+                                  ? "Selecione primeiro uma divisão" 
+                                  : sortedWorkflows.length === 0
+                                    ? "Nenhum workflow disponível para esta divisão"
+                                    : "Selecione o workflow de aprovação"
+                              } />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {sortedWorkflows.map((workflow) => (
-                              <SelectItem key={workflow.id} value={workflow.id}>
-                                {workflow.name} {workflow.isDefault ? "(Padrão)" : ""}
-                              </SelectItem>
-                            ))}
+                            {sortedWorkflows.length > 0 ? (
+                              sortedWorkflows.map((workflow) => (
+                                <SelectItem key={workflow.id} value={workflow.id}>
+                                  {workflow.name} {workflow.isDefault ? "(Padrão)" : ""}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="py-6 text-center text-sm text-muted-foreground">
+                                Nenhum workflow cadastrado para esta divisão
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
+                        {isDisabled && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Selecione uma divisão para ver os workflows disponíveis
+                          </p>
+                        )}
+                        {!isDisabled && sortedWorkflows.length === 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            ⚠️ Não há workflows cadastrados para a divisão {selectedDepartment}
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     );

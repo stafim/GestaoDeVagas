@@ -27,6 +27,9 @@ Preferred communication style: Simple, everyday language.
   - Replaces hardcoded division list with data from `usu_tdivare` table via divisions API
   - Ensures consistency between job divisions and workflow divisions
   - Division field positioned immediately after Client field in "Informações Básicas" section
+  - **Workflow filtering**: Approval workflow dropdown shows only workflows matching the selected division
+  - Workflow field disabled until division is selected
+  - Auto-clears workflow selection if division is changed to prevent mismatches
 - **Use Case**:
   - Each workflow must be associated with a specific division
   - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
