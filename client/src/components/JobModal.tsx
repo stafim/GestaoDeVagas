@@ -819,14 +819,13 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                     return (
                       <FormItem>
                         <FormLabel>Workflow de Aprovação</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-approval-workflow">
                               <SelectValue placeholder="Selecione o workflow (opcional)" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Nenhum workflow</SelectItem>
                             {sortedWorkflows.map((workflow) => (
                               <SelectItem key={workflow.id} value={workflow.id}>
                                 {workflow.name} {workflow.isDefault ? "(Padrão)" : ""}
