@@ -1359,6 +1359,17 @@ export type JobsByCompanyResponse = Array<{
   count: number 
 }>;
 
+export type JobsByWorkPositionResponse = Array<{
+  workPosition: string;
+  count: number;
+}>;
+
+export type JobsByCostCenterResponse = Array<{
+  costCenterId: string;
+  costCenterName: string;
+  count: number;
+}>;
+
 export type JobsSLAResponse = {
   withinSLA: number;
   outsideSLA: number;

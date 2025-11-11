@@ -223,6 +223,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/dashboard/jobs-by-work-position', isAuthenticated, async (req, res) => {
+    try {
+      const months = Array.isArray(req.query.month) ? req.query.month as string[] : (req.query.month ? [req.query.month as string] : []);
+      const companyIds = Array.isArray(req.query.companyId) ? req.query.companyId as string[] : (req.query.companyId ? [req.query.companyId as string] : []);
+      const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
+      const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
+      const data = await storage.getJobsByWorkPosition(months, companyIds, divisions, recruiterIds);
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching jobs by work position:", error);
+      res.status(500).json({ message: "Failed to fetch jobs by work position" });
+    }
+  });
+
+  app.get('/api/dashboard/jobs-by-cost-center', isAuthenticated, async (req, res) => {
+    try {
+      const months = Array.isArray(req.query.month) ? req.query.month as string[] : (req.query.month ? [req.query.month as string] : []);
+      const companyIds = Array.isArray(req.query.companyId) ? req.query.companyId as string[] : (req.query.companyId ? [req.query.companyId as string] : []);
+      const divisions = Array.isArray(req.query.division) ? req.query.division as string[] : (req.query.division ? [req.query.division as string] : []);
+      const recruiterIds = Array.isArray(req.query.recruiterId) ? req.query.recruiterId as string[] : (req.query.recruiterId ? [req.query.recruiterId as string] : []);
+      const data = await storage.getJobsByCostCenter(months, companyIds, divisions, recruiterIds);
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching jobs by cost center:", error);
+      res.status(500).json({ message: "Failed to fetch jobs by cost center" });
+    }
+  });
+
   app.get('/api/dashboard/jobs-by-client', isAuthenticated, async (req, res) => {
     try {
       const months = Array.isArray(req.query.month) ? req.query.month as string[] : (req.query.month ? [req.query.month as string] : []);

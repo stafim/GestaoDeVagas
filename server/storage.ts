@@ -115,7 +115,7 @@ import {
   type InsertSeniorIntegrationSetting,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, count, and, or, ilike, sql, inArray, isNull } from "drizzle-orm";
+import { eq, desc, count, and, or, ilike, sql, inArray, isNull, isNotNull } from "drizzle-orm";
 import { createSeniorIntegrationService } from "./services/seniorIntegration";
 
 export interface IStorage {
@@ -2100,6 +2100,81 @@ export class DatabaseStorage implements IStorage {
       companyId: row.companyId || '',
       companyName: row.companyName || 'Sem empresa',
       companyColor: row.companyColor || '#10b981',
+      count: row.count
+    }));
+  }
+
+  async getJobsByWorkPosition(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ workPosition: string; count: number }>> {
+    const conditions = [
+      sql`${jobs.status} NOT IN ('6ef1106a-a027-4424-9e10-63d6f9f2910c', '17ea0666-f253-415d-8a0c-0be57295c209')`,
+      isNotNull(jobs.workPosition)
+    ];
+    
+    if (months && months.length > 0) {
+      conditions.push(inArray(sql`TO_CHAR(${jobs.createdAt}, 'YYYY-MM')`, months));
+    }
+    if (companyIds && companyIds.length > 0) {
+      conditions.push(inArray(jobs.companyId, companyIds));
+    }
+    if (divisions && divisions.length > 0) {
+      conditions.push(inArray(jobs.division, divisions));
+    }
+    if (recruiterIds && recruiterIds.length > 0) {
+      conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    
+    const result = await db
+      .select({
+        workPosition: jobs.workPosition,
+        count: count(),
+      })
+      .from(jobs)
+      .where(and(...conditions))
+      .groupBy(jobs.workPosition)
+      .orderBy(desc(count()))
+      .limit(10); // Top 10 postos de trabalho
+    
+    return result.map(row => ({
+      workPosition: row.workPosition || 'Não especificado',
+      count: row.count
+    }));
+  }
+
+  async getJobsByCostCenter(months?: string[], companyIds?: string[], divisions?: string[], recruiterIds?: string[]): Promise<Array<{ costCenterId: string; costCenterName: string; count: number }>> {
+    const conditions = [
+      sql`${jobs.status} NOT IN ('6ef1106a-a027-4424-9e10-63d6f9f2910c', '17ea0666-f253-415d-8a0c-0be57295c209')`,
+      isNotNull(jobs.costCenterId)
+    ];
+    
+    if (months && months.length > 0) {
+      conditions.push(inArray(sql`TO_CHAR(${jobs.createdAt}, 'YYYY-MM')`, months));
+    }
+    if (companyIds && companyIds.length > 0) {
+      conditions.push(inArray(jobs.companyId, companyIds));
+    }
+    if (divisions && divisions.length > 0) {
+      conditions.push(inArray(jobs.division, divisions));
+    }
+    if (recruiterIds && recruiterIds.length > 0) {
+      conditions.push(inArray(jobs.recruiterId, recruiterIds));
+    }
+    
+    const result = await db
+      .select({
+        costCenterId: jobs.costCenterId,
+        costCenterName: costCenters.name,
+        count: count(),
+      })
+      .from(jobs)
+      .leftJoin(costCenters, eq(jobs.costCenterId, costCenters.id))
+      .where(and(...conditions))
+      .groupBy(jobs.costCenterId, costCenters.name)
+      .orderBy(desc(count()))
+      .limit(10); // Top 10 centros de custo
+    
+    return result.map(row => ({
+      costCenterId: row.costCenterId || '',
+      costCenterName: row.costCenterName || 'Sem centro de custo',
       count: row.count
     }));
   }

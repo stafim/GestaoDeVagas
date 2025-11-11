@@ -8,7 +8,27 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
-### ClientModal Employee List - Status Filter & Pagination (LATEST)
+### Dashboard Charts - Work Positions & Cost Centers (LATEST)
+- **New Charts Added**:
+  - **Vagas por Posto de Trabalho**: Horizontal bar chart showing top 10 work positions with most open jobs
+  - **Vagas por Centro de Custos**: Horizontal bar chart showing top 10 cost centers with most open jobs
+- **Backend Implementation**:
+  - New API endpoints: `/api/dashboard/jobs-by-work-position` and `/api/dashboard/jobs-by-cost-center`
+  - Storage methods: `getJobsByWorkPosition()` and `getJobsByCostCenter()`
+  - Both support filtering by month, company, division, and recruiter
+  - Excludes completed/canceled jobs, shows only active open positions
+  - Top 10 results sorted by count (descending)
+- **Frontend Features**:
+  - Responsive charts using Recharts library
+  - Loading skeletons during data fetch
+  - Empty state messages when no data available
+  - Consistent styling with existing dashboard charts
+  - Full filter integration (respects month/company/division/recruiter selections)
+- **Data Types**:
+  - `JobsByWorkPositionResponse`: Array of { workPosition: string, count: number }
+  - `JobsByCostCenterResponse`: Array of { costCenterId: string, costCenterName: string, count: number }
+
+### ClientModal Employee List - Status Filter & Pagination
 - **Features Added**:
   - **Status Filter**: Dropdown to filter employees by status (Todos, Ativo, Desligado, Férias, Afastamento)
   - **100-Item Limit**: Shows only first 100 employees to improve performance

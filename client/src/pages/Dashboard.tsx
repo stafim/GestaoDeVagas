@@ -7,7 +7,9 @@ import type {
   OpenJobsByMonthResponse,
   JobsByCreatorResponse,
   JobsByCompanyResponse,
-  JobsSLAResponse
+  JobsSLAResponse,
+  JobsByWorkPositionResponse,
+  JobsByCostCenterResponse
 } from "@shared/schema";
 import { useState } from "react";
 import Layout from "@/components/Layout";
@@ -236,6 +238,34 @@ export default function Dashboard() {
       selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
       const res = await fetch(`/api/dashboard/all-jobs-by-creator?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error('Failed to fetch all jobs by creator');
+      return await res.json();
+    }
+  });
+
+  const { data: jobsByWorkPosition, isLoading: jobsByWorkPositionLoading } = useQuery<JobsByWorkPositionResponse>({
+    queryKey: ["/api/dashboard/jobs-by-work-position", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      selectedMonths.forEach(month => params.append("month", month));
+      selectedCompanies.forEach(company => params.append("companyId", company));
+      selectedDivisions.forEach(div => params.append("division", div));
+      selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      const res = await fetch(`/api/dashboard/jobs-by-work-position?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error('Failed to fetch jobs by work position');
+      return await res.json();
+    }
+  });
+
+  const { data: jobsByCostCenter, isLoading: jobsByCostCenterLoading } = useQuery<JobsByCostCenterResponse>({
+    queryKey: ["/api/dashboard/jobs-by-cost-center", selectedMonths, selectedCompanies, selectedDivisions, selectedRecruiters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      selectedMonths.forEach(month => params.append("month", month));
+      selectedCompanies.forEach(company => params.append("companyId", company));
+      selectedDivisions.forEach(div => params.append("division", div));
+      selectedRecruiters.forEach(rec => params.append("recruiterId", rec));
+      const res = await fetch(`/api/dashboard/jobs-by-cost-center?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error('Failed to fetch jobs by cost center');
       return await res.json();
     }
   });
@@ -961,6 +991,103 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Novos gráficos: Posto de Trabalho e Centro de Custos */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Vagas por Posto de Trabalho */}
+          <Card className="shadow-sm hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-chart-1 rounded-full"></div>
+                Vagas por Posto de Trabalho
+              </CardTitle>
+              <CardDescription>Top 10 postos de trabalho com mais vagas abertas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {jobsByWorkPositionLoading ? (
+                <Skeleton className="h-80 w-full" />
+              ) : !jobsByWorkPosition || jobsByWorkPosition.length === 0 ? (
+                <div className="h-80 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Briefcase className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-lg font-medium">Nenhum dado disponível</p>
+                    <p className="text-sm mt-2">Cadastre vagas com postos de trabalho</p>
+                  </div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart 
+                    data={jobsByWorkPosition?.slice(0, 10).map((item) => ({
+                      name: item.workPosition,
+                      value: item.count
+                    })) || []} 
+                    layout="horizontal"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={150} />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Bar dataKey="value" fill="#3B82F6" radius={[0, 8, 8, 0]} barSize={25} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Vagas por Centro de Custos */}
+          <Card className="shadow-sm hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-chart-2 rounded-full"></div>
+                Vagas por Centro de Custos
+              </CardTitle>
+              <CardDescription>Top 10 centros de custo com mais vagas abertas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {jobsByCostCenterLoading ? (
+                <Skeleton className="h-80 w-full" />
+              ) : !jobsByCostCenter || jobsByCostCenter.length === 0 ? (
+                <div className="h-80 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-lg font-medium">Nenhum dado disponível</p>
+                    <p className="text-sm mt-2">Cadastre vagas com centros de custo</p>
+                  </div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart 
+                    data={jobsByCostCenter?.slice(0, 10).map((item) => ({
+                      name: item.costCenterName,
+                      value: item.count
+                    })) || []} 
+                    layout="horizontal"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={150} />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Bar dataKey="value" fill="#10b981" radius={[0, 8, 8, 0]} barSize={25} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Recent Jobs Table */}
         <Card className="shadow-sm hover:shadow-lg transition-shadow duration-200">
