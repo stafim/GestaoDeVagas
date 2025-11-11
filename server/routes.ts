@@ -5,7 +5,7 @@ import { setupSimpleAuth, isAuthenticated } from "./simpleAuth";
 import { getWorkPositions } from "./hcm-connection";
 import { emailService } from "./emailService";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { 
   insertOrganizationSchema,
   insertOrganizationWithAdminSchema,
@@ -32,7 +32,8 @@ import {
   insertApprovalWorkflowStepSchema,
   insertJobApprovalHistorySchema,
   insertBlacklistCandidateSchema,
-  divisions
+  divisions,
+  costCenters
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -1148,32 +1149,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Create Senior integration service
+      const { createSeniorIntegrationService } = await import('./services/seniorIntegration');
+      const seniorService = createSeniorIntegrationService({
+        apiUrl: settings.apiUrl,
+        apiKey: settings.apiKey,
+      });
+
       // Get all companies from our system to map numemp -> company ID
       const companies = await storage.getCompanies();
-      const companyMap = new Map();
+      const companyMap = new Map<string, string>();
       companies.forEach(company => {
         if ((company as any).seniorId) {
           companyMap.set((company as any).seniorId, company.id);
         }
       });
 
-      // Query to fetch all cost centers from r018ccu
-      const queryResponse = await fetch(`${settings.apiUrl}/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': settings.apiKey,
-        },
-        body: JSON.stringify({ 
-          sqlText: 'SELECT numemp, codccu, nomccu FROM r018ccu ORDER BY numemp, codccu' 
-        }),
+      // Get all divisions to map code -> division ID
+      const allDivisions = await storage.getDivisions();
+      const divisionMap = new Map<string, string>();
+      allDivisions.forEach(division => {
+        if (division.code) {
+          divisionMap.set(division.code.toString(), division.id);
+        }
       });
 
-      if (!queryResponse.ok) {
-        throw new Error(`Query falhou: ${queryResponse.status}`);
-      }
-
-      const seniorCostCenters = await queryResponse.json();
+      // Query to fetch all cost centers from r018ccu (including division)
+      const seniorCostCenters = await seniorService.executeQuery<{
+        numemp: number;
+        codccu: string;
+        nomccu: string;
+        usu_coddiv: number | null;
+      }>('SELECT numemp, codccu, nomccu, usu_coddiv FROM r018ccu ORDER BY numemp, codccu');
 
       if (!Array.isArray(seniorCostCenters) || seniorCostCenters.length === 0) {
         return res.json({ 
@@ -1184,8 +1191,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Load existing cost centers once and create lookup map
+      const existingCostCenters = await storage.getCostCenters();
+      const existingMap = new Set<string>();
+      existingCostCenters.forEach(cc => {
+        if ((cc as any).seniorId && cc.companyId) {
+          existingMap.add(`${(cc as any).seniorId}-${cc.companyId}`);
+        }
+      });
+
       let imported = 0;
+      let updated = 0;
       let skipped = 0;
+      let withDivision = 0;
+      let withoutDivision = 0;
       const errors: string[] = [];
 
       // Import each cost center
@@ -1200,29 +1219,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
 
-          // Check if cost center already exists
-          const existingCostCenters = await storage.getCostCenters();
-          const exists = existingCostCenters.some(cc => 
-            (cc as any).seniorId === seniorCC.codccu && cc.companyId === companyId
-          );
-
-          if (exists) {
-            skipped++;
-            continue;
+          // Find division if usu_coddiv is set
+          let divisionId: string | null = null;
+          if (seniorCC.usu_coddiv && seniorCC.usu_coddiv !== 0) {
+            const foundDivisionId = divisionMap.get(seniorCC.usu_coddiv.toString());
+            if (foundDivisionId) {
+              divisionId = foundDivisionId;
+              withDivision++;
+            }
           }
 
-          // Create cost center in our system
-          const costCenterData = {
-            name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
-            code: seniorCC.codccu,
-            companyId: companyId,
-            seniorId: seniorCC.codccu,
-            importedFromSenior: true,
-            lastSyncedAt: new Date(),
-          };
+          if (!divisionId) {
+            withoutDivision++;
+          }
 
-          await storage.createCostCenter(costCenterData);
-          imported++;
+          // Check if cost center already exists
+          const key = `${seniorCC.codccu}-${companyId}`;
+          const exists = existingMap.has(key);
+
+          if (exists) {
+            // Update existing cost center with division info
+            await db.update(costCenters)
+              .set({
+                name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
+                divisionId: divisionId,
+                lastSyncedAt: new Date(),
+              })
+              .where(and(
+                eq(costCenters.seniorId, seniorCC.codccu),
+                eq(costCenters.companyId, companyId)
+              ));
+            updated++;
+          } else {
+            // Create cost center in our system
+            await db.insert(costCenters).values({
+              name: seniorCC.nomccu || `Centro de Custo ${seniorCC.codccu}`,
+              code: seniorCC.codccu,
+              companyId: companyId,
+              divisionId: divisionId,
+              seniorId: seniorCC.codccu,
+              importedFromSenior: true,
+              lastSyncedAt: new Date(),
+            });
+            imported++;
+          }
 
         } catch (error) {
           console.error(`Error importing cost center ${seniorCC.codccu}:`, error);
@@ -1233,10 +1273,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         imported,
+        updated,
         skipped,
+        withDivision,
+        withoutDivision,
         total: seniorCostCenters.length,
         errors: errors.length > 0 ? errors : undefined,
-        message: `Importação concluída: ${imported} centros de custo importados, ${skipped} já existentes ou sem empresa`
+        message: `Importação concluída: ${imported} importados, ${updated} atualizados, ${withDivision} com divisão, ${withoutDivision} sem divisão`
       });
 
     } catch (error) {

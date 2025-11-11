@@ -163,3 +163,17 @@
 [x] 4. Adicionar métodos createDivision e updateDivisionName ao storage
 [x] 5. Testar importação: 7 divisões importadas com sucesso da Senior HCM
 [x] 6. Confirmar dados: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
+
+## Implementação: Filtro de Centros de Custo por Divisão
+[x] 1. Identificar campo usu_coddiv na tabela r018ccu da Senior HCM que relaciona centro de custo com divisão
+[x] 2. Atualizar rota /api/senior-integration/import-cost-centers para:
+      - Buscar campo usu_coddiv na query SQL
+      - Mapear divisões por código (divisionMap)
+      - Associar divisionId ao criar/atualizar centro de custo
+      - Usar createSeniorIntegrationService compartilhado
+      - Adicionar imports necessários (and, costCenters)
+[x] 3. Importar empresas: 13 empresas da Senior HCM
+[x] 4. Importar centros de custo: 882 centros de custo (50 com divisão, 832 sem divisão)
+[x] 5. Verificar relacionamento: Centro de Custo "GERAL" associado à divisão "FACILITIES"
+[x] 6. Confirmar que JobModal.tsx já tem lógica de filtro implementada (linhas 784-790)
+[x] 7. Funcionalidade pronta: Ao selecionar divisão, campo Centro de Custo mostra apenas centros da divisão selecionada
