@@ -135,13 +135,18 @@ export default function Clients() {
   const viewingClient = clients?.find(c => c.id === viewingEmployeesClientId);
 
   const filteredEmployees = viewingClientEmployees.filter((employee) => {
+    // Filtro principal: apenas funcionários em centros de custo com "localiza"
+    const costCenter = costCenters.find((cc: any) => cc.id === employee.costCenterId);
+    const isLocalizaCostCenter = costCenter?.name?.toLowerCase().includes('localiza');
+    
+    if (!isLocalizaCostCenter) return false;
+    
+    // Filtro secundário: busca por nome, cargo, centro de custo ou status
     if (!employeeSearch) return true;
     
     const searchLower = employeeSearch.toLowerCase();
     const nameMatch = employee.name?.toLowerCase().includes(searchLower);
     const positionMatch = employee.position?.toLowerCase().includes(searchLower);
-    
-    const costCenter = costCenters.find((cc: any) => cc.id === employee.costCenterId);
     const costCenterMatch = costCenter?.name?.toLowerCase().includes(searchLower);
     
     const statusConfig = {
