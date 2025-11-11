@@ -379,6 +379,29 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
     loadCostCenters();
   }, [selectedCompanyId, form]);
 
+  // Clear cost center selection when division changes
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "department") {
+        const selectedDepartment = value.department;
+        const selectedCostCenterId = value.costCenterId;
+        
+        if (selectedDepartment && selectedCostCenterId && costCenters.length > 0 && divisions) {
+          // Find the selected division
+          const selectedDivision = divisions.find(d => d.name === selectedDepartment);
+          // Find the selected cost center
+          const selectedCostCenter = costCenters.find(cc => cc.id === selectedCostCenterId);
+          
+          // If cost center doesn't match the division, clear it
+          if (selectedDivision && selectedCostCenter && selectedCostCenter.divisionId !== selectedDivision.id) {
+            form.setValue("costCenterId", "");
+          }
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [costCenters, divisions, form]);
+
   // Fetch selected client data and its employees
   const { data: selectedClient } = useQuery<any>({
     queryKey: ["/api/clients", selectedClientId],
@@ -907,9 +930,22 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                   name="costCenterId"
                   render={({ field }) => {
                     const selectedCompanyId = form.watch("companyId");
-                    const filteredCostCenters = selectedCompanyId 
-                      ? costCenters.filter(cc => cc.companyId === selectedCompanyId)
-                      : costCenters;
+                    const selectedDepartment = form.watch("department");
+                    
+                    // Find division ID by name
+                    const selectedDivision = divisions?.find(d => d.name === selectedDepartment);
+                    
+                    // Filter cost centers by both company AND division
+                    const filteredCostCenters = selectedCompanyId && selectedDivision
+                      ? costCenters.filter(cc => 
+                          cc.companyId === selectedCompanyId && 
+                          cc.divisionId === selectedDivision.id
+                        )
+                      : selectedCompanyId
+                        ? costCenters.filter(cc => cc.companyId === selectedCompanyId)
+                        : costCenters;
+
+                    const isDisabled = !selectedCompanyId || !selectedDepartment;
 
                     return (
                       <FormItem>
@@ -917,11 +953,19 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                         <Select 
                           onValueChange={field.onChange} 
                           value={field.value || ""}
-                          disabled={!selectedCompanyId}
+                          disabled={isDisabled}
                         >
                           <FormControl>
                             <SelectTrigger data-testid="select-cost-center">
-                              <SelectValue placeholder={selectedCompanyId ? "Selecione um centro de custo" : "Selecione primeiro uma empresa"} />
+                              <SelectValue placeholder={
+                                !selectedCompanyId 
+                                  ? "Selecione primeiro uma empresa" 
+                                  : !selectedDepartment
+                                    ? "Selecione primeiro uma divisão"
+                                    : filteredCostCenters.length === 0
+                                      ? "Nenhum centro de custo disponível"
+                                      : "Selecione um centro de custo"
+                              } />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -933,11 +977,21 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
                               ))
                             ) : (
                               <div className="py-6 text-center text-sm text-muted-foreground">
-                                Nenhum centro de custo disponível para esta empresa
+                                Nenhum centro de custo disponível para esta empresa e divisão
                               </div>
                             )}
                           </SelectContent>
                         </Select>
+                        {isDisabled && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Selecione empresa e divisão para ver os centros de custo
+                          </p>
+                        )}
+                        {!isDisabled && filteredCostCenters.length === 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            ⚠️ Não há centros de custo para a divisão {selectedDepartment}
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     );

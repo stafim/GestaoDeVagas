@@ -8,11 +8,12 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Updates (Nov 11, 2025)
 
-### Division-Based Workflow Approvals (LATEST)
+### Division-Based Workflow and Cost Center Filtering (LATEST)
 - **Database Structure**:
   - **divisions table**: Stores organizational divisions from Senior (code, name, isActive)
   - **7 divisions imported**: ADMINISTRATIVO, FACILITIES, INDUSTRIAL, LOGISTICA, MANUTENCAO, ENGENHARIA, MOBILIDADE
   - **approvalWorkflows.divisionId**: Required foreign key to divisions table (NOT NULL)
+  - **costCenters.divisionId**: Foreign key to divisions table - associates cost centers with specific divisions
 - **Backend Implementation**:
   - Import script: `server/scripts/import-divisions.ts` syncs divisions from Senior's `usu_tdivare` table
   - API endpoint: `GET /api/divisions` returns all active divisions
@@ -28,11 +29,16 @@ Preferred communication style: Simple, everyday language.
   - Ensures consistency between job divisions and workflow divisions
   - Division field positioned immediately after Client field in "Informações Básicas" section
   - **Workflow filtering**: Approval workflow dropdown shows only workflows matching the selected division
-  - Workflow field disabled until division is selected
-  - Auto-clears workflow selection if division is changed to prevent mismatches
+  - **Cost Center filtering**: Cost center dropdown shows only cost centers matching both selected company AND division
+  - Both workflow and cost center fields disabled until division is selected
+  - Auto-clears workflow and cost center selections if division is changed to prevent mismatches
+  - Informative placeholders guide users through the cascading selection process
+  - Warning messages displayed when no cost centers available for selected division
 - **Use Case**:
   - Each workflow must be associated with a specific division
+  - Cost centers are filtered by both company and division for better data organization
   - Create division-specific workflows (e.g., "Aprovação FACILITIES" only for FACILITIES division)
+  - Ensures cost centers are appropriate for the division's context
   - Enables customized approval processes per organizational area
   - To cover all divisions, create separate workflows for each
   - Job creation form now uses same division source as workflows for data consistency

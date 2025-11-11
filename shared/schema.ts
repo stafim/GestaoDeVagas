@@ -140,6 +140,7 @@ export const costCenters = pgTable("cost_centers", {
   name: varchar("name", { length: 255 }).notNull(),
   code: varchar("code", { length: 50 }).notNull(),
   companyId: varchar("company_id").references(() => companies.id),
+  divisionId: varchar("division_id").references(() => divisions.id), // Divisão associada ao centro de custo
   budget: decimal("budget", { precision: 10, scale: 2 }),
   // Senior Integration fields
   importedFromSenior: boolean("imported_from_senior").default(false), // Se foi importado da API Senior
