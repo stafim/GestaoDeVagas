@@ -4156,6 +4156,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sync clients from Senior API
+  app.post('/api/senior/sync-clients', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id || (req.session as any).user?.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.organizationId) {
+        return res.status(400).json({ message: "Organization ID not found" });
+      }
+
+      // Buscar configurações da integração Senior
+      const settings = await storage.getSeniorIntegrationSettings(user.organizationId);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Integração com Senior não está configurada ou ativa" 
+        });
+      }
+
+      // Criar instância do serviço Senior
+      const seniorService = createSeniorIntegrationService({
+        apiUrl: settings.apiUrl,
+        apiKey: settings.apiKey,
+      });
+
+      // Buscar clientes da API Senior
+      const seniorClients = await seniorService.getClients();
+
+      let importedCount = 0;
+      let updatedCount = 0;
+      let skippedCount = 0;
+      const errors: string[] = [];
+
+      // Processar cada cliente
+      for (const seniorClient of seniorClients) {
+        try {
+          // Verificar se já existe um cliente com este seniorId
+          const existingClients = await storage.getClients();
+          const existingClient = existingClients.find(c => c.seniorId === seniorClient.seniorId);
+
+          if (existingClient) {
+            // Atualizar cliente existente
+            await storage.updateClient(existingClient.id, {
+              name: seniorClient.name,
+              contactPerson: seniorClient.contactPerson,
+              phone: seniorClient.phone,
+              email: seniorClient.email,
+              address: seniorClient.address,
+              city: seniorClient.city,
+              state: seniorClient.state,
+              lastSyncedAt: new Date(),
+            });
+            updatedCount++;
+          } else {
+            // Criar novo cliente
+            await storage.createClient({
+              organizationId: user.organizationId,
+              name: seniorClient.name,
+              contactPerson: seniorClient.contactPerson,
+              phone: seniorClient.phone,
+              email: seniorClient.email,
+              address: seniorClient.address,
+              city: seniorClient.city,
+              state: seniorClient.state,
+              importedFromSenior: true,
+              seniorId: seniorClient.seniorId,
+              lastSyncedAt: new Date(),
+            });
+            importedCount++;
+          }
+        } catch (clientError) {
+          console.error(`Error processing client ${seniorClient.name}:`, clientError);
+          errors.push(`Erro ao processar ${seniorClient.name}: ${clientError instanceof Error ? clientError.message : 'Erro desconhecido'}`);
+          skippedCount++;
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Sincronização concluída: ${importedCount} importados, ${updatedCount} atualizados, ${skippedCount} com erro`,
+        imported: importedCount,
+        updated: updatedCount,
+        skipped: skippedCount,
+        errors: errors.length > 0 ? errors : undefined,
+      });
+
+    } catch (error) {
+      console.error("Error syncing clients from Senior:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Erro ao sincronizar clientes da Senior" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
