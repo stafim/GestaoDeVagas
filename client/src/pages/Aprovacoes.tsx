@@ -58,6 +58,15 @@ interface PendingApproval {
     id: string;
     stepOrder: number;
     requiresDualApproval: boolean;
+    stepType: string;
+  } | null;
+  approvalHistory: {
+    id: string;
+    approvedBy: string | null;
+    approvedAt: Date | null;
+    approvedBy2: string | null;
+    approvedAt2: Date | null;
+    status: string;
   } | null;
 }
 
@@ -91,6 +100,39 @@ interface ApprovalHistory {
     id: string;
     name: string;
   } | null;
+}
+
+// Component to display dual approval status indicators
+function DualApprovalIndicators({ approval }: { approval: PendingApproval }) {
+  const isDualApproval = approval.currentStep?.stepType === 'dual';
+  
+  if (!isDualApproval) {
+    return <span className="text-sm text-muted-foreground">-</span>;
+  }
+
+  const hasFirstApproval = approval.approvalHistory?.approvedBy;
+  const hasSecondApproval = approval.approvalHistory?.approvedBy2;
+
+  return (
+    <div className="flex items-center gap-1" data-testid={`dual-approval-${approval.job.id}`}>
+      {/* First approver circle */}
+      <div
+        className={`w-3 h-3 rounded-full ${
+          hasFirstApproval ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+        }`}
+        title={hasFirstApproval ? 'Aprovador 1: Aprovado' : 'Aprovador 1: Pendente'}
+        data-testid={`circle-approver1-${approval.job.id}`}
+      />
+      {/* Second approver circle */}
+      <div
+        className={`w-3 h-3 rounded-full ${
+          hasSecondApproval ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+        }`}
+        title={hasSecondApproval ? 'Aprovador 2: Aprovado' : 'Aprovador 2: Pendente'}
+        data-testid={`circle-approver2-${approval.job.id}`}
+      />
+    </div>
+  );
 }
 
 export default function Aprovacoes() {
@@ -254,6 +296,7 @@ export default function Aprovacoes() {
                         <TableHead>Data Abertura</TableHead>
                         <TableHead>Workflow</TableHead>
                         <TableHead>Etapa</TableHead>
+                        <TableHead>Status Dupla Alçada</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -280,6 +323,9 @@ export default function Aprovacoes() {
                             <Badge variant="outline">
                               Etapa {approval.currentStep?.stepOrder || '-'}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <DualApprovalIndicators approval={approval} />
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">

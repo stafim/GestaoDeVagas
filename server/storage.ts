@@ -3482,6 +3482,7 @@ export class DatabaseStorage implements IStorage {
         profession: professions,
         workflow: approvalWorkflows,
         currentStep: approvalWorkflowSteps,
+        approvalHistory: jobApprovalHistory,
       })
       .from(jobs)
       .leftJoin(companies, eq(jobs.companyId, companies.id))
@@ -3491,6 +3492,10 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(approvalWorkflowSteps, and(
         eq(approvalWorkflowSteps.workflowId, jobs.approvalWorkflowId),
         eq(approvalWorkflowSteps.stepOrder, jobs.currentApprovalStep)
+      ))
+      .leftJoin(jobApprovalHistory, and(
+        eq(jobApprovalHistory.jobId, jobs.id),
+        eq(jobApprovalHistory.workflowStepId, approvalWorkflowSteps.id)
       ))
       .where(and(
         eq(jobs.approvalStatus, 'pending'),
