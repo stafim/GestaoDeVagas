@@ -1,5 +1,6 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import pkg from 'pg';
+const { Pool } = pkg;
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { clientEmployees, clients, costCenters } from '../../shared/schema';
 import { createSeniorIntegrationService } from '../services/seniorIntegration';
 import { eq, and, ilike } from 'drizzle-orm';
@@ -16,8 +17,8 @@ if (!SENIOR_API_URL || !SENIOR_API_KEY) {
   throw new Error('SENIOR_API_URL ou SENIOR_API_KEY não estão configurados');
 }
 
-const sql = neon(DATABASE_URL);
-const db = drizzle(sql);
+const pool = new Pool({ connectionString: DATABASE_URL });
+const db = drizzle(pool);
 
 interface SeniorEmployee {
   numcad: number;      // Número cadastral (matrícula)

@@ -20,7 +20,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express.js.
 - **Language**: TypeScript (ES modules).
 - **API Pattern**: RESTful API (JSON).
-- **Database**: PostgreSQL (Neon serverless) with Drizzle ORM.
+- **Database**: PostgreSQL with Drizzle ORM.
 - **System Design Choices**: Repository pattern for data access, Zod for API input validation, well-defined foreign key relationships, and configurable parameters for work scales, benefits, and job statuses.
 
 ## Authentication & Authorization
@@ -62,7 +62,7 @@ Preferred communication style: Simple, everyday language.
 # External Dependencies
 
 ## Database Services
-- **Neon Database**: Serverless PostgreSQL hosting.
+- **PostgreSQL**: Standard PostgreSQL database (for VM deployment).
 
 ## Authentication Services
 - **Replit Auth**: OpenID Connect provider.
