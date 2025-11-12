@@ -303,6 +303,7 @@ export const roleTypeEnum = pgEnum("role_type", [
 ]);
 
 export const permissionTypeEnum = pgEnum("permission_type", [
+  // Permissões antigas (operações granulares)
   "create_jobs",
   "edit_jobs", 
   "delete_jobs",
@@ -321,7 +322,19 @@ export const permissionTypeEnum = pgEnum("permission_type", [
   "view_reports",
   "export_data",
   "manage_users",
-  "manage_permissions"
+  "manage_permissions",
+  // Novas permissões baseadas em menu (access control)
+  "access_dashboard",
+  "access_jobs",
+  "access_kanban",
+  "access_approvals",
+  "access_companies",
+  "access_clients",
+  "access_users",
+  "access_permissions",
+  "access_workflow",
+  "access_settings",
+  "access_reports"
 ]);
 
 // Approval workflow enums

@@ -46,11 +46,11 @@ GRANT ALL PRIVILEGES ON DATABASE vagaspro TO vagaspro_user;
 ### 3. Restaurar o Dump do Banco
 
 ```bash
-# Restaurar o dump
-psql -U vagaspro_user -d vagaspro -f database_dump_final_20251112_013415.sql
+# Restaurar o dump (usar o arquivo mais recente)
+psql -U vagaspro_user -d vagaspro -f database_dump_final_YYYYMMDD_HHMMSS.sql
 
 # Se precisar usar com sudo:
-sudo -u postgres psql -d vagaspro -f database_dump_final_20251112_013415.sql
+sudo -u postgres psql -d vagaspro -f database_dump_final_YYYYMMDD_HHMMSS.sql
 ```
 
 ## 🚀 Instalação da Aplicação

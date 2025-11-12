@@ -174,7 +174,18 @@ CREATE TYPE public.permission_type AS ENUM (
     'view_reports',
     'export_data',
     'manage_users',
-    'manage_permissions'
+    'manage_permissions',
+    'access_dashboard',
+    'access_jobs',
+    'access_kanban',
+    'access_approvals',
+    'access_companies',
+    'access_clients',
+    'access_users',
+    'access_permissions',
+    'access_workflow',
+    'access_settings',
+    'access_reports'
 );
 
 

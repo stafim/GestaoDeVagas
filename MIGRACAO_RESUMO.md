@@ -48,11 +48,12 @@ export const db = drizzle(pool, { schema });
 
 ## 📁 Arquivos Criados
 
-1. **`database_dump_final_20251112_013415.sql`** (774 KB)
+1. **`database_dump_final_YYYYMMDD_HHMMSS.sql`** (~800 KB)
    - Dump completo do banco de dados PostgreSQL
    - **Sem referências ao Neon** (--no-owner --no-acl)
    - Pronto para restauração em qualquer PostgreSQL
    - Inclui estrutura + dados completos
+   - **Sistema de permissões atualizado** com valores baseados em menu
 
 2. **`VM_DEPLOYMENT.md`**
    - Guia completo de deployment
@@ -77,7 +78,7 @@ export const db = drizzle(pool, { schema });
 
 2. **Deploy:**
    - Seguir instruções em `VM_DEPLOYMENT.md`
-   - Restaurar dump: `database_dump_final_20251112_013415.sql`
+   - Restaurar dump: Use o arquivo `database_dump_final_*.sql` mais recente
    - Configurar variáveis de ambiente
    - Iniciar aplicação
 
@@ -120,8 +121,28 @@ export const db = drizzle(pool, { schema });
 ## 📞 Referências
 
 - Guia completo: `VM_DEPLOYMENT.md`
-- Dump do banco: `database_dump_final_20251112_013415.sql`
+- Dump do banco: Use o arquivo `database_dump_final_*.sql` mais recente
 - Documentação: `replit.md`
+
+## 🔄 Atualizações Recentes
+
+### Sistema de Permissões (12/11/2025)
+- ✅ **Enum `permission_type` atualizado** com novos valores baseados em menu
+- ✅ Valores adicionados:
+  - `access_dashboard` - Acesso ao Dashboard
+  - `access_jobs` - Acesso ao módulo de Vagas
+  - `access_kanban` - Acesso ao Kanban
+  - `access_approvals` - Acesso às Aprovações
+  - `access_companies` - Acesso ao cadastro de Empresas
+  - `access_clients` - Acesso ao cadastro de Clientes
+  - `access_users` - Acesso ao cadastro de Usuários
+  - `access_permissions` - Acesso às Permissões
+  - `access_workflow` - Acesso aos Workflows
+  - `access_settings` - Acesso às Configurações
+  - `access_reports` - Acesso aos Relatórios
+- ✅ Valores antigos mantidos para compatibilidade (create_jobs, edit_jobs, etc.)
+- ✅ Total de 30 valores no enum
+- ✅ Schema TypeScript (`shared/schema.ts`) sincronizado com banco de dados
 
 ## ✅ Verificação de Limpeza
 
