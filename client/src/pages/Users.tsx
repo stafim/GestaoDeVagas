@@ -36,18 +36,24 @@ import { Plus, User, Mail, Shield, Pencil, Trash2, UserCircle } from "lucide-rea
 import { z } from "zod";
 
 const roleLabels: Record<string, string> = {
-  user: "Usuário",
+  super_admin: "Super Administrador",
   admin: "Administrador",
+  hr_manager: "Gestor de RH",
   recruiter: "Recrutador",
+  interviewer: "Entrevistador",
+  viewer: "Visualizador",
   approver: "Aprovador",
   manager: "Gestor"
 };
 
 const roleColors: Record<string, string> = {
-  user: "bg-gray-100 text-gray-800",
+  super_admin: "bg-purple-100 text-purple-800",
   admin: "bg-red-100 text-red-800",
+  hr_manager: "bg-blue-100 text-blue-800",
   recruiter: "bg-green-100 text-green-800",
-  approver: "bg-purple-100 text-purple-800",
+  interviewer: "bg-cyan-100 text-cyan-800",
+  viewer: "bg-gray-100 text-gray-800",
+  approver: "bg-indigo-100 text-indigo-800",
   manager: "bg-orange-100 text-orange-800"
 };
 
@@ -73,7 +79,7 @@ export default function Users() {
       name: "",
       email: "",
       password: "",
-      role: "user"
+      role: "viewer"
     }
   });
 
