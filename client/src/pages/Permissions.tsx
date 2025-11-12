@@ -3,13 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, CheckCircle2, XCircle, User, Settings } from "lucide-react";
+import { Shield, CheckCircle2, XCircle, Settings } from "lucide-react";
 
 // Role labels and colors
 const roleLabels: Record<string, string> = {
@@ -91,24 +90,12 @@ const availableMenus = [
 
 export default function Permissions() {
   const [selectedRole, setSelectedRole] = useState<string>("admin");
-  const [selectedUser, setSelectedUser] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Get role permissions
   const { data: rolePermissions = [], isLoading: rolePermsLoading } = useQuery<any[]>({
     queryKey: ["/api/permissions/roles/permissions"],
-  });
-
-  // Get all users for menu permissions
-  const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
-    queryKey: ["/api/users"],
-  });
-
-  // Get menu permissions for selected user
-  const { data: userMenuPerms = [] } = useQuery<any[]>({
-    queryKey: ["/api/permissions/menu", selectedUser],
-    enabled: !!selectedUser,
   });
 
   // Setup default permissions mutation
@@ -146,33 +133,12 @@ export default function Permissions() {
     }
   });
 
-  // Update menu permissions for selected user
-  const updateMenuPermissionsMutation = useMutation({
-    mutationFn: async (data: { userId: string; menuPermissions: Array<{ menuPath: string; menuName: string; canAccess: boolean }> }) => {
-      const res = await apiRequest("POST", `/api/permissions/menu/${data.userId}/bulk`, { menuPermissions: data.menuPermissions });
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Permissões de menu atualizadas com sucesso" });
-      queryClient.invalidateQueries({ queryKey: ["/api/permissions/menu", selectedUser] });
-    },
-    onError: () => {
-      toast({ title: "Erro ao atualizar permissões de menu", variant: "destructive" });
-    }
-  });
-
   // Check if a role has a specific permission
   const hasPermission = (role: string, permission: string): boolean => {
     const perm = rolePermissions.find(
       (p: any) => p.role === role && p.permission === permission
     );
     return perm?.isGranted ?? false;
-  };
-
-  // Check if a user has access to a specific menu
-  const hasMenuAccess = (menuPath: string): boolean => {
-    const perm = userMenuPerms.find((p: any) => p.menuPath === menuPath);
-    return perm?.canAccess ?? false;
   };
 
   // Toggle permission for a role
@@ -184,29 +150,7 @@ export default function Permissions() {
     });
   };
 
-  // Toggle menu access for a user
-  const handleToggleMenu = (menuPath: string, menuName: string, currentValue: boolean) => {
-    if (!selectedUser) return;
-    
-    // Update all menu permissions at once
-    const updatedPermissions = availableMenus.map(menu => {
-      if (menu.path === menuPath) {
-        return { menuPath: menu.path, menuName: menu.name, canAccess: !currentValue };
-      }
-      return { 
-        menuPath: menu.path, 
-        menuName: menu.name, 
-        canAccess: hasMenuAccess(menu.path) 
-      };
-    });
-
-    updateMenuPermissionsMutation.mutate({
-      userId: selectedUser,
-      menuPermissions: updatedPermissions
-    });
-  };
-
-  if (rolePermsLoading || usersLoading) {
+  if (rolePermsLoading) {
     return (
       <div className="p-6">
         <div className="space-y-4">
@@ -240,20 +184,7 @@ export default function Permissions() {
         </Button>
       </div>
 
-      <Tabs defaultValue="roles" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="roles" data-testid="tab-role-permissions">
-            <Settings className="h-4 w-4 mr-2" />
-            Permissões por Função
-          </TabsTrigger>
-          <TabsTrigger value="menu" data-testid="tab-menu-permissions">
-            <User className="h-4 w-4 mr-2" />
-            Permissões de Menu
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Role Permissions Tab */}
-        <TabsContent value="roles" className="space-y-4">
+      <div className="space-y-4">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -317,80 +248,7 @@ export default function Permissions() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* Menu Permissions Tab */}
-        <TabsContent value="menu" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Permissões de Menu por Usuário</CardTitle>
-                  <CardDescription>
-                    Controle quais itens do menu cada usuário específico pode acessar
-                  </CardDescription>
-                </div>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger className="w-[300px]" data-testid="select-user">
-                    <SelectValue placeholder="Selecione um usuário" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id} data-testid={`select-user-${user.id}`}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{user.firstName} {user.lastName}</span>
-                          <span className="text-xs text-muted-foreground">{user.email}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!selectedUser ? (
-                <div className="text-center py-12">
-                  <User className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">
-                    Selecione um usuário para configurar suas permissões de menu
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {availableMenus.map((menu) => {
-                    const hasAccess = hasMenuAccess(menu.path);
-                    return (
-                      <div
-                        key={menu.path}
-                        className="flex items-center justify-between p-3 rounded-lg border hover-elevate"
-                        data-testid={`menu-row-${menu.path}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {hasAccess ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          ) : (
-                            <XCircle className="h-5 w-5 text-gray-400" />
-                          )}
-                          <span className="text-2xl">{menu.icon}</span>
-                          <div>
-                            <span className="font-medium">{menu.name}</span>
-                            <p className="text-xs text-muted-foreground">{menu.path}</p>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={hasAccess}
-                          onCheckedChange={() => handleToggleMenu(menu.path, menu.name, hasAccess)}
-                          data-testid={`switch-menu-${menu.path}`}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   );
 }
