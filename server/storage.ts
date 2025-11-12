@@ -3008,15 +3008,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserAccessibleMenus(userId: string): Promise<string[] | null> {
+    // Get user info to check if it's super admin or master admin
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    
+    if (user.length === 0) {
+      return [];
+    }
+    
+    // Super admins and users without organization (master admins) have full access by default
+    const isSuperAdmin = user[0].role === 'super_admin';
+    const isMasterAdmin = user[0].organizationId === null;
+    
     // First check if user has any menu permissions configured
     const allPermissions = await db
       .select()
       .from(userMenuPermissions)
       .where(eq(userMenuPermissions.userId, userId));
     
-    // If no permissions are configured, return null (meaning use default: show all)
+    // If no permissions are configured:
+    // - Super admins and master admins: return null (meaning show all permitted by role)
+    // - Regular users: return empty array (meaning show nothing - security first!)
     if (allPermissions.length === 0) {
-      return null;
+      return (isSuperAdmin || isMasterAdmin) ? null : [];
     }
     
     // If permissions exist, return only the accessible ones
