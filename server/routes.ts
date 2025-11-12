@@ -3118,6 +3118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activeStatuses = ['nova_vaga', 'aprovada', 'em_recrutamento', 'em_dp', 'em_admissao'];
       const wasActive = activeStatuses.includes(existingJob.status || '');
       const willBeActive = activeStatuses.includes(status);
+      let markAsIrregular = false;
       
       // Only validate if reopening (inactive → active)
       if (!wasActive && willBeActive) {
@@ -3154,15 +3155,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     requested: newJobContribution
                   }
                 });
+              } else if (policy === 'require_approval') {
+                // Mark to set irregularity flag along with status
+                markAsIrregular = true;
               }
-              // Note: For PATCH endpoint, we don't set createdWithIrregularity since we can only update status
             }
           }
         }
       }
       
-      // Update only the status
-      const job = await storage.updateJob(id, { status });
+      // Update status (and irregularity flag if needed)
+      const updateData: any = { status };
+      if (markAsIrregular) {
+        updateData.createdWithIrregularity = true;
+      }
+      const job = await storage.updateJob(id, updateData);
       
       // Send email notification if enabled for this status
       if (newStatusObj?.id) {
