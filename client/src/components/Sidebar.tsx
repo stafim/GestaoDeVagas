@@ -147,17 +147,16 @@ export default function Sidebar() {
     try {
       await apiRequest("POST", "/api/auth/logout", {});
       
-      // Clear all queries
-      await queryClient.invalidateQueries();
-      queryClient.clear();
-      
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
       });
       
+      // Invalidate auth query to trigger re-render
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       // Redirect to login page
-      setLocation("/");
+      window.location.href = "/";
     } catch (error) {
       toast({
         title: "Erro ao fazer logout",

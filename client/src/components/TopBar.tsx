@@ -54,15 +54,14 @@ export default function TopBar({
       // Invalidate auth query to update UI
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
-      // Redirect to login page
-      setLocation("/");
+      // Force full page reload to reset app state
+      window.location.href = "/";
     } catch (error: any) {
       toast({
         title: "Erro no logout",
         description: error.message || "Tente novamente",
         variant: "destructive",
       });
-    } finally {
       setIsLoggingOut(false);
     }
   };
