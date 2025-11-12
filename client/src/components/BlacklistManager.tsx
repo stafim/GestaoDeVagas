@@ -16,6 +16,7 @@ import { Plus, Edit, Trash2, Ban, Upload, Download, FileText } from "lucide-reac
 import { z } from "zod";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import type { User } from "@shared/schema";
 
 const blacklistCandidateFormSchema = z.object({
   fullName: z.string().min(3, "Nome completo deve ter no mínimo 3 caracteres"),
@@ -47,13 +48,18 @@ export function BlacklistManager() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Get current user to access organizationId
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+  });
+
   const form = useForm<BlacklistCandidateFormData>({
     resolver: zodResolver(blacklistCandidateFormSchema),
     defaultValues: {
       fullName: "",
       cpf: "",
       reason: "",
-      organizationId: "demo-org-id",
+      organizationId: currentUser?.organizationId || "",
     },
   });
 
@@ -187,7 +193,7 @@ export function BlacklistManager() {
             fullName: row.nome || row.name || row.fullName || "",
             cpf: formatCPF(row.cpf || ""),
             reason: row.motivo || row.reason || "",
-            organizationId: "demo-org-id",
+            organizationId: currentUser?.organizationId || "",
           }));
           setImportPreview(parsed);
         },
@@ -238,7 +244,7 @@ export function BlacklistManager() {
               fullName,
               cpf: formatCPF(cpf),
               reason,
-              organizationId: "demo-org-id",
+              organizationId: currentUser?.organizationId || "",
             };
           });
           
@@ -304,7 +310,7 @@ export function BlacklistManager() {
       fullName: candidate.fullName,
       cpf: candidate.cpf,
       reason: candidate.reason,
-      organizationId: "demo-org-id",
+      organizationId: currentUser?.organizationId || "",
     });
     setIsModalOpen(true);
   };
@@ -317,7 +323,7 @@ export function BlacklistManager() {
         fullName: "",
         cpf: "",
         reason: "",
-        organizationId: "demo-org-id",
+        organizationId: currentUser?.organizationId || "",
       });
     }
   };
