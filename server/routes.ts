@@ -422,6 +422,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: userData.role || 'user'
       });
       
+      // Create default menu permissions for the new user (except for admins who have full access automatically)
+      const userRole = userData.role || 'user';
+      if (userRole !== 'admin' && userRole !== 'super_admin') {
+        await storage.setDefaultMenuPermissions(newUser.id);
+      }
+      
       res.status(201).json(newUser);
     } catch (error) {
       console.error("Error creating user:", error);

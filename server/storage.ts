@@ -3080,6 +3080,15 @@ export class DatabaseStorage implements IStorage {
       { menuPath: "/reports/job-closure", menuName: "Fechamento de Vagas" },
       { menuPath: "/settings", menuName: "Configurações" },
       { menuPath: "/help", menuName: "Ajuda" },
+      { menuPath: "/organizations", menuName: "Organizações" },
+      { menuPath: "/plans", menuName: "Planos" },
+      { menuPath: "/financial", menuName: "Financeiro" },
+      { menuPath: "/approvals", menuName: "Aprovações" },
+      { menuPath: "/blacklist", menuName: "Lista Negra" },
+      { menuPath: "/cost-centers", menuName: "Centros de Custo" },
+      { menuPath: "/work-scales", menuName: "Escalas" },
+      { menuPath: "/divisions", menuName: "Divisões" },
+      { menuPath: "/workflows", menuName: "Workflows" },
     ];
 
     const permissionsToInsert = defaultMenus.map(menu => ({
