@@ -3035,20 +3035,21 @@ export class DatabaseStorage implements IStorage {
       return null;
     }
     
-    // For regular users, check if they have menu permissions configured
-    const allPermissions = await db
+    // For regular users, check if they have USER-SPECIFIC menu permissions configured
+    const userSpecificPermissions = await db
       .select()
       .from(userMenuPermissions)
       .where(eq(userMenuPermissions.userId, userId));
     
-    // Regular users without permissions = no access (security first!)
-    if (allPermissions.length === 0) {
-      return [];
+    // If user has specific permissions configured, use those (they override role permissions)
+    if (userSpecificPermissions.length > 0) {
+      const accessiblePermissions = userSpecificPermissions.filter(p => p.canAccess);
+      return accessiblePermissions.map(p => p.menuPath);
     }
     
-    // Regular users with permissions = only what's explicitly allowed
-    const accessiblePermissions = allPermissions.filter(p => p.canAccess);
-    return accessiblePermissions.map(p => p.menuPath);
+    // No user-specific permissions, so return empty array (no access)
+    // In the future, we could check role-based permissions here
+    return [];
   }
 
   async createUserMenuPermission(permission: InsertUserMenuPermission): Promise<UserMenuPermission> {
