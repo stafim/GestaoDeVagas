@@ -48,9 +48,10 @@ export const db = drizzle(pool, { schema });
 
 ## 📁 Arquivos Criados
 
-1. **`database_dump_postgresql_20251112_012616.sql`** (781 KB)
+1. **`database_dump_clean_20251112_013043.sql`** (774 KB)
    - Dump completo do banco de dados PostgreSQL
-   - Pronto para restauração na VM
+   - **Sem referências ao Neon** (--no-owner --no-acl)
+   - Pronto para restauração em qualquer PostgreSQL
    - Inclui estrutura + dados
 
 2. **`VM_DEPLOYMENT.md`**
@@ -76,7 +77,7 @@ export const db = drizzle(pool, { schema });
 
 2. **Deploy:**
    - Seguir instruções em `VM_DEPLOYMENT.md`
-   - Restaurar dump: `database_dump_postgresql_20251112_012616.sql`
+   - Restaurar dump: `database_dump_clean_20251112_013043.sql`
    - Configurar variáveis de ambiente
    - Iniciar aplicação
 
@@ -119,8 +120,16 @@ export const db = drizzle(pool, { schema });
 ## 📞 Referências
 
 - Guia completo: `VM_DEPLOYMENT.md`
-- Dump do banco: `database_dump_postgresql_20251112_012616.sql`
+- Dump do banco: `database_dump_clean_20251112_013043.sql`
 - Documentação: `replit.md`
+
+## ✅ Verificação de Limpeza
+
+- ✅ Zero referências ao Neon no código TypeScript
+- ✅ @neondatabase/serverless removido do package.json
+- ✅ Dump do banco sem referências ao neondb_owner
+- ✅ Todos os imports usando `pg` e `drizzle-orm/node-postgres`
+- ✅ Sistema testado e funcionando com PostgreSQL puro
 
 ---
 

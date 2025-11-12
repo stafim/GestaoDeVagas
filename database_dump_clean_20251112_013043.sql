@@ -17,7 +17,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: approval_workflow_step_status; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_step_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.approval_workflow_step_status AS ENUM (
@@ -28,10 +28,8 @@ CREATE TYPE public.approval_workflow_step_status AS ENUM (
 );
 
 
-ALTER TYPE public.approval_workflow_step_status OWNER TO neondb_owner;
-
 --
--- Name: approval_workflow_step_type; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_step_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.approval_workflow_step_type AS ENUM (
@@ -42,10 +40,8 @@ CREATE TYPE public.approval_workflow_step_type AS ENUM (
 );
 
 
-ALTER TYPE public.approval_workflow_step_type OWNER TO neondb_owner;
-
 --
--- Name: client_employee_status; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: client_employee_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.client_employee_status AS ENUM (
@@ -56,10 +52,8 @@ CREATE TYPE public.client_employee_status AS ENUM (
 );
 
 
-ALTER TYPE public.client_employee_status OWNER TO neondb_owner;
-
 --
--- Name: contract_type; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: contract_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.contract_type AS ENUM (
@@ -71,10 +65,8 @@ CREATE TYPE public.contract_type AS ENUM (
 );
 
 
-ALTER TYPE public.contract_type OWNER TO neondb_owner;
-
 --
--- Name: dual_approval_subtype; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: dual_approval_subtype; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.dual_approval_subtype AS ENUM (
@@ -83,10 +75,8 @@ CREATE TYPE public.dual_approval_subtype AS ENUM (
 );
 
 
-ALTER TYPE public.dual_approval_subtype OWNER TO neondb_owner;
-
 --
--- Name: gender; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: gender; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.gender AS ENUM (
@@ -96,10 +86,8 @@ CREATE TYPE public.gender AS ENUM (
 );
 
 
-ALTER TYPE public.gender OWNER TO neondb_owner;
-
 --
--- Name: interview_type; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: interview_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.interview_type AS ENUM (
@@ -111,10 +99,8 @@ CREATE TYPE public.interview_type AS ENUM (
 );
 
 
-ALTER TYPE public.interview_type OWNER TO neondb_owner;
-
 --
--- Name: job_reason; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: job_reason; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.job_reason AS ENUM (
@@ -123,10 +109,8 @@ CREATE TYPE public.job_reason AS ENUM (
 );
 
 
-ALTER TYPE public.job_reason OWNER TO neondb_owner;
-
 --
--- Name: job_status; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: job_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.job_status AS ENUM (
@@ -144,10 +128,8 @@ CREATE TYPE public.job_status AS ENUM (
 );
 
 
-ALTER TYPE public.job_status OWNER TO neondb_owner;
-
 --
--- Name: job_type; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: job_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.job_type AS ENUM (
@@ -156,10 +138,8 @@ CREATE TYPE public.job_type AS ENUM (
 );
 
 
-ALTER TYPE public.job_type OWNER TO neondb_owner;
-
 --
--- Name: kanban_stage; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: kanban_stage; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.kanban_stage AS ENUM (
@@ -171,10 +151,8 @@ CREATE TYPE public.kanban_stage AS ENUM (
 );
 
 
-ALTER TYPE public.kanban_stage OWNER TO neondb_owner;
-
 --
--- Name: permission_type; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: permission_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.permission_type AS ENUM (
@@ -200,10 +178,8 @@ CREATE TYPE public.permission_type AS ENUM (
 );
 
 
-ALTER TYPE public.permission_type OWNER TO neondb_owner;
-
 --
--- Name: role_type; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: role_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.role_type AS ENUM (
@@ -218,10 +194,8 @@ CREATE TYPE public.role_type AS ENUM (
 );
 
 
-ALTER TYPE public.role_type OWNER TO neondb_owner;
-
 --
--- Name: selection_status; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: selection_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.selection_status AS ENUM (
@@ -238,10 +212,8 @@ CREATE TYPE public.selection_status AS ENUM (
 );
 
 
-ALTER TYPE public.selection_status OWNER TO neondb_owner;
-
 --
--- Name: unhealthiness_level; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: unhealthiness_level; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.unhealthiness_level AS ENUM (
@@ -252,10 +224,8 @@ CREATE TYPE public.unhealthiness_level AS ENUM (
 );
 
 
-ALTER TYPE public.unhealthiness_level OWNER TO neondb_owner;
-
 --
--- Name: work_scale; Type: TYPE; Schema: public; Owner: neondb_owner
+-- Name: work_scale; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.work_scale AS ENUM (
@@ -267,14 +237,12 @@ CREATE TYPE public.work_scale AS ENUM (
 );
 
 
-ALTER TYPE public.work_scale OWNER TO neondb_owner;
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: application_stage_progress; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: application_stage_progress; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.application_stage_progress (
@@ -291,10 +259,8 @@ CREATE TABLE public.application_stage_progress (
 );
 
 
-ALTER TABLE public.application_stage_progress OWNER TO neondb_owner;
-
 --
--- Name: applications; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: applications; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.applications (
@@ -313,10 +279,8 @@ CREATE TABLE public.applications (
 );
 
 
-ALTER TABLE public.applications OWNER TO neondb_owner;
-
 --
--- Name: approval_workflow_steps; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_steps; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.approval_workflow_steps (
@@ -337,10 +301,8 @@ CREATE TABLE public.approval_workflow_steps (
 );
 
 
-ALTER TABLE public.approval_workflow_steps OWNER TO neondb_owner;
-
 --
--- Name: approval_workflows; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: approval_workflows; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.approval_workflows (
@@ -355,10 +317,8 @@ CREATE TABLE public.approval_workflows (
 );
 
 
-ALTER TABLE public.approval_workflows OWNER TO neondb_owner;
-
 --
--- Name: benefits; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: benefits; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.benefits (
@@ -371,10 +331,8 @@ CREATE TABLE public.benefits (
 );
 
 
-ALTER TABLE public.benefits OWNER TO neondb_owner;
-
 --
--- Name: blacklist_candidates; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: blacklist_candidates; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.blacklist_candidates (
@@ -389,10 +347,8 @@ CREATE TABLE public.blacklist_candidates (
 );
 
 
-ALTER TABLE public.blacklist_candidates OWNER TO neondb_owner;
-
 --
--- Name: candidates; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: candidates; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.candidates (
@@ -414,10 +370,8 @@ CREATE TABLE public.candidates (
 );
 
 
-ALTER TABLE public.candidates OWNER TO neondb_owner;
-
 --
--- Name: client_dashboard_permissions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: client_dashboard_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.client_dashboard_permissions (
@@ -430,10 +384,8 @@ CREATE TABLE public.client_dashboard_permissions (
 );
 
 
-ALTER TABLE public.client_dashboard_permissions OWNER TO neondb_owner;
-
 --
--- Name: client_employees; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: client_employees; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.client_employees (
@@ -451,10 +403,8 @@ CREATE TABLE public.client_employees (
 );
 
 
-ALTER TABLE public.client_employees OWNER TO neondb_owner;
-
 --
--- Name: client_profession_limits; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: client_profession_limits; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.client_profession_limits (
@@ -467,10 +417,8 @@ CREATE TABLE public.client_profession_limits (
 );
 
 
-ALTER TABLE public.client_profession_limits OWNER TO neondb_owner;
-
 --
--- Name: clients; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: clients; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.clients (
@@ -496,10 +444,8 @@ CREATE TABLE public.clients (
 );
 
 
-ALTER TABLE public.clients OWNER TO neondb_owner;
-
 --
--- Name: companies; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: companies; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.companies (
@@ -524,10 +470,8 @@ CREATE TABLE public.companies (
 );
 
 
-ALTER TABLE public.companies OWNER TO neondb_owner;
-
 --
--- Name: cost_centers; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: cost_centers; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.cost_centers (
@@ -545,10 +489,8 @@ CREATE TABLE public.cost_centers (
 );
 
 
-ALTER TABLE public.cost_centers OWNER TO neondb_owner;
-
 --
--- Name: divisions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: divisions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.divisions (
@@ -561,10 +503,8 @@ CREATE TABLE public.divisions (
 );
 
 
-ALTER TABLE public.divisions OWNER TO neondb_owner;
-
 --
--- Name: employees; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: employees; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.employees (
@@ -580,10 +520,8 @@ CREATE TABLE public.employees (
 );
 
 
-ALTER TABLE public.employees OWNER TO neondb_owner;
-
 --
--- Name: integration_settings; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: integration_settings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.integration_settings (
@@ -597,10 +535,8 @@ CREATE TABLE public.integration_settings (
 );
 
 
-ALTER TABLE public.integration_settings OWNER TO neondb_owner;
-
 --
--- Name: interview_criteria; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: interview_criteria; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.interview_criteria (
@@ -612,10 +548,8 @@ CREATE TABLE public.interview_criteria (
 );
 
 
-ALTER TABLE public.interview_criteria OWNER TO neondb_owner;
-
 --
--- Name: interviews; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: interviews; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.interviews (
@@ -636,10 +570,8 @@ CREATE TABLE public.interviews (
 );
 
 
-ALTER TABLE public.interviews OWNER TO neondb_owner;
-
 --
--- Name: invoices; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: invoices; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.invoices (
@@ -664,10 +596,8 @@ CREATE TABLE public.invoices (
 );
 
 
-ALTER TABLE public.invoices OWNER TO neondb_owner;
-
 --
--- Name: job_approval_history; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: job_approval_history; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.job_approval_history (
@@ -687,10 +617,8 @@ CREATE TABLE public.job_approval_history (
 );
 
 
-ALTER TABLE public.job_approval_history OWNER TO neondb_owner;
-
 --
--- Name: job_benefits; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: job_benefits; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.job_benefits (
@@ -701,10 +629,8 @@ CREATE TABLE public.job_benefits (
 );
 
 
-ALTER TABLE public.job_benefits OWNER TO neondb_owner;
-
 --
--- Name: job_status_history; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: job_status_history; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.job_status_history (
@@ -717,10 +643,8 @@ CREATE TABLE public.job_status_history (
 );
 
 
-ALTER TABLE public.job_status_history OWNER TO neondb_owner;
-
 --
--- Name: job_statuses; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: job_statuses; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.job_statuses (
@@ -739,10 +663,8 @@ CREATE TABLE public.job_statuses (
 );
 
 
-ALTER TABLE public.job_statuses OWNER TO neondb_owner;
-
 --
--- Name: jobs; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: jobs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.jobs (
@@ -797,10 +719,8 @@ CREATE TABLE public.jobs (
 );
 
 
-ALTER TABLE public.jobs OWNER TO neondb_owner;
-
 --
--- Name: kanban_boards; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: kanban_boards; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.kanban_boards (
@@ -813,10 +733,8 @@ CREATE TABLE public.kanban_boards (
 );
 
 
-ALTER TABLE public.kanban_boards OWNER TO neondb_owner;
-
 --
--- Name: kanban_stages; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: kanban_stages; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.kanban_stages (
@@ -829,10 +747,8 @@ CREATE TABLE public.kanban_stages (
 );
 
 
-ALTER TABLE public.kanban_stages OWNER TO neondb_owner;
-
 --
--- Name: organizations; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: organizations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.organizations (
@@ -854,10 +770,8 @@ CREATE TABLE public.organizations (
 );
 
 
-ALTER TABLE public.organizations OWNER TO neondb_owner;
-
 --
--- Name: payment_history; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: payment_history; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.payment_history (
@@ -873,10 +787,8 @@ CREATE TABLE public.payment_history (
 );
 
 
-ALTER TABLE public.payment_history OWNER TO neondb_owner;
-
 --
--- Name: plans; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: plans; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.plans (
@@ -895,10 +807,8 @@ CREATE TABLE public.plans (
 );
 
 
-ALTER TABLE public.plans OWNER TO neondb_owner;
-
 --
--- Name: professions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: professions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.professions (
@@ -918,10 +828,8 @@ CREATE TABLE public.professions (
 );
 
 
-ALTER TABLE public.professions OWNER TO neondb_owner;
-
 --
--- Name: role_job_status_permissions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: role_job_status_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.role_job_status_permissions (
@@ -935,10 +843,8 @@ CREATE TABLE public.role_job_status_permissions (
 );
 
 
-ALTER TABLE public.role_job_status_permissions OWNER TO neondb_owner;
-
 --
--- Name: role_permissions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: role_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.role_permissions (
@@ -949,10 +855,8 @@ CREATE TABLE public.role_permissions (
 );
 
 
-ALTER TABLE public.role_permissions OWNER TO neondb_owner;
-
 --
--- Name: selection_stages; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: selection_stages; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.selection_stages (
@@ -967,10 +871,8 @@ CREATE TABLE public.selection_stages (
 );
 
 
-ALTER TABLE public.selection_stages OWNER TO neondb_owner;
-
 --
--- Name: senior_integration_settings; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: senior_integration_settings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.senior_integration_settings (
@@ -990,10 +892,8 @@ CREATE TABLE public.senior_integration_settings (
 );
 
 
-ALTER TABLE public.senior_integration_settings OWNER TO neondb_owner;
-
 --
--- Name: sessions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: sessions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.sessions (
@@ -1003,10 +903,8 @@ CREATE TABLE public.sessions (
 );
 
 
-ALTER TABLE public.sessions OWNER TO neondb_owner;
-
 --
--- Name: status_notification_settings; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: status_notification_settings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.status_notification_settings (
@@ -1019,10 +917,8 @@ CREATE TABLE public.status_notification_settings (
 );
 
 
-ALTER TABLE public.status_notification_settings OWNER TO neondb_owner;
-
 --
--- Name: system_settings; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: system_settings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.system_settings (
@@ -1037,10 +933,8 @@ CREATE TABLE public.system_settings (
 );
 
 
-ALTER TABLE public.system_settings OWNER TO neondb_owner;
-
 --
--- Name: user_company_roles; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: user_company_roles; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_company_roles (
@@ -1055,10 +949,8 @@ CREATE TABLE public.user_company_roles (
 );
 
 
-ALTER TABLE public.user_company_roles OWNER TO neondb_owner;
-
 --
--- Name: user_menu_permissions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: user_menu_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_menu_permissions (
@@ -1072,10 +964,8 @@ CREATE TABLE public.user_menu_permissions (
 );
 
 
-ALTER TABLE public.user_menu_permissions OWNER TO neondb_owner;
-
 --
--- Name: users; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -1092,10 +982,8 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO neondb_owner;
-
 --
--- Name: work_positions; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: work_positions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.work_positions (
@@ -1112,10 +1000,8 @@ CREATE TABLE public.work_positions (
 );
 
 
-ALTER TABLE public.work_positions OWNER TO neondb_owner;
-
 --
--- Name: work_scales; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: work_scales; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.work_scales (
@@ -1131,10 +1017,8 @@ CREATE TABLE public.work_scales (
 );
 
 
-ALTER TABLE public.work_scales OWNER TO neondb_owner;
-
 --
--- Name: workflow_job_status_rules; Type: TABLE; Schema: public; Owner: neondb_owner
+-- Name: workflow_job_status_rules; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.workflow_job_status_rules (
@@ -1146,10 +1030,8 @@ CREATE TABLE public.workflow_job_status_rules (
 );
 
 
-ALTER TABLE public.workflow_job_status_rules OWNER TO neondb_owner;
-
 --
--- Data for Name: application_stage_progress; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: application_stage_progress; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.application_stage_progress (id, application_id, stage_id, status, score, feedback, completed_at, reviewed_by, created_at, updated_at) FROM stdin;
@@ -1157,7 +1039,7 @@ COPY public.application_stage_progress (id, application_id, stage_id, status, sc
 
 
 --
--- Data for Name: applications; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: applications; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.applications (id, job_id, candidate_id, cover_letter, status, current_stage, kanban_stage_id, overall_score, rejection_reason, notes, applied_at, updated_at) FROM stdin;
@@ -1166,7 +1048,7 @@ c602d6e6-08df-4071-a07e-2ed964525227	057358c7-b2e4-4824-b77e-cba574c9c846	3446b9
 
 
 --
--- Data for Name: approval_workflow_steps; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: approval_workflow_steps; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.approval_workflow_steps (id, workflow_id, step_order, step_name, step_type, dual_approval_subtype, user_id, user_id2, role, role2, permission, is_required, created_at, updated_at) FROM stdin;
@@ -1177,7 +1059,7 @@ c980893f-ed0f-415a-b4a1-9a3f2340b70c	fdaec6c5-7573-4292-8053-eb847c092317	1	Dupl
 
 
 --
--- Data for Name: approval_workflows; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: approval_workflows; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.approval_workflows (id, name, description, division_id, is_active, is_default, created_at, updated_at) FROM stdin;
@@ -1188,7 +1070,7 @@ fdaec6c5-7573-4292-8053-eb847c092317	Wk2 Admn	etste	e51ccbf7-3477-49dd-948d-0d80
 
 
 --
--- Data for Name: benefits; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: benefits; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.benefits (id, name, description, is_active, created_at, updated_at) FROM stdin;
@@ -1196,7 +1078,7 @@ COPY public.benefits (id, name, description, is_active, created_at, updated_at) 
 
 
 --
--- Data for Name: blacklist_candidates; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: blacklist_candidates; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.blacklist_candidates (id, organization_id, full_name, cpf, reason, created_by, created_at, updated_at) FROM stdin;
@@ -1205,7 +1087,7 @@ COPY public.blacklist_candidates (id, organization_id, full_name, cpf, reason, c
 
 
 --
--- Data for Name: candidates; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: candidates; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.candidates (id, name, email, phone, document, birth_date, resume, skills, experience, education, linkedin_url, portfolio_url, notes, created_at, updated_at) FROM stdin;
@@ -1214,7 +1096,7 @@ COPY public.candidates (id, name, email, phone, document, birth_date, resume, sk
 
 
 --
--- Data for Name: client_dashboard_permissions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: client_dashboard_permissions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.client_dashboard_permissions (id, client_id, dashboard_key, is_enabled, created_at, updated_at) FROM stdin;
@@ -1225,7 +1107,7 @@ f07735e7-d790-41a7-a70b-f4764da032d5	607dbda8-0553-4817-bcd1-0827084cc7fb	analyt
 
 
 --
--- Data for Name: client_employees; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: client_employees; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.client_employees (id, client_id, cost_center_id, name, "position", status, admission_date, termination_date, notes, created_at, updated_at) FROM stdin;
@@ -1233,7 +1115,7 @@ COPY public.client_employees (id, client_id, cost_center_id, name, "position", s
 
 
 --
--- Data for Name: client_profession_limits; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: client_profession_limits; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.client_profession_limits (id, client_id, profession_id, max_jobs, created_at, updated_at) FROM stdin;
@@ -1243,7 +1125,7 @@ COPY public.client_profession_limits (id, client_id, profession_id, max_jobs, cr
 
 
 --
--- Data for Name: clients; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: clients; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.clients (id, organization_id, name, contact_person, phone, email, address, city, state, notes, contract_file_name, contract_file_path, max_jobs, is_active, imported_from_senior, senior_id, last_synced_at, created_at, updated_at) FROM stdin;
@@ -1252,7 +1134,7 @@ COPY public.clients (id, organization_id, name, contact_person, phone, email, ad
 
 
 --
--- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.companies (id, organization_id, name, cnpj, contact_person, phone, email, industry_type, description, website, logo, color, job_counter, imported_from_senior, senior_id, last_synced_at, created_at, updated_at) FROM stdin;
@@ -1273,7 +1155,7 @@ c0c66615-69ec-45bd-9bf1-bcc55aeb7737	a6b0e84d-df56-45ab-810b-310f100cd760	ACELER
 
 
 --
--- Data for Name: cost_centers; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: cost_centers; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.cost_centers (id, name, code, company_id, division_id, budget, imported_from_senior, senior_id, last_synced_at, created_at, updated_at) FROM stdin;
@@ -3874,7 +3756,7 @@ b44a9f61-071c-4142-87db-4c95ab2849ba	ACELERA IT	10000	c0c66615-69ec-45bd-9bf1-bc
 
 
 --
--- Data for Name: divisions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: divisions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.divisions (id, code, name, is_active, created_at, updated_at) FROM stdin;
@@ -3889,7 +3771,7 @@ c255fa6d-7c7a-4974-ab31-fd31c4d71168	5	MANUTENCAO	t	2025-11-11 18:50:00.209355	2
 
 
 --
--- Data for Name: employees; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: employees; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.employees (id, employee_code, name, company_id, department, "position", is_active, created_at, updated_at) FROM stdin;
@@ -3897,7 +3779,7 @@ COPY public.employees (id, employee_code, name, company_id, department, "positio
 
 
 --
--- Data for Name: integration_settings; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: integration_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.integration_settings (id, integration_type, config_key, config_value, is_encrypted, created_at, updated_at) FROM stdin;
@@ -3905,7 +3787,7 @@ COPY public.integration_settings (id, integration_type, config_key, config_value
 
 
 --
--- Data for Name: interview_criteria; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: interview_criteria; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.interview_criteria (id, interview_id, criterion, score, notes) FROM stdin;
@@ -3913,7 +3795,7 @@ COPY public.interview_criteria (id, interview_id, criterion, score, notes) FROM 
 
 
 --
--- Data for Name: interviews; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: interviews; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.interviews (id, application_id, interviewer_id, stage_id, type, scheduled_at, duration, location, status, score, feedback, recommendations, created_at, updated_at) FROM stdin;
@@ -3921,7 +3803,7 @@ COPY public.interviews (id, application_id, interviewer_id, stage_id, type, sche
 
 
 --
--- Data for Name: invoices; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: invoices; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.invoices (id, organization_id, invoice_number, description, amount, due_date, paid_date, status, payment_method, boleto_url, boleto_barcode, boleto_digitable_line, pix_qr_code, pix_qr_code_text, external_id, notes, created_at, updated_at) FROM stdin;
@@ -3929,7 +3811,7 @@ COPY public.invoices (id, organization_id, invoice_number, description, amount, 
 
 
 --
--- Data for Name: job_approval_history; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: job_approval_history; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.job_approval_history (id, job_id, workflow_step_id, step_name, step_order, status, approved_by, comments, approved_at, created_at, updated_at, approved_by_2, approved_at_2) FROM stdin;
@@ -3940,7 +3822,7 @@ bc7683a9-6064-4ef6-88f4-067e0e2d3daf	057358c7-b2e4-4824-b77e-cba574c9c846	c98089
 
 
 --
--- Data for Name: job_benefits; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: job_benefits; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.job_benefits (id, job_id, benefit_id, created_at) FROM stdin;
@@ -3948,7 +3830,7 @@ COPY public.job_benefits (id, job_id, benefit_id, created_at) FROM stdin;
 
 
 --
--- Data for Name: job_status_history; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: job_status_history; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.job_status_history (id, job_id, previous_status, new_status, changed_by, changed_at) FROM stdin;
@@ -3961,7 +3843,7 @@ COPY public.job_status_history (id, job_id, previous_status, new_status, changed
 
 
 --
--- Data for Name: job_statuses; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: job_statuses; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.job_statuses (id, key, label, variant, color, description, display_order, is_default, is_active, created_at, updated_at, is_final) FROM stdin;
@@ -3973,7 +3855,7 @@ COPY public.job_statuses (id, key, label, variant, color, description, display_o
 
 
 --
--- Data for Name: jobs; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: jobs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.jobs (id, job_code, title, profession_id, description, requirements, company_id, cost_center_id, cost_center_description, work_position, recruiter_id, department, location, contract_type, job_type, opening_date, start_date, opening_reason, replacement_employee_name, age_range_min, age_range_max, specifications, client_id, vacancy_quantity, gender, work_scale_id, work_hours, salary_min, bonus, has_hazard_pay, unhealthiness_level, kanban_board_id, status, created_by, expires_at, sla_deadline, notes, completed_at, admission_date, hired_candidate_id, approval_workflow_id, approval_status, current_approval_step, approved_by, approved_at, created_with_irregularity, created_at, updated_at) FROM stdin;
@@ -3990,7 +3872,7 @@ c5aeed76-919a-4abc-bf3b-38142f27e12a	LOC008	\N	71232e5a-c913-4308-ae29-b5809cd24
 
 
 --
--- Data for Name: kanban_boards; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: kanban_boards; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.kanban_boards (id, name, description, is_default, created_at, updated_at) FROM stdin;
@@ -3999,7 +3881,7 @@ kanban-1762886368370	Processo padrão		t	2025-11-11 18:39:28.37	2025-11-12 00:22
 
 
 --
--- Data for Name: kanban_stages; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: kanban_stages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.kanban_stages (id, kanban_board_id, name, "order", color, created_at) FROM stdin;
@@ -4011,7 +3893,7 @@ a6048327-5ec9-4148-beea-f297e773197d	kanban-1762886368370	Em entrevista	2	bg-gre
 
 
 --
--- Data for Name: organizations; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: organizations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.organizations (id, name, slug, cnpj, contact_name, contact_email, contact_phone, address, logo, is_active, max_users, plan_type, monthly_price, created_at, updated_at) FROM stdin;
@@ -4021,7 +3903,7 @@ b99e4a03-8e2c-4b27-a48a-5a423da8dec0	Telos Consultoria	Telos	2908098234034928	Br
 
 
 --
--- Data for Name: payment_history; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: payment_history; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.payment_history (id, invoice_id, amount, payment_date, payment_method, transaction_id, status, notes, created_at) FROM stdin;
@@ -4029,7 +3911,7 @@ COPY public.payment_history (id, invoice_id, amount, payment_date, payment_metho
 
 
 --
--- Data for Name: plans; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: plans; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.plans (id, name, description, monthly_price, yearly_price, max_users, max_jobs, features, is_active, display_order, created_at, updated_at) FROM stdin;
@@ -4037,7 +3919,7 @@ COPY public.plans (id, name, description, monthly_price, yearly_price, max_users
 
 
 --
--- Data for Name: professions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: professions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.professions (id, name, description, category, "union", cbo_code, is_active, created_at, updated_at, senior_id, senior_establishment, imported_from_senior, last_synced_at) FROM stdin;
@@ -4977,7 +4859,7 @@ adb63de6-f2e4-4247-8087-4525e01f0aef	VENDEDOR INTERNO	\N	\N	\N	521110	t	2025-11-
 
 
 --
--- Data for Name: role_job_status_permissions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: role_job_status_permissions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.role_job_status_permissions (id, role, job_status_id, can_view, can_edit, created_at, updated_at) FROM stdin;
@@ -5013,7 +4895,7 @@ d5b6a867-57e0-4dac-aaa8-43bcf64ac4e4	admin	733daa89-b7d8-4403-b289-cb47947d4a95	
 
 
 --
--- Data for Name: role_permissions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: role_permissions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.role_permissions (id, role, permission, is_granted) FROM stdin;
@@ -5068,7 +4950,7 @@ ac384d3f-d0bb-45dc-ae38-2cd6afd40a47	admin	create_jobs	t
 
 
 --
--- Data for Name: selection_stages; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: selection_stages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.selection_stages (id, job_id, name, description, "order", is_required, passing_score, created_at) FROM stdin;
@@ -5076,7 +4958,7 @@ COPY public.selection_stages (id, job_id, name, description, "order", is_require
 
 
 --
--- Data for Name: senior_integration_settings; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: senior_integration_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.senior_integration_settings (id, organization_id, api_url, api_key, is_active, auto_sync, sync_interval, last_sync_at, last_sync_status, last_sync_error, created_by, created_at, updated_at) FROM stdin;
@@ -5085,7 +4967,7 @@ COPY public.senior_integration_settings (id, organization_id, api_url, api_key, 
 
 
 --
--- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.sessions (sid, sess, expire) FROM stdin;
@@ -5093,7 +4975,7 @@ COPY public.sessions (sid, sess, expire) FROM stdin;
 
 
 --
--- Data for Name: status_notification_settings; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: status_notification_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.status_notification_settings (id, status_id, email_notification_enabled, whatsapp_notification_enabled, created_at, updated_at) FROM stdin;
@@ -5101,7 +4983,7 @@ COPY public.status_notification_settings (id, status_id, email_notification_enab
 
 
 --
--- Data for Name: system_settings; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: system_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.system_settings (id, key, value, label, description, min_value, max_value, updated_at) FROM stdin;
@@ -5109,7 +4991,7 @@ COPY public.system_settings (id, key, value, label, description, min_value, max_
 
 
 --
--- Data for Name: user_company_roles; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: user_company_roles; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.user_company_roles (id, user_id, company_id, role, cost_center_id, is_active, created_at, updated_at) FROM stdin;
@@ -5130,7 +5012,7 @@ dd420d83-e9bb-4a29-ba83-e4324ad7091b	2e8d4227-c3f6-4daa-af9e-1f6cbd04d8b4	838028
 
 
 --
--- Data for Name: user_menu_permissions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: user_menu_permissions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.user_menu_permissions (id, user_id, menu_path, menu_name, can_access, created_at, updated_at) FROM stdin;
@@ -5138,7 +5020,7 @@ COPY public.user_menu_permissions (id, user_id, menu_path, menu_name, can_access
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.users (id, organization_id, email, password_hash, first_name, last_name, profile_image_url, role, created_at, updated_at) FROM stdin;
@@ -5149,7 +5031,7 @@ COPY public.users (id, organization_id, email, password_hash, first_name, last_n
 
 
 --
--- Data for Name: work_positions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: work_positions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.work_positions (id, code, name, short_name, is_active, created_at, updated_at, senior_establishment, imported_from_senior, last_synced_at) FROM stdin;
@@ -5157,7 +5039,7 @@ COPY public.work_positions (id, code, name, short_name, is_active, created_at, u
 
 
 --
--- Data for Name: work_scales; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: work_scales; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.work_scales (id, name, description, start_time, end_time, break_intervals, is_active, created_at, updated_at) FROM stdin;
@@ -5166,7 +5048,7 @@ e2a73107-a816-44fe-ba8a-0e3f3cc45b45	Escala normal	teste	09:01	18:01	teste	t	202
 
 
 --
--- Data for Name: workflow_job_status_rules; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+-- Data for Name: workflow_job_status_rules; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.workflow_job_status_rules (id, workflow_id, job_status_id, created_at, updated_at) FROM stdin;
@@ -5174,7 +5056,7 @@ COPY public.workflow_job_status_rules (id, workflow_id, job_status_id, created_a
 
 
 --
--- Name: application_stage_progress application_stage_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: application_stage_progress application_stage_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.application_stage_progress
@@ -5182,7 +5064,7 @@ ALTER TABLE ONLY public.application_stage_progress
 
 
 --
--- Name: applications applications_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: applications applications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.applications
@@ -5190,7 +5072,7 @@ ALTER TABLE ONLY public.applications
 
 
 --
--- Name: approval_workflow_steps approval_workflow_steps_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_steps approval_workflow_steps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.approval_workflow_steps
@@ -5198,7 +5080,7 @@ ALTER TABLE ONLY public.approval_workflow_steps
 
 
 --
--- Name: approval_workflows approval_workflows_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: approval_workflows approval_workflows_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.approval_workflows
@@ -5206,7 +5088,7 @@ ALTER TABLE ONLY public.approval_workflows
 
 
 --
--- Name: benefits benefits_name_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: benefits benefits_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.benefits
@@ -5214,7 +5096,7 @@ ALTER TABLE ONLY public.benefits
 
 
 --
--- Name: benefits benefits_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: benefits benefits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.benefits
@@ -5222,7 +5104,7 @@ ALTER TABLE ONLY public.benefits
 
 
 --
--- Name: blacklist_candidates blacklist_candidates_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: blacklist_candidates blacklist_candidates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blacklist_candidates
@@ -5230,7 +5112,7 @@ ALTER TABLE ONLY public.blacklist_candidates
 
 
 --
--- Name: candidates candidates_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: candidates candidates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.candidates
@@ -5238,7 +5120,7 @@ ALTER TABLE ONLY public.candidates
 
 
 --
--- Name: client_dashboard_permissions client_dashboard_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_dashboard_permissions client_dashboard_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_dashboard_permissions
@@ -5246,7 +5128,7 @@ ALTER TABLE ONLY public.client_dashboard_permissions
 
 
 --
--- Name: client_employees client_employees_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_employees client_employees_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_employees
@@ -5254,7 +5136,7 @@ ALTER TABLE ONLY public.client_employees
 
 
 --
--- Name: client_profession_limits client_profession_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_profession_limits client_profession_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_profession_limits
@@ -5262,7 +5144,7 @@ ALTER TABLE ONLY public.client_profession_limits
 
 
 --
--- Name: clients clients_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: clients clients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.clients
@@ -5270,7 +5152,7 @@ ALTER TABLE ONLY public.clients
 
 
 --
--- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.companies
@@ -5278,7 +5160,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- Name: cost_centers cost_centers_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: cost_centers cost_centers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cost_centers
@@ -5286,7 +5168,7 @@ ALTER TABLE ONLY public.cost_centers
 
 
 --
--- Name: divisions divisions_code_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: divisions divisions_code_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.divisions
@@ -5294,7 +5176,7 @@ ALTER TABLE ONLY public.divisions
 
 
 --
--- Name: divisions divisions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: divisions divisions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.divisions
@@ -5302,7 +5184,7 @@ ALTER TABLE ONLY public.divisions
 
 
 --
--- Name: employees employees_employee_code_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: employees employees_employee_code_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.employees
@@ -5310,7 +5192,7 @@ ALTER TABLE ONLY public.employees
 
 
 --
--- Name: employees employees_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: employees employees_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.employees
@@ -5318,7 +5200,7 @@ ALTER TABLE ONLY public.employees
 
 
 --
--- Name: integration_settings integration_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: integration_settings integration_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.integration_settings
@@ -5326,7 +5208,7 @@ ALTER TABLE ONLY public.integration_settings
 
 
 --
--- Name: interview_criteria interview_criteria_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: interview_criteria interview_criteria_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.interview_criteria
@@ -5334,7 +5216,7 @@ ALTER TABLE ONLY public.interview_criteria
 
 
 --
--- Name: interviews interviews_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: interviews interviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.interviews
@@ -5342,7 +5224,7 @@ ALTER TABLE ONLY public.interviews
 
 
 --
--- Name: invoices invoices_invoice_number_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: invoices invoices_invoice_number_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.invoices
@@ -5350,7 +5232,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.invoices
@@ -5358,7 +5240,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- Name: job_approval_history job_approval_history_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_approval_history job_approval_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_approval_history
@@ -5366,7 +5248,7 @@ ALTER TABLE ONLY public.job_approval_history
 
 
 --
--- Name: job_benefits job_benefits_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_benefits job_benefits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_benefits
@@ -5374,7 +5256,7 @@ ALTER TABLE ONLY public.job_benefits
 
 
 --
--- Name: job_status_history job_status_history_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_status_history job_status_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_status_history
@@ -5382,7 +5264,7 @@ ALTER TABLE ONLY public.job_status_history
 
 
 --
--- Name: job_statuses job_statuses_key_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_statuses job_statuses_key_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_statuses
@@ -5390,7 +5272,7 @@ ALTER TABLE ONLY public.job_statuses
 
 
 --
--- Name: job_statuses job_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_statuses job_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_statuses
@@ -5398,7 +5280,7 @@ ALTER TABLE ONLY public.job_statuses
 
 
 --
--- Name: jobs jobs_job_code_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_job_code_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5406,7 +5288,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5414,7 +5296,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: kanban_boards kanban_boards_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: kanban_boards kanban_boards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.kanban_boards
@@ -5422,7 +5304,7 @@ ALTER TABLE ONLY public.kanban_boards
 
 
 --
--- Name: kanban_stages kanban_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: kanban_stages kanban_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.kanban_stages
@@ -5430,7 +5312,7 @@ ALTER TABLE ONLY public.kanban_stages
 
 
 --
--- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.organizations
@@ -5438,7 +5320,7 @@ ALTER TABLE ONLY public.organizations
 
 
 --
--- Name: organizations organizations_slug_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: organizations organizations_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.organizations
@@ -5446,7 +5328,7 @@ ALTER TABLE ONLY public.organizations
 
 
 --
--- Name: payment_history payment_history_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: payment_history payment_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payment_history
@@ -5454,7 +5336,7 @@ ALTER TABLE ONLY public.payment_history
 
 
 --
--- Name: plans plans_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: plans plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.plans
@@ -5462,7 +5344,7 @@ ALTER TABLE ONLY public.plans
 
 
 --
--- Name: professions professions_name_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: professions professions_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.professions
@@ -5470,7 +5352,7 @@ ALTER TABLE ONLY public.professions
 
 
 --
--- Name: professions professions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: professions professions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.professions
@@ -5478,7 +5360,7 @@ ALTER TABLE ONLY public.professions
 
 
 --
--- Name: role_job_status_permissions role_job_status_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: role_job_status_permissions role_job_status_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.role_job_status_permissions
@@ -5486,7 +5368,7 @@ ALTER TABLE ONLY public.role_job_status_permissions
 
 
 --
--- Name: role_permissions role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: role_permissions role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.role_permissions
@@ -5494,7 +5376,7 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
--- Name: selection_stages selection_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: selection_stages selection_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.selection_stages
@@ -5502,7 +5384,7 @@ ALTER TABLE ONLY public.selection_stages
 
 
 --
--- Name: senior_integration_settings senior_integration_settings_organization_id_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: senior_integration_settings senior_integration_settings_organization_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.senior_integration_settings
@@ -5510,7 +5392,7 @@ ALTER TABLE ONLY public.senior_integration_settings
 
 
 --
--- Name: senior_integration_settings senior_integration_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: senior_integration_settings senior_integration_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.senior_integration_settings
@@ -5518,7 +5400,7 @@ ALTER TABLE ONLY public.senior_integration_settings
 
 
 --
--- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sessions
@@ -5526,7 +5408,7 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- Name: status_notification_settings status_notification_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: status_notification_settings status_notification_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.status_notification_settings
@@ -5534,7 +5416,7 @@ ALTER TABLE ONLY public.status_notification_settings
 
 
 --
--- Name: status_notification_settings status_notification_settings_status_id_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: status_notification_settings status_notification_settings_status_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.status_notification_settings
@@ -5542,7 +5424,7 @@ ALTER TABLE ONLY public.status_notification_settings
 
 
 --
--- Name: system_settings system_settings_key_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: system_settings system_settings_key_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.system_settings
@@ -5550,7 +5432,7 @@ ALTER TABLE ONLY public.system_settings
 
 
 --
--- Name: system_settings system_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: system_settings system_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.system_settings
@@ -5558,7 +5440,7 @@ ALTER TABLE ONLY public.system_settings
 
 
 --
--- Name: user_company_roles user_company_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: user_company_roles user_company_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_company_roles
@@ -5566,7 +5448,7 @@ ALTER TABLE ONLY public.user_company_roles
 
 
 --
--- Name: user_menu_permissions user_menu_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: user_menu_permissions user_menu_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_menu_permissions
@@ -5574,7 +5456,7 @@ ALTER TABLE ONLY public.user_menu_permissions
 
 
 --
--- Name: users users_email_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: users users_email_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -5582,7 +5464,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -5590,7 +5472,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: work_positions work_positions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: work_positions work_positions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.work_positions
@@ -5598,7 +5480,7 @@ ALTER TABLE ONLY public.work_positions
 
 
 --
--- Name: work_scales work_scales_name_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: work_scales work_scales_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.work_scales
@@ -5606,7 +5488,7 @@ ALTER TABLE ONLY public.work_scales
 
 
 --
--- Name: work_scales work_scales_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: work_scales work_scales_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.work_scales
@@ -5614,7 +5496,7 @@ ALTER TABLE ONLY public.work_scales
 
 
 --
--- Name: workflow_job_status_rules workflow_job_status_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: workflow_job_status_rules workflow_job_status_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.workflow_job_status_rules
@@ -5622,14 +5504,14 @@ ALTER TABLE ONLY public.workflow_job_status_rules
 
 
 --
--- Name: IDX_session_expire; Type: INDEX; Schema: public; Owner: neondb_owner
+-- Name: IDX_session_expire; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX "IDX_session_expire" ON public.sessions USING btree (expire);
 
 
 --
--- Name: application_stage_progress application_stage_progress_application_id_applications_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: application_stage_progress application_stage_progress_application_id_applications_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.application_stage_progress
@@ -5637,7 +5519,7 @@ ALTER TABLE ONLY public.application_stage_progress
 
 
 --
--- Name: application_stage_progress application_stage_progress_reviewed_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: application_stage_progress application_stage_progress_reviewed_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.application_stage_progress
@@ -5645,7 +5527,7 @@ ALTER TABLE ONLY public.application_stage_progress
 
 
 --
--- Name: application_stage_progress application_stage_progress_stage_id_selection_stages_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: application_stage_progress application_stage_progress_stage_id_selection_stages_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.application_stage_progress
@@ -5653,7 +5535,7 @@ ALTER TABLE ONLY public.application_stage_progress
 
 
 --
--- Name: applications applications_candidate_id_candidates_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: applications applications_candidate_id_candidates_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.applications
@@ -5661,7 +5543,7 @@ ALTER TABLE ONLY public.applications
 
 
 --
--- Name: applications applications_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: applications applications_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.applications
@@ -5669,7 +5551,7 @@ ALTER TABLE ONLY public.applications
 
 
 --
--- Name: applications applications_kanban_stage_id_kanban_stages_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: applications applications_kanban_stage_id_kanban_stages_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.applications
@@ -5677,7 +5559,7 @@ ALTER TABLE ONLY public.applications
 
 
 --
--- Name: approval_workflow_steps approval_workflow_steps_user_id2_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_steps approval_workflow_steps_user_id2_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.approval_workflow_steps
@@ -5685,7 +5567,7 @@ ALTER TABLE ONLY public.approval_workflow_steps
 
 
 --
--- Name: approval_workflow_steps approval_workflow_steps_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_steps approval_workflow_steps_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.approval_workflow_steps
@@ -5693,7 +5575,7 @@ ALTER TABLE ONLY public.approval_workflow_steps
 
 
 --
--- Name: approval_workflow_steps approval_workflow_steps_workflow_id_approval_workflows_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: approval_workflow_steps approval_workflow_steps_workflow_id_approval_workflows_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.approval_workflow_steps
@@ -5701,7 +5583,7 @@ ALTER TABLE ONLY public.approval_workflow_steps
 
 
 --
--- Name: approval_workflows approval_workflows_division_id_divisions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: approval_workflows approval_workflows_division_id_divisions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.approval_workflows
@@ -5709,7 +5591,7 @@ ALTER TABLE ONLY public.approval_workflows
 
 
 --
--- Name: blacklist_candidates blacklist_candidates_created_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: blacklist_candidates blacklist_candidates_created_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blacklist_candidates
@@ -5717,7 +5599,7 @@ ALTER TABLE ONLY public.blacklist_candidates
 
 
 --
--- Name: blacklist_candidates blacklist_candidates_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: blacklist_candidates blacklist_candidates_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blacklist_candidates
@@ -5725,7 +5607,7 @@ ALTER TABLE ONLY public.blacklist_candidates
 
 
 --
--- Name: client_dashboard_permissions client_dashboard_permissions_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_dashboard_permissions client_dashboard_permissions_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_dashboard_permissions
@@ -5733,7 +5615,7 @@ ALTER TABLE ONLY public.client_dashboard_permissions
 
 
 --
--- Name: client_employees client_employees_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_employees client_employees_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_employees
@@ -5741,7 +5623,7 @@ ALTER TABLE ONLY public.client_employees
 
 
 --
--- Name: client_employees client_employees_cost_center_id_cost_centers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_employees client_employees_cost_center_id_cost_centers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_employees
@@ -5749,7 +5631,7 @@ ALTER TABLE ONLY public.client_employees
 
 
 --
--- Name: client_profession_limits client_profession_limits_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: client_profession_limits client_profession_limits_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.client_profession_limits
@@ -5757,7 +5639,7 @@ ALTER TABLE ONLY public.client_profession_limits
 
 
 --
--- Name: clients clients_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: clients clients_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.clients
@@ -5765,7 +5647,7 @@ ALTER TABLE ONLY public.clients
 
 
 --
--- Name: companies companies_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: companies companies_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.companies
@@ -5773,7 +5655,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- Name: cost_centers cost_centers_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: cost_centers cost_centers_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cost_centers
@@ -5781,7 +5663,7 @@ ALTER TABLE ONLY public.cost_centers
 
 
 --
--- Name: cost_centers cost_centers_division_id_divisions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: cost_centers cost_centers_division_id_divisions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cost_centers
@@ -5789,7 +5671,7 @@ ALTER TABLE ONLY public.cost_centers
 
 
 --
--- Name: employees employees_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: employees employees_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.employees
@@ -5797,7 +5679,7 @@ ALTER TABLE ONLY public.employees
 
 
 --
--- Name: interview_criteria interview_criteria_interview_id_interviews_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: interview_criteria interview_criteria_interview_id_interviews_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.interview_criteria
@@ -5805,7 +5687,7 @@ ALTER TABLE ONLY public.interview_criteria
 
 
 --
--- Name: interviews interviews_application_id_applications_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: interviews interviews_application_id_applications_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.interviews
@@ -5813,7 +5695,7 @@ ALTER TABLE ONLY public.interviews
 
 
 --
--- Name: interviews interviews_interviewer_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: interviews interviews_interviewer_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.interviews
@@ -5821,7 +5703,7 @@ ALTER TABLE ONLY public.interviews
 
 
 --
--- Name: interviews interviews_stage_id_selection_stages_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: interviews interviews_stage_id_selection_stages_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.interviews
@@ -5829,7 +5711,7 @@ ALTER TABLE ONLY public.interviews
 
 
 --
--- Name: invoices invoices_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: invoices invoices_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.invoices
@@ -5837,7 +5719,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- Name: job_approval_history job_approval_history_approved_by_2_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_approval_history job_approval_history_approved_by_2_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_approval_history
@@ -5845,7 +5727,7 @@ ALTER TABLE ONLY public.job_approval_history
 
 
 --
--- Name: job_approval_history job_approval_history_approved_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_approval_history job_approval_history_approved_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_approval_history
@@ -5853,7 +5735,7 @@ ALTER TABLE ONLY public.job_approval_history
 
 
 --
--- Name: job_approval_history job_approval_history_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_approval_history job_approval_history_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_approval_history
@@ -5861,7 +5743,7 @@ ALTER TABLE ONLY public.job_approval_history
 
 
 --
--- Name: job_approval_history job_approval_history_workflow_step_id_approval_workflow_steps_i; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_approval_history job_approval_history_workflow_step_id_approval_workflow_steps_i; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_approval_history
@@ -5869,7 +5751,7 @@ ALTER TABLE ONLY public.job_approval_history
 
 
 --
--- Name: job_benefits job_benefits_benefit_id_benefits_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_benefits job_benefits_benefit_id_benefits_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_benefits
@@ -5877,7 +5759,7 @@ ALTER TABLE ONLY public.job_benefits
 
 
 --
--- Name: job_benefits job_benefits_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_benefits job_benefits_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_benefits
@@ -5885,7 +5767,7 @@ ALTER TABLE ONLY public.job_benefits
 
 
 --
--- Name: job_status_history job_status_history_changed_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_status_history job_status_history_changed_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_status_history
@@ -5893,7 +5775,7 @@ ALTER TABLE ONLY public.job_status_history
 
 
 --
--- Name: job_status_history job_status_history_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: job_status_history job_status_history_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.job_status_history
@@ -5901,7 +5783,7 @@ ALTER TABLE ONLY public.job_status_history
 
 
 --
--- Name: jobs jobs_approval_workflow_id_approval_workflows_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_approval_workflow_id_approval_workflows_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5909,7 +5791,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_approved_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_approved_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5917,7 +5799,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_client_id_clients_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5925,7 +5807,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5933,7 +5815,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_cost_center_id_cost_centers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_cost_center_id_cost_centers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5941,7 +5823,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_created_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_created_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5949,7 +5831,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_hired_candidate_id_candidates_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_hired_candidate_id_candidates_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5957,7 +5839,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_kanban_board_id_kanban_boards_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_kanban_board_id_kanban_boards_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5965,7 +5847,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_profession_id_professions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_profession_id_professions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5973,7 +5855,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_recruiter_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_recruiter_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5981,7 +5863,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: jobs jobs_work_scale_id_work_scales_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: jobs jobs_work_scale_id_work_scales_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.jobs
@@ -5989,7 +5871,7 @@ ALTER TABLE ONLY public.jobs
 
 
 --
--- Name: kanban_stages kanban_stages_kanban_board_id_kanban_boards_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: kanban_stages kanban_stages_kanban_board_id_kanban_boards_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.kanban_stages
@@ -5997,7 +5879,7 @@ ALTER TABLE ONLY public.kanban_stages
 
 
 --
--- Name: payment_history payment_history_invoice_id_invoices_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: payment_history payment_history_invoice_id_invoices_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payment_history
@@ -6005,7 +5887,7 @@ ALTER TABLE ONLY public.payment_history
 
 
 --
--- Name: role_job_status_permissions role_job_status_permissions_job_status_id_job_statuses_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: role_job_status_permissions role_job_status_permissions_job_status_id_job_statuses_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.role_job_status_permissions
@@ -6013,7 +5895,7 @@ ALTER TABLE ONLY public.role_job_status_permissions
 
 
 --
--- Name: selection_stages selection_stages_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: selection_stages selection_stages_job_id_jobs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.selection_stages
@@ -6021,7 +5903,7 @@ ALTER TABLE ONLY public.selection_stages
 
 
 --
--- Name: senior_integration_settings senior_integration_settings_created_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: senior_integration_settings senior_integration_settings_created_by_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.senior_integration_settings
@@ -6029,7 +5911,7 @@ ALTER TABLE ONLY public.senior_integration_settings
 
 
 --
--- Name: senior_integration_settings senior_integration_settings_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: senior_integration_settings senior_integration_settings_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.senior_integration_settings
@@ -6037,7 +5919,7 @@ ALTER TABLE ONLY public.senior_integration_settings
 
 
 --
--- Name: status_notification_settings status_notification_settings_status_id_job_statuses_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: status_notification_settings status_notification_settings_status_id_job_statuses_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.status_notification_settings
@@ -6045,7 +5927,7 @@ ALTER TABLE ONLY public.status_notification_settings
 
 
 --
--- Name: user_company_roles user_company_roles_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: user_company_roles user_company_roles_company_id_companies_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_company_roles
@@ -6053,7 +5935,7 @@ ALTER TABLE ONLY public.user_company_roles
 
 
 --
--- Name: user_company_roles user_company_roles_cost_center_id_cost_centers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: user_company_roles user_company_roles_cost_center_id_cost_centers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_company_roles
@@ -6061,7 +5943,7 @@ ALTER TABLE ONLY public.user_company_roles
 
 
 --
--- Name: user_company_roles user_company_roles_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: user_company_roles user_company_roles_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_company_roles
@@ -6069,7 +5951,7 @@ ALTER TABLE ONLY public.user_company_roles
 
 
 --
--- Name: user_menu_permissions user_menu_permissions_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: user_menu_permissions user_menu_permissions_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_menu_permissions
@@ -6077,7 +5959,7 @@ ALTER TABLE ONLY public.user_menu_permissions
 
 
 --
--- Name: users users_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: users users_organization_id_organizations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -6085,7 +5967,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: workflow_job_status_rules workflow_job_status_rules_job_status_id_job_statuses_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: workflow_job_status_rules workflow_job_status_rules_job_status_id_job_statuses_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.workflow_job_status_rules
@@ -6093,25 +5975,11 @@ ALTER TABLE ONLY public.workflow_job_status_rules
 
 
 --
--- Name: workflow_job_status_rules workflow_job_status_rules_workflow_id_approval_workflows_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+-- Name: workflow_job_status_rules workflow_job_status_rules_workflow_id_approval_workflows_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.workflow_job_status_rules
     ADD CONSTRAINT workflow_job_status_rules_workflow_id_approval_workflows_id_fk FOREIGN KEY (workflow_id) REFERENCES public.approval_workflows(id) ON DELETE CASCADE;
-
-
---
--- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
---
-
-ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO neon_superuser WITH GRANT OPTION;
-
-
---
--- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
---
-
-ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON TABLES TO neon_superuser WITH GRANT OPTION;
 
 
 --

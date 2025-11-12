@@ -47,10 +47,10 @@ GRANT ALL PRIVILEGES ON DATABASE vagaspro TO vagaspro_user;
 
 ```bash
 # Restaurar o dump
-psql -U vagaspro_user -d vagaspro -f database_dump_postgresql_20251112_012616.sql
+psql -U vagaspro_user -d vagaspro -f database_dump_clean_20251112_013043.sql
 
 # Se precisar usar com sudo:
-sudo -u postgres psql -d vagaspro -f database_dump_postgresql_20251112_012616.sql
+sudo -u postgres psql -d vagaspro -f database_dump_clean_20251112_013043.sql
 ```
 
 ## 🚀 Instalação da Aplicação
