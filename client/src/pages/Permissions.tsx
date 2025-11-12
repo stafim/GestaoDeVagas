@@ -106,7 +106,7 @@ export default function Permissions() {
   });
 
   // Get menu permissions for selected user
-  const { data: userMenuPerms = [] } = useQuery({
+  const { data: userMenuPerms = [] } = useQuery<any[]>({
     queryKey: ["/api/permissions/menu", selectedUser],
     enabled: !!selectedUser,
   });
