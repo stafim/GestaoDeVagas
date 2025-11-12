@@ -42,6 +42,7 @@ import {
   blacklistCandidates,
   seniorIntegrationSettings,
   customRoles,
+  customRoleMenuPermissions,
   type Organization,
   type InsertOrganization,
   type Invoice,
@@ -2872,6 +2873,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async toggleRolePermission(role: string, permission: string, isGranted: boolean): Promise<RolePermission> {
+    // Check if it's a custom role - custom roles are not yet supported for permission management
+    if (role.startsWith('custom_')) {
+      throw new Error('Permissões para funções customizadas ainda não estão implementadas');
+    }
+
     // Check if permission exists
     const existing = await db
       .select()

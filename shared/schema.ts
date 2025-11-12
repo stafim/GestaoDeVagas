@@ -678,6 +678,17 @@ export const insertCustomRoleSchema = createInsertSchema(customRoles).omit({
 });
 export type InsertCustomRole = z.infer<typeof insertCustomRoleSchema>;
 
+// Custom role menu permissions table - controls menu access for custom roles
+export const customRoleMenuPermissions = pgTable("custom_role_menu_permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customRoleId: varchar("custom_role_id").references(() => customRoles.id, { onDelete: "cascade" }).notNull(),
+  menuPath: varchar("menu_path", { length: 255 }).notNull(), // e.g., "/dashboard", "/jobs", "/companies"
+  menuName: varchar("menu_name", { length: 255 }).notNull(), // e.g., "Dashboard", "Vagas", "Empresas"
+  canAccess: boolean("can_access").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Role job status permissions table - controls which roles can view/edit jobs by status
 export const roleJobStatusPermissions = pgTable("role_job_status_permissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

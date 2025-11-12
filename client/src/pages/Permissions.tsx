@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCustomRoleSchema, type CustomRole } from "@shared/schema";
-import { Shield, CheckCircle2, XCircle, Settings, Briefcase, Building2, Users, FileText, BarChart3, Download, UserCog, Lock, CheckSquare, Edit, Trash2, Eye, UserCheck, FolderKanban, CreditCard, ClipboardList, UserPlus, LayoutDashboard, Workflow, Plus } from "lucide-react";
+import { Shield, CheckCircle2, XCircle, Settings, Briefcase, Building2, Users, FileText, BarChart3, Download, UserCog, Lock, CheckSquare, Edit, Trash2, Eye, UserCheck, FolderKanban, CreditCard, ClipboardList, UserPlus, LayoutDashboard, Workflow, Plus, AlertCircle } from "lucide-react";
 
 // Role labels and colors
 const roleLabels: Record<string, string> = {
@@ -555,6 +555,26 @@ export default function Permissions() {
         </Card>
       </div>
 
+      {/* Custom Role Warning */}
+      {selectedRole.startsWith('custom_') && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                  Permissões de Funções Customizadas
+                </h4>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  A gestão de permissões para funções customizadas ainda não está disponível. 
+                  Por enquanto, você pode criar, editar e excluir funções customizadas, mas não pode configurar suas permissões específicas.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Permissions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {Object.entries(permissionCategories).map(([categoryName, category]) => {
@@ -583,6 +603,7 @@ export default function Permissions() {
                       variant="ghost"
                       onClick={() => handleToggleCategory(categoryName, true)}
                       className="h-7 text-xs"
+                      disabled={selectedRole.startsWith('custom_')}
                     >
                       Todas
                     </Button>
@@ -591,6 +612,7 @@ export default function Permissions() {
                       variant="ghost"
                       onClick={() => handleToggleCategory(categoryName, false)}
                       className="h-7 text-xs"
+                      disabled={selectedRole.startsWith('custom_')}
                     >
                       Nenhuma
                     </Button>
@@ -603,6 +625,7 @@ export default function Permissions() {
                   {category.permissions.map((perm) => {
                     const hasAccess = hasPermission(selectedRole, perm.key);
                     const PermIcon = perm.icon;
+                    const isCustomRole = selectedRole.startsWith('custom_');
                     
                     return (
                       <div
@@ -611,7 +634,7 @@ export default function Permissions() {
                           hasAccess 
                             ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
                             : 'bg-muted/30 border-border'
-                        }`}
+                        } ${isCustomRole ? 'opacity-60' : ''}`}
                         data-testid={`permission-row-${perm.key}`}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -636,6 +659,7 @@ export default function Permissions() {
                             onCheckedChange={() => handleTogglePermission(selectedRole, perm.key, hasAccess)}
                             data-testid={`switch-permission-${perm.key}`}
                             className="flex-shrink-0"
+                            disabled={isCustomRole}
                           />
                         </div>
                       </div>
