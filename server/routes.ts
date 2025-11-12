@@ -5040,6 +5040,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom Roles endpoints
+  app.get('/api/custom-roles', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = (req.session as any).user;
+      const organizationId = user.organizationId;
+      const roles = await storage.getCustomRoles(organizationId);
+      res.json(roles);
+    } catch (error) {
+      console.error("Error fetching custom roles:", error);
+      res.status(500).json({ message: "Failed to fetch custom roles" });
+    }
+  });
+
+  app.get('/api/custom-roles/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const role = await storage.getCustomRole(id);
+      if (!role) {
+        return res.status(404).json({ message: "Custom role not found" });
+      }
+      res.json(role);
+    } catch (error) {
+      console.error("Error fetching custom role:", error);
+      res.status(500).json({ message: "Failed to fetch custom role" });
+    }
+  });
+
+  app.post('/api/custom-roles', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = (req.session as any).user;
+      const roleData = {
+        ...req.body,
+        organizationId: user.organizationId,
+      };
+      const role = await storage.createCustomRole(roleData);
+      res.status(201).json(role);
+    } catch (error) {
+      console.error("Error creating custom role:", error);
+      res.status(500).json({ message: "Failed to create custom role" });
+    }
+  });
+
+  app.put('/api/custom-roles/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const role = await storage.updateCustomRole(id, req.body);
+      res.json(role);
+    } catch (error) {
+      console.error("Error updating custom role:", error);
+      res.status(500).json({ message: "Failed to update custom role" });
+    }
+  });
+
+  app.delete('/api/custom-roles/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCustomRole(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting custom role:", error);
+      res.status(500).json({ message: "Failed to delete custom role" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
