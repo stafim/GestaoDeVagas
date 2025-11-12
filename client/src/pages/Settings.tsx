@@ -992,7 +992,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-8 lg:w-auto">
           <TabsTrigger value="general" className="flex items-center gap-2" data-testid="tab-general">
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
@@ -1024,10 +1024,6 @@ export default function Settings() {
           <TabsTrigger value="blacklist" className="flex items-center gap-2" data-testid="tab-blacklist">
             <Ban className="h-4 w-4" />
             <span className="hidden sm:inline">Lista de banimento</span>
-          </TabsTrigger>
-          <TabsTrigger value="roles" className="flex items-center gap-2" data-testid="tab-roles">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Funções</span>
           </TabsTrigger>
         </TabsList>
 
@@ -2399,187 +2395,6 @@ export default function Settings() {
         {/* Aba Lista de banimento */}
         <TabsContent value="blacklist">
           <BlacklistManager />
-        </TabsContent>
-
-        {/* Aba Funções Customizadas */}
-        <TabsContent value="roles">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Funções Customizadas
-                </CardTitle>
-                <CardDescription>
-                  Gerencie as funções personalizadas para organizar seus colaboradores
-                </CardDescription>
-              </div>
-              <Dialog open={isCustomRoleModalOpen} onOpenChange={setIsCustomRoleModalOpen}>
-                <DialogTrigger asChild>
-                  <Button data-testid="button-new-custom-role" onClick={() => setEditingCustomRole(null)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nova Função
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingCustomRole ? "Editar Função Customizada" : "Nova Função Customizada"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <Form {...customRoleForm}>
-                    <form onSubmit={customRoleForm.handleSubmit(onSubmitCustomRole)} className="space-y-4">
-                      <FormField
-                        control={customRoleForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome da Função</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Ex: Gerente de Vendas, Coordenador de TI"
-                                data-testid="input-custom-role-name"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={customRoleForm.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Descrição (opcional)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                placeholder="Descreva as responsabilidades desta função..."
-                                rows={3}
-                                data-testid="input-custom-role-description"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCloseCustomRoleModal}
-                          data-testid="button-cancel-custom-role"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={createCustomRoleMutation.isPending || updateCustomRoleMutation.isPending}
-                          data-testid="button-save-custom-role"
-                        >
-                          {createCustomRoleMutation.isPending || updateCustomRoleMutation.isPending
-                            ? "Salvando..."
-                            : editingCustomRole
-                            ? "Atualizar"
-                            : "Criar"}
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </DialogContent>
-              </Dialog>
-            </CardHeader>
-            <CardContent>
-              {isLoadingCustomRoles ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
-                  ))}
-                </div>
-              ) : customRoles.length === 0 ? (
-                <p className="text-gray-500 text-center py-8" data-testid="text-no-custom-roles">
-                  Nenhuma função customizada cadastrada
-                </p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Data de Criação</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {customRoles.map((customRole) => (
-                      <TableRow key={customRole.id} data-testid={`custom-role-row-${customRole.id}`}>
-                        <TableCell className="font-medium" data-testid={`text-custom-role-name-${customRole.id}`}>
-                          {customRole.name}
-                        </TableCell>
-                        <TableCell data-testid={`text-custom-role-description-${customRole.id}`}>
-                          {customRole.description || "-"}
-                        </TableCell>
-                        <TableCell data-testid={`text-custom-role-created-${customRole.id}`}>
-                          {new Date(customRole.createdAt).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditCustomRole(customRole)}
-                              data-testid={`button-edit-custom-role-${customRole.id}`}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeletingCustomRoleId(customRole.id)}
-                              data-testid={`button-delete-custom-role-${customRole.id}`}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Delete Confirmation Dialog */}
-          <AlertDialog open={!!deletingCustomRoleId} onOpenChange={(open) => !open && setDeletingCustomRoleId(undefined)}>
-            <AlertDialogContent data-testid="dialog-delete-custom-role-confirmation">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir esta função customizada? Esta ação não pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel data-testid="button-cancel-delete-custom-role">
-                  Cancelar
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    if (deletingCustomRoleId) {
-                      handleDeleteCustomRole(deletingCustomRoleId);
-                    }
-                  }}
-                  className="bg-red-600 hover:bg-red-700"
-                  data-testid="button-confirm-delete-custom-role"
-                >
-                  {deleteCustomRoleMutation.isPending ? "Excluindo..." : "Excluir"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </TabsContent>
       </Tabs>
     </div>
