@@ -34,7 +34,7 @@ Preferred communication style: Simple, everyday language.
 ## Core Features & Implementations
 - **Employee Replacement Workflow**: Smart filtering of employees by work position and cost center from imported Senior data.
 - **Senior HCM Integration**: Synchronization of client data, cost centers, professions, work positions, and employee data (with status correction) from Senior HCM API.
-- **Job Quota System**: Profession-based quotas for clients, managed via `client_profession_limits` table, with comprehensive validation during job creation.
+- **Job Quota System**: Profession-based quotas for clients, managed via `client_profession_limits` table, with comprehensive validation during job creation, reopening, and quantity updates. Active statuses: 'nova_vaga', 'aprovada', 'em_recrutamento', 'em_dp', 'em_admissao'. Validation enforced in PUT /api/jobs/:id and PATCH /api/jobs/:id/status endpoints with proper accounting for vacancyQuantity.
 - **Notifications System**: Multi-channel (Email, WhatsApp) for job status changes, with configurable settings and smart recipient logic.
 - **Organization Management**: CRUD operations for organizations, with admin creation, active/inactive status, and plan-based limits.
 - **Kanban Management**: Unified creation of Kanban boards with multiple stages, selectable per job.

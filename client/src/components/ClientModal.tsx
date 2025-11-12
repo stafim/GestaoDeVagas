@@ -747,10 +747,12 @@ export default function ClientModal({ clientId, onClose }: ClientModalProps) {
                       <TableBody>
                         {professionLimits.map((limit) => {
                           const profession = professions.find((p) => p.id === limit.professionId);
+                          // Count active jobs using the same logic as backend
+                          const activeStatuses = ['nova_vaga', 'aprovada', 'em_recrutamento', 'em_dp', 'em_admissao'];
                           const jobsForProfession = clientJobs.filter(
                             (job: any) => job.professionId === limit.professionId &&
-                            !['admitido', 'cancelada'].includes(job.status)
-                          ).length;
+                            activeStatuses.includes(job.status)
+                          ).reduce((sum: number, job: any) => sum + (job.vacancyQuantity || 1), 0);
                           const available = limit.maxJobs - jobsForProfession;
 
                           return (
