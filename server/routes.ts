@@ -3013,12 +3013,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activeStatuses = ['nova_vaga', 'aprovada', 'em_recrutamento', 'em_dp', 'em_admissao'];
       const wasActive = activeStatuses.includes(existingJob.status || '');
       const willBeActive = validatedData.status ? activeStatuses.includes(validatedData.status) : wasActive;
-      const quantityIncrease = (validatedData.vacancyQuantity || existingJob.vacancyQuantity || 1) - (existingJob.vacancyQuantity || 1);
+      const quantityChange = validatedData.vacancyQuantity !== undefined;
       
       // Only validate if:
       // 1. Status is changing from inactive to active (reopening job), OR
-      // 2. Quantity is increasing while job is/will be active
-      if ((!wasActive && willBeActive) || (willBeActive && quantityIncrease > 0)) {
+      // 2. Quantity is changing while job is/will be active
+      if ((!wasActive && willBeActive) || (willBeActive && quantityChange)) {
         const quotaPolicy = await storage.getSystemSetting('job_creation_quota_policy');
         const policy = quotaPolicy?.value || 'allow';
         
@@ -3029,36 +3029,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (professionLimit) {
-            // Count current active jobs (excluding this job)
-            const activeJobsCount = await storage.countActiveJobsByClientAndProfession(
+            // Count current active jobs (includes this job if it's currently active)
+            const currentActiveCount = await storage.countActiveJobsByClientAndProfession(
               existingJob.clientId,
               existingJob.professionId
             );
             
-            // Calculate how many jobs this update will add to the count
-            let additionalJobs = 0;
-            if (!wasActive && willBeActive) {
-              // Reopening: add the current or new quantity
-              additionalJobs = validatedData.vacancyQuantity || existingJob.vacancyQuantity || 1;
-            } else if (quantityIncrease > 0) {
-              // Increasing quantity: add only the increase
-              additionalJobs = quantityIncrease;
-            }
+            // Calculate projected usage correctly:
+            // Start with current count, subtract this job's current contribution, add new contribution
+            const currentJobContribution = wasActive ? (existingJob.vacancyQuantity || 1) : 0;
+            const newJobContribution = willBeActive ? (validatedData.vacancyQuantity || existingJob.vacancyQuantity || 1) : 0;
+            const projectedCount = currentActiveCount - currentJobContribution + newJobContribution;
             
-            const futureCount = activeJobsCount + additionalJobs;
-            
-            if (futureCount > professionLimit.maxJobs) {
-              const availableSlots = Math.max(0, professionLimit.maxJobs - activeJobsCount);
+            if (projectedCount > professionLimit.maxJobs) {
+              const netIncrease = newJobContribution - currentJobContribution;
+              const availableSlots = Math.max(0, professionLimit.maxJobs - currentActiveCount);
               
               if (policy === 'block') {
                 const profession = await storage.getProfession(existingJob.professionId);
                 return res.status(400).json({ 
-                  message: `Limite de vagas excedido! Cliente possui ${activeJobsCount} vagas ativas de ${professionLimit.maxJobs} permitidas para "${profession?.name || 'esta profissão'}". Disponível: ${availableSlots} vaga(s).`,
+                  message: `Limite de vagas excedido! Cliente possui ${currentActiveCount} vagas ativas de ${professionLimit.maxJobs} permitidas para "${profession?.name || 'esta profissão'}". Disponível: ${availableSlots} vaga(s).`,
                   quota: {
-                    active: activeJobsCount,
+                    active: currentActiveCount,
                     limit: professionLimit.maxJobs,
                     available: availableSlots,
-                    requested: additionalJobs
+                    requested: netIncrease
                   }
                 });
               } else if (policy === 'require_approval') {
@@ -3136,26 +3131,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (professionLimit) {
-            const activeJobsCount = await storage.countActiveJobsByClientAndProfession(
+            const currentActiveCount = await storage.countActiveJobsByClientAndProfession(
               existingJob.clientId,
               existingJob.professionId
             );
             
-            const additionalJobs = existingJob.vacancyQuantity || 1;
-            const futureCount = activeJobsCount + additionalJobs;
+            // Calculate projected usage: current - 0 (was inactive) + new contribution
+            const newJobContribution = existingJob.vacancyQuantity || 1;
+            const projectedCount = currentActiveCount + newJobContribution;
             
-            if (futureCount > professionLimit.maxJobs) {
-              const availableSlots = Math.max(0, professionLimit.maxJobs - activeJobsCount);
+            if (projectedCount > professionLimit.maxJobs) {
+              const availableSlots = Math.max(0, professionLimit.maxJobs - currentActiveCount);
               
               if (policy === 'block') {
                 const profession = await storage.getProfession(existingJob.professionId);
                 return res.status(400).json({ 
-                  message: `Limite de vagas excedido! Cliente possui ${activeJobsCount} vagas ativas de ${professionLimit.maxJobs} permitidas para "${profession?.name || 'esta profissão'}". Disponível: ${availableSlots} vaga(s).`,
+                  message: `Limite de vagas excedido! Cliente possui ${currentActiveCount} vagas ativas de ${professionLimit.maxJobs} permitidas para "${profession?.name || 'esta profissão'}". Disponível: ${availableSlots} vaga(s).`,
                   quota: {
-                    active: activeJobsCount,
+                    active: currentActiveCount,
                     limit: professionLimit.maxJobs,
                     available: availableSlots,
-                    requested: additionalJobs
+                    requested: newJobContribution
                   }
                 });
               }
