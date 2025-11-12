@@ -41,6 +41,7 @@ import {
   jobApprovalHistory,
   blacklistCandidates,
   seniorIntegrationSettings,
+  customRoles,
   type Organization,
   type InsertOrganization,
   type Invoice,
@@ -115,6 +116,8 @@ import {
   type InsertBlacklistCandidate,
   type SeniorIntegrationSetting,
   type InsertSeniorIntegrationSetting,
+  type CustomRole,
+  type InsertCustomRole,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, and, or, ilike, sql, inArray, isNull, isNotNull } from "drizzle-orm";
@@ -441,6 +444,13 @@ export interface IStorage {
   getSeniorPositions(organizationId: string): Promise<any[]>;
   executeSeniorQuery(organizationId: string, sqlText: string): Promise<any[]>;
   syncSeniorData(organizationId: string): Promise<{ success: boolean; message: string; syncedAt?: Date; error?: string }>;
+  
+  // Custom Roles operations
+  getCustomRoles(organizationId?: string | null): Promise<CustomRole[]>;
+  getCustomRole(id: string): Promise<CustomRole | undefined>;
+  createCustomRole(role: InsertCustomRole): Promise<CustomRole>;
+  updateCustomRole(id: string, role: Partial<InsertCustomRole>): Promise<CustomRole>;
+  deleteCustomRole(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -4196,6 +4206,38 @@ export class DatabaseStorage implements IStorage {
         error: errorMessage,
       };
     }
+  }
+  
+  // Custom Roles operations
+  async getCustomRoles(organizationId?: string | null): Promise<CustomRole[]> {
+    const query = db.select().from(customRoles).orderBy(desc(customRoles.createdAt));
+    if (organizationId !== undefined) {
+      return await query.where(eq(customRoles.organizationId, organizationId));
+    }
+    return await query;
+  }
+  
+  async getCustomRole(id: string): Promise<CustomRole | undefined> {
+    const [role] = await db.select().from(customRoles).where(eq(customRoles.id, id));
+    return role;
+  }
+  
+  async createCustomRole(role: InsertCustomRole): Promise<CustomRole> {
+    const [newRole] = await db.insert(customRoles).values(role).returning();
+    return newRole;
+  }
+  
+  async updateCustomRole(id: string, role: Partial<InsertCustomRole>): Promise<CustomRole> {
+    const [updated] = await db
+      .update(customRoles)
+      .set({ ...role, updatedAt: new Date() })
+      .where(eq(customRoles.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteCustomRole(id: string): Promise<void> {
+    await db.delete(customRoles).where(eq(customRoles.id, id));
   }
 }
 
