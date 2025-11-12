@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2, Briefcase, RefreshCw, Download } from "lucide-react";
+import { Plus, Settings2, Edit, Trash2, Clock, Tag, Bell, ChevronRight, LayoutGrid, Plug, Monitor, Ban, Database, CheckCircle2, XCircle, Loader2, Briefcase, RefreshCw, Download, Users } from "lucide-react";
 import { z } from "zod";
 import { ClientDashboardSettings } from "@/components/ClientDashboardSettings";
 import { BlacklistManager } from "@/components/BlacklistManager";
@@ -67,12 +67,27 @@ const seniorIntegrationFormSchema = z.object({
   syncInterval: z.number().min(5, "Intervalo mínimo é de 5 minutos").max(1440, "Intervalo máximo é de 24 horas").default(60),
 });
 
+const customRoleFormSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  description: z.string().optional(),
+});
+
 type WorkScaleFormData = z.infer<typeof workScaleFormSchema>;
 type JobStatusFormData = z.infer<typeof jobStatusFormSchema>;
 type KanbanBoardFormData = z.infer<typeof kanbanBoardFormSchema>;
 type KanbanStageFormData = z.infer<typeof kanbanStageFormSchema>;
 type SystemSettingFormData = z.infer<typeof systemSettingFormSchema>;
 type SeniorIntegrationFormData = z.infer<typeof seniorIntegrationFormSchema>;
+type CustomRoleFormData = z.infer<typeof customRoleFormSchema>;
+
+type CustomRole = {
+  id: string;
+  organizationId: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 type SystemSetting = {
   id: string;
@@ -170,6 +185,11 @@ export default function Settings() {
   // Temporary stages for new kanban creation
   const [tempStages, setTempStages] = useState<Array<{ name: string; color: string; order: number }>>([]);
   
+  // Custom Roles state
+  const [isCustomRoleModalOpen, setIsCustomRoleModalOpen] = useState(false);
+  const [editingCustomRole, setEditingCustomRole] = useState<CustomRole | null>(null);
+  const [deletingCustomRoleId, setDeletingCustomRoleId] = useState<string | undefined>();
+  
   const { toast } = useToast();
 
   const systemSettingForm = useForm<SystemSettingFormData>({
@@ -181,6 +201,14 @@ export default function Settings() {
 
   const workScaleForm = useForm<WorkScaleFormData>({
     resolver: zodResolver(workScaleFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+  
+  const customRoleForm = useForm<CustomRoleFormData>({
+    resolver: zodResolver(customRoleFormSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -268,6 +296,11 @@ export default function Settings() {
   });
 
   const [professionsSearch, setProfessionsSearch] = useState("");
+  
+  // Custom Roles queries
+  const { data: customRoles = [], isLoading: isLoadingCustomRoles } = useQuery<CustomRole[]>({
+    queryKey: ["/api/custom-roles"],
+  });
 
   // System Settings mutations
   const updateSystemSettingMutation = useMutation({
@@ -616,6 +649,98 @@ export default function Settings() {
     },
   });
 
+  // Custom Roles mutations
+  const createCustomRoleMutation = useMutation({
+    mutationFn: async (data: CustomRoleFormData) => {
+      const response = await apiRequest("POST", "/api/custom-roles", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Função customizada criada com sucesso!",
+      });
+      setIsCustomRoleModalOpen(false);
+      customRoleForm.reset();
+      setEditingCustomRole(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao criar função customizada. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCustomRoleMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: CustomRoleFormData }) => {
+      const response = await apiRequest("PUT", `/api/custom-roles/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Função customizada atualizada com sucesso!",
+      });
+      setIsCustomRoleModalOpen(false);
+      customRoleForm.reset();
+      setEditingCustomRole(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao atualizar função customizada. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCustomRoleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/custom-roles/${id}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Função customizada excluída com sucesso!",
+      });
+      setDeletingCustomRoleId(undefined);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir função customizada. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleCustomRoleActiveMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const response = await apiRequest("PUT", `/api/custom-roles/${id}`, { isActive });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Status da função customizada atualizado com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao atualizar status da função customizada. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmitWorkScale = (data: WorkScaleFormData) => {
     if (editingWorkScale) {
       updateWorkScaleMutation.mutate({ id: editingWorkScale.id, data });
@@ -629,6 +754,14 @@ export default function Settings() {
       updateJobStatusMutation.mutate({ id: editingJobStatus.id, data });
     } else {
       createJobStatusMutation.mutate(data);
+    }
+  };
+
+  const onSubmitCustomRole = (data: CustomRoleFormData) => {
+    if (editingCustomRole) {
+      updateCustomRoleMutation.mutate({ id: editingCustomRole.id, data });
+    } else {
+      createCustomRoleMutation.mutate(data);
     }
   };
 
@@ -690,6 +823,51 @@ export default function Settings() {
       displayOrder: 0,
     });
   };
+
+  const handleEditCustomRole = (customRole: CustomRole) => {
+    setEditingCustomRole(customRole);
+    customRoleForm.reset({
+      name: customRole.name,
+      description: customRole.description || "",
+    });
+    setIsCustomRoleModalOpen(true);
+  };
+
+  const handleDeleteCustomRole = (id: string) => {
+    deleteCustomRoleMutation.mutate(id);
+  };
+
+  const handleCloseCustomRoleModal = () => {
+    setIsCustomRoleModalOpen(false);
+    setEditingCustomRole(null);
+    customRoleForm.reset({
+      name: "",
+      description: "",
+    });
+  };
+
+  // Reset form when editing work scale changes
+  useEffect(() => {
+    if (editingWorkScale) {
+      workScaleForm.reset({
+        name: editingWorkScale.name,
+        description: editingWorkScale.description || "",
+        startTime: editingWorkScale.startTime || "",
+        endTime: editingWorkScale.endTime || "",
+        breakIntervals: editingWorkScale.breakIntervals || "",
+      });
+    }
+  }, [editingWorkScale]);
+
+  // Reset form when editing custom role changes
+  useEffect(() => {
+    if (editingCustomRole) {
+      customRoleForm.reset({
+        name: editingCustomRole.name,
+        description: editingCustomRole.description || "",
+      });
+    }
+  }, [editingCustomRole]);
 
   // Kanban Board handlers
   const onSubmitKanbanBoard = async (data: KanbanBoardFormData) => {
@@ -814,7 +992,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-9 lg:w-auto">
           <TabsTrigger value="general" className="flex items-center gap-2" data-testid="tab-general">
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
@@ -846,6 +1024,10 @@ export default function Settings() {
           <TabsTrigger value="blacklist" className="flex items-center gap-2" data-testid="tab-blacklist">
             <Ban className="h-4 w-4" />
             <span className="hidden sm:inline">Lista de banimento</span>
+          </TabsTrigger>
+          <TabsTrigger value="roles" className="flex items-center gap-2" data-testid="tab-roles">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Funções</span>
           </TabsTrigger>
         </TabsList>
 
@@ -2217,6 +2399,187 @@ export default function Settings() {
         {/* Aba Lista de banimento */}
         <TabsContent value="blacklist">
           <BlacklistManager />
+        </TabsContent>
+
+        {/* Aba Funções Customizadas */}
+        <TabsContent value="roles">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Funções Customizadas
+                </CardTitle>
+                <CardDescription>
+                  Gerencie as funções personalizadas para organizar seus colaboradores
+                </CardDescription>
+              </div>
+              <Dialog open={isCustomRoleModalOpen} onOpenChange={setIsCustomRoleModalOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-new-custom-role" onClick={() => setEditingCustomRole(null)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Função
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingCustomRole ? "Editar Função Customizada" : "Nova Função Customizada"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <Form {...customRoleForm}>
+                    <form onSubmit={customRoleForm.handleSubmit(onSubmitCustomRole)} className="space-y-4">
+                      <FormField
+                        control={customRoleForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Função</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Ex: Gerente de Vendas, Coordenador de TI"
+                                data-testid="input-custom-role-name"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={customRoleForm.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descrição (opcional)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                placeholder="Descreva as responsabilidades desta função..."
+                                rows={3}
+                                data-testid="input-custom-role-description"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCloseCustomRoleModal}
+                          data-testid="button-cancel-custom-role"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={createCustomRoleMutation.isPending || updateCustomRoleMutation.isPending}
+                          data-testid="button-save-custom-role"
+                        >
+                          {createCustomRoleMutation.isPending || updateCustomRoleMutation.isPending
+                            ? "Salvando..."
+                            : editingCustomRole
+                            ? "Atualizar"
+                            : "Criar"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              {isLoadingCustomRoles ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : customRoles.length === 0 ? (
+                <p className="text-gray-500 text-center py-8" data-testid="text-no-custom-roles">
+                  Nenhuma função customizada cadastrada
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead>Data de Criação</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {customRoles.map((customRole) => (
+                      <TableRow key={customRole.id} data-testid={`custom-role-row-${customRole.id}`}>
+                        <TableCell className="font-medium" data-testid={`text-custom-role-name-${customRole.id}`}>
+                          {customRole.name}
+                        </TableCell>
+                        <TableCell data-testid={`text-custom-role-description-${customRole.id}`}>
+                          {customRole.description || "-"}
+                        </TableCell>
+                        <TableCell data-testid={`text-custom-role-created-${customRole.id}`}>
+                          {new Date(customRole.createdAt).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditCustomRole(customRole)}
+                              data-testid={`button-edit-custom-role-${customRole.id}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeletingCustomRoleId(customRole.id)}
+                              data-testid={`button-delete-custom-role-${customRole.id}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={!!deletingCustomRoleId} onOpenChange={(open) => !open && setDeletingCustomRoleId(undefined)}>
+            <AlertDialogContent data-testid="dialog-delete-custom-role-confirmation">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir esta função customizada? Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel data-testid="button-cancel-delete-custom-role">
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    if (deletingCustomRoleId) {
+                      handleDeleteCustomRole(deletingCustomRoleId);
+                    }
+                  }}
+                  className="bg-red-600 hover:bg-red-700"
+                  data-testid="button-confirm-delete-custom-role"
+                >
+                  {deleteCustomRoleMutation.isPending ? "Excluindo..." : "Excluir"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
       </Tabs>
     </div>
