@@ -663,11 +663,8 @@ export const userMenuPermissions = pgTable("user_menu_permissions", {
 export const customRoles = pgTable("custom_roles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   organizationId: varchar("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
-  key: varchar("key", { length: 50 }).notNull().unique(), // Identificador único (ex: "supervisor", "coordinator")
-  label: varchar("label", { length: 255 }).notNull(), // Nome para exibição (ex: "Supervisor", "Coordenador")
+  name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  isActive: boolean("is_active").default(true),
-  displayOrder: integer("display_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -677,6 +674,7 @@ export const insertCustomRoleSchema = createInsertSchema(customRoles).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  organizationId: true,
 });
 export type InsertCustomRole = z.infer<typeof insertCustomRoleSchema>;
 
