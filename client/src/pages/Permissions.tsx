@@ -6,9 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, CheckCircle2, XCircle, Settings, Briefcase, Building2, Users, FileText, BarChart3, Download, UserCog, Lock, CheckSquare, Edit, Trash2, Eye, UserCheck, FolderKanban, CreditCard, ClipboardList, UserPlus, LayoutDashboard, Workflow } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertCustomRoleSchema, type CustomRole } from "@shared/schema";
+import { Shield, CheckCircle2, XCircle, Settings, Briefcase, Building2, Users, FileText, BarChart3, Download, UserCog, Lock, CheckSquare, Edit, Trash2, Eye, UserCheck, FolderKanban, CreditCard, ClipboardList, UserPlus, LayoutDashboard, Workflow, Plus } from "lucide-react";
 
 // Role labels and colors
 const roleLabels: Record<string, string> = {
@@ -101,14 +108,35 @@ const availableMenus = [
   { path: "/settings", name: "Configurações", icon: "⚙️" },
 ];
 
+type CustomRoleFormData = {
+  name: string;
+  description?: string;
+};
+
 export default function Permissions() {
   const [selectedRole, setSelectedRole] = useState<string>("admin");
+  const [isCustomRoleModalOpen, setIsCustomRoleModalOpen] = useState(false);
+  const [editingCustomRole, setEditingCustomRole] = useState<CustomRole | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Form for custom roles
+  const customRoleForm = useForm<CustomRoleFormData>({
+    resolver: zodResolver(insertCustomRoleSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
   // Get role permissions
   const { data: rolePermissions = [], isLoading: rolePermsLoading } = useQuery<any[]>({
     queryKey: ["/api/permissions/roles/permissions"],
+  });
+
+  // Get custom roles
+  const { data: customRoles = [], isLoading: customRolesLoading } = useQuery<CustomRole[]>({
+    queryKey: ["/api/custom-roles"],
   });
 
   // Setup default permissions mutation
@@ -145,6 +173,120 @@ export default function Permissions() {
       });
     }
   });
+
+  // Create custom role mutation
+  const createCustomRoleMutation = useMutation({
+    mutationFn: async (data: CustomRoleFormData) => {
+      const response = await apiRequest("POST", "/api/custom-roles", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Função criada com sucesso!",
+      });
+      setIsCustomRoleModalOpen(false);
+      customRoleForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao criar função. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update custom role mutation
+  const updateCustomRoleMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: CustomRoleFormData }) => {
+      const response = await apiRequest("PUT", `/api/custom-roles/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Função atualizada com sucesso!",
+      });
+      setIsCustomRoleModalOpen(false);
+      customRoleForm.reset();
+      setEditingCustomRole(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao atualizar função. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete custom role mutation
+  const deleteCustomRoleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/custom-roles/${id}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      toast({
+        title: "Sucesso",
+        description: "Função excluída com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir função. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Submit custom role
+  const onSubmitCustomRole = (data: CustomRoleFormData) => {
+    if (editingCustomRole) {
+      updateCustomRoleMutation.mutate({ id: editingCustomRole.id, data });
+    } else {
+      createCustomRoleMutation.mutate(data);
+    }
+  };
+
+  // Handle close modal
+  const handleCloseCustomRoleModal = () => {
+    setIsCustomRoleModalOpen(false);
+    setEditingCustomRole(null);
+    customRoleForm.reset({
+      name: "",
+      description: "",
+    });
+  };
+
+  // Combine predefined roles with custom roles
+  const allAvailableRoles = useMemo(() => {
+    const customRoleIds = customRoles.map(cr => `custom_${cr.id}`);
+    return [...availableRoles, ...customRoleIds];
+  }, [customRoles]);
+
+  // Get role label (handles both predefined and custom roles)
+  const getRoleLabel = (roleId: string): string => {
+    if (roleId.startsWith('custom_')) {
+      const customRoleId = roleId.replace('custom_', '');
+      const customRole = customRoles.find(cr => cr.id === customRoleId);
+      return customRole?.name || roleId;
+    }
+    return roleLabels[roleId] || roleId;
+  };
+
+  // Get role color
+  const getRoleColor = (roleId: string): string => {
+    if (roleId.startsWith('custom_')) {
+      return "default";
+    }
+    return roleColors[roleId] || "default";
+  };
 
   // Check if a role has a specific permission
   const hasPermission = (role: string, permission: string): boolean => {
@@ -214,15 +356,96 @@ export default function Permissions() {
             Configure permissões por função e controle de acesso ao menu
           </p>
         </div>
-        <Button 
-          onClick={() => setupDefaultsMutation.mutate()}
-          disabled={setupDefaultsMutation.isPending}
-          variant="outline"
-          data-testid="button-setup-defaults"
-        >
-          <Shield className="h-4 w-4 mr-2" />
-          Configurar Padrões
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={isCustomRoleModalOpen} onOpenChange={setIsCustomRoleModalOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="default"
+                data-testid="button-new-custom-role"
+                onClick={() => {
+                  setEditingCustomRole(null);
+                  customRoleForm.reset({ name: "", description: "" });
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Função
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCustomRole ? "Editar Função" : "Nova Função"}
+                </DialogTitle>
+              </DialogHeader>
+              <Form {...customRoleForm}>
+                <form onSubmit={customRoleForm.handleSubmit(onSubmitCustomRole)} className="space-y-4">
+                  <FormField
+                    control={customRoleForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome da Função</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Ex: Supervisor de Vendas"
+                            data-testid="input-custom-role-name"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={customRoleForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descrição (opcional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Descreva as responsabilidades..."
+                            data-testid="textarea-custom-role-description"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCloseCustomRoleModal}
+                      data-testid="button-cancel-custom-role"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={createCustomRoleMutation.isPending || updateCustomRoleMutation.isPending}
+                      data-testid="button-save-custom-role"
+                    >
+                      {editingCustomRole ? "Atualizar" : "Criar"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+          <Button 
+            onClick={() => setupDefaultsMutation.mutate()}
+            disabled={setupDefaultsMutation.isPending}
+            variant="outline"
+            data-testid="button-setup-defaults"
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Configurar Padrões
+          </Button>
+        </div>
       </div>
 
       {/* Role Selector and Stats */}
@@ -236,7 +459,7 @@ export default function Permissions() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {availableRoles.map((role) => (
+              {allAvailableRoles.map((role) => (
                 <button
                   key={role}
                   onClick={() => setSelectedRole(role)}
@@ -248,10 +471,10 @@ export default function Permissions() {
                   data-testid={`button-role-${role}`}
                 >
                   <Badge 
-                    variant={roleColors[role] as any}
+                    variant={getRoleColor(role) as any}
                     className="mb-2"
                   >
-                    {roleLabels[role]}
+                    {getRoleLabel(role)}
                   </Badge>
                   <div className="text-xs text-muted-foreground mt-2">
                     {permissionStats.total > 0 && selectedRole === role && (
@@ -290,8 +513,8 @@ export default function Permissions() {
               </div>
 
               <div className="pt-4 border-t">
-                <Badge variant={roleColors[selectedRole] as any} className="text-sm">
-                  {roleLabels[selectedRole]}
+                <Badge variant={getRoleColor(selectedRole) as any} className="text-sm">
+                  {getRoleLabel(selectedRole)}
                 </Badge>
                 <p className="text-xs text-muted-foreground mt-2">
                   Função selecionada
