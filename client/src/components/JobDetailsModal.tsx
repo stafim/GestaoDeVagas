@@ -126,30 +126,6 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
     }
   });
 
-  const completeJobMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/jobs/${jobId}/complete`, {});
-      return response.json();
-    },
-    onSuccess: async () => {
-      toast({
-        title: "Vaga Concluída",
-        description: "A vaga foi concluída com sucesso",
-      });
-      await queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-      await queryClient.refetchQueries({ queryKey: [`/api/jobs/${jobId}`] });
-      onClose();
-    },
-    onError: (error) => {
-      console.error("Error completing job:", error);
-      toast({
-        title: "Erro",
-        description: "Falha ao concluir a vaga",
-        variant: "destructive",
-      });
-    }
-  });
-
   const deleteJobMutation = useMutation({
     mutationFn: async (reason: string) => {
       await apiRequest("DELETE", `/api/jobs/${jobId}`, { reason });
@@ -1047,24 +1023,10 @@ export default function JobDetailsModal({ isOpen, onClose, jobId }: JobDetailsMo
                   <p className="text-sm text-muted-foreground italic">Nenhuma mudança de status registrada</p>
                 )}
               </div>
-
-              {/* Botão Concluir Vaga */}
-              {!job?.completedAt && (
-                <div className="flex justify-end pt-4 border-t">
-                  <Button
-                    variant="default"
-                    onClick={() => completeJobMutation.mutate()}
-                    disabled={completeJobMutation.isPending}
-                    data-testid="button-complete-job"
-                  >
-                    {completeJobMutation.isPending ? "Concluindo..." : "Concluir Vaga"}
-                  </Button>
-                </div>
-              )}
               
               {/* Data de conclusão */}
               {job?.completedAt && (
-                <div className="flex items-center gap-2 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg mt-4">
                   <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <div>
                     <p className="text-sm font-medium text-green-800 dark:text-green-300">
