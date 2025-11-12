@@ -101,7 +101,7 @@ export default function Landing() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0a1f35] via-[#1a3a52] to-[#2a4a62] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1e3a8a] via-[#2563eb] to-[#3b82f6] flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
           <p className="text-white text-lg font-medium">Carregando...</p>
@@ -111,12 +111,12 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a1f35] via-[#1a3a52] to-[#2a4a62] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#1e3a8a] via-[#2563eb] to-[#3b82f6] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/15 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/15 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
@@ -234,7 +234,7 @@ export default function Landing() {
                       <button
                         type="button"
                         onClick={() => setShowResetDialog(true)}
-                        className="text-sm text-[#1a3a52] hover:text-[#0a1f35] hover:underline transition-colors"
+                        className="text-sm text-[#2563eb] hover:text-[#1e3a8a] hover:underline transition-colors"
                         data-testid="button-forgot-password"
                       >
                         Esqueceu sua senha?
@@ -245,7 +245,7 @@ export default function Landing() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 bg-gradient-to-r from-[#1a3a52] to-[#2a4a62] hover:from-[#0a1f35] hover:to-[#1a3a52] text-white font-medium shadow-lg hover:shadow-xl transition-all"
+                    className="w-full h-12 bg-gradient-to-r from-[#2563eb] to-[#3b82f6] hover:from-[#1e3a8a] hover:to-[#2563eb] text-white font-medium shadow-lg hover:shadow-xl transition-all"
                     data-testid="button-login"
                   >
                     {isSubmitting ? (
@@ -311,7 +311,7 @@ export default function Landing() {
               <Button
                 type="submit"
                 disabled={isResetting}
-                className="flex-1 bg-gradient-to-r from-[#1a3a52] to-[#2a4a62] hover:from-[#0a1f35] hover:to-[#1a3a52] text-white"
+                className="flex-1 bg-gradient-to-r from-[#2563eb] to-[#3b82f6] hover:from-[#1e3a8a] hover:to-[#2563eb] text-white"
                 data-testid="button-submit-reset"
               >
                 {isResetting ? (
