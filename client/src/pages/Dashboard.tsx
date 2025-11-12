@@ -968,8 +968,8 @@ export default function Dashboard() {
                       strokeWidth={2}
                       stroke="hsl(var(--background))"
                     >
-                      <Cell fill="#10b981" />
-                      <Cell fill="#ef4444" />
+                      <Cell fill="#3B82F6" />
+                      <Cell fill="#60A5FA" />
                     </Pie>
                     <Tooltip 
                       contentStyle={{
@@ -1019,7 +1019,7 @@ export default function Dashboard() {
                     />
                     <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={50}>
                       {jobsByCreator?.slice(0, 5).map((_, index: number) => (
-                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#60A5FA', '#2563EB', '#10b981', '#5B9FED'][index % 5]} />
+                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#60A5FA', '#2563EB', '#1D4ED8', '#93C5FD'][index % 5]} />
                       )) || []}
                     </Bar>
                   </BarChart>
@@ -1060,7 +1060,7 @@ export default function Dashboard() {
                       {jobsByCompany?.slice(0, 5).map((item, index: number) => (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={item.companyColor || '#10b981'} 
+                          fill={item.companyColor || ['#3B82F6', '#60A5FA', '#2563EB', '#1D4ED8', '#93C5FD'][index % 5]} 
                         />
                       )) || []}
                     </Pie>
@@ -1161,7 +1161,7 @@ export default function Dashboard() {
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
                   />
-                  <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} barSize={80} />
+                  <Bar dataKey="value" fill="#3B82F6" radius={[8, 8, 0, 0]} barSize={80} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -1257,7 +1257,7 @@ export default function Dashboard() {
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                       }}
                     />
-                    <Bar dataKey="value" fill="#10b981" radius={[0, 8, 8, 0]} barSize={25} />
+                    <Bar dataKey="value" fill="#3B82F6" radius={[0, 8, 8, 0]} barSize={25} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
