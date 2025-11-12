@@ -1234,6 +1234,10 @@ export class DatabaseStorage implements IStorage {
           createdAt: companies.createdAt,
           updatedAt: companies.updatedAt,
         },
+        client: {
+          id: clients.id,
+          name: clients.name,
+        },
         recruiter: {
           id: sql<string>`recruiter_users.id`,
           firstName: sql<string>`recruiter_users.first_name`,
@@ -1252,6 +1256,7 @@ export class DatabaseStorage implements IStorage {
       .from(jobs)
       .leftJoin(professions, eq(jobs.professionId, professions.id))
       .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .leftJoin(clients, eq(jobs.clientId, clients.id))
       .leftJoin(sql`users as recruiter_users`, eq(jobs.recruiterId, sql`recruiter_users.id`))
       .leftJoin(sql`users as creator_users`, eq(jobs.createdBy, sql`creator_users.id`))
       .leftJoin(applications, eq(jobs.id, applications.jobId))
@@ -1261,6 +1266,7 @@ export class DatabaseStorage implements IStorage {
         jobs.id, 
         professions.id, 
         companies.id, 
+        clients.id,
         sql`recruiter_users.id`,
         sql`recruiter_users.first_name`,
         sql`recruiter_users.last_name`,
