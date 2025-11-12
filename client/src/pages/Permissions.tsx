@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, CheckCircle2, XCircle, Settings, Briefcase, Building2, Users, FileText, BarChart3, Download, UserCog, Lock, CheckSquare, Edit, Trash2, Eye, UserCheck, FolderKanban, CreditCard, ClipboardList, UserPlus } from "lucide-react";
+import { Shield, CheckCircle2, XCircle, Settings, Briefcase, Building2, Users, FileText, BarChart3, Download, UserCog, Lock, CheckSquare, Edit, Trash2, Eye, UserCheck, FolderKanban, CreditCard, ClipboardList, UserPlus, LayoutDashboard, Workflow } from "lucide-react";
 
 // Role labels and colors
 const roleLabels: Record<string, string> = {
@@ -42,53 +42,46 @@ const availableRoles = [
   "manager"
 ];
 
-// Permission categories with icons and descriptions
+// Permission categories with icons and descriptions - mapped to menu items
 const permissionCategories = {
-  "Vagas": {
-    icon: Briefcase,
+  "Módulos Principais": {
+    icon: LayoutDashboard,
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-950",
     permissions: [
-      { key: "create_jobs", label: "Criar Vagas", icon: Briefcase, description: "Criar novas vagas no sistema" },
-      { key: "edit_jobs", label: "Editar Vagas", icon: Edit, description: "Modificar vagas existentes" },
-      { key: "delete_jobs", label: "Excluir Vagas", icon: Trash2, description: "Remover vagas do sistema" },
-      { key: "view_jobs", label: "Visualizar Vagas", icon: Eye, description: "Ver detalhes das vagas" },
-      { key: "approve_jobs", label: "Aprovar Vagas", icon: CheckSquare, description: "Aprovar solicitações de vagas" },
-      { key: "assign_to_jobs", label: "Pegar Vagas no Grid", icon: UserCheck, description: "Assumir vagas para trabalhar" },
+      { key: "access_dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Acessar dashboard com métricas e gráficos" },
+      { key: "access_jobs", label: "Vagas", icon: Briefcase, description: "Acessar módulo de gestão de vagas" },
+      { key: "access_kanban", label: "Kanban", icon: FolderKanban, description: "Visualizar e gerenciar Kanban de vagas" },
+      { key: "access_approvals", label: "Aprovações", icon: CheckSquare, description: "Acessar aprovações de vagas" },
     ]
   },
-  "Empresas": {
+  "Cadastros": {
     icon: Building2,
     color: "text-purple-600",
     bgColor: "bg-purple-50 dark:bg-purple-950",
     permissions: [
-      { key: "create_companies", label: "Criar Empresas", icon: Building2, description: "Cadastrar novas empresas" },
-      { key: "edit_companies", label: "Editar Empresas", icon: Edit, description: "Alterar dados de empresas" },
-      { key: "delete_companies", label: "Excluir Empresas", icon: Trash2, description: "Remover empresas" },
-      { key: "view_companies", label: "Visualizar Empresas", icon: Eye, description: "Acessar informações de empresas" },
-      { key: "manage_cost_centers", label: "Gerenciar Centros de Custo", icon: CreditCard, description: "Administrar centros de custo" },
+      { key: "access_companies", label: "Empresas", icon: Building2, description: "Gerenciar cadastro de empresas" },
+      { key: "access_clients", label: "Clientes", icon: Users, description: "Gerenciar cadastro de clientes" },
+      { key: "access_users", label: "Usuários", icon: UserCog, description: "Gerenciar cadastro de usuários" },
     ]
   },
-  "Candidatos": {
-    icon: Users,
-    color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-950",
-    permissions: [
-      { key: "view_applications", label: "Visualizar Candidaturas", icon: Eye, description: "Ver candidaturas recebidas" },
-      { key: "manage_applications", label: "Gerenciar Candidaturas", icon: ClipboardList, description: "Administrar todo o processo" },
-      { key: "interview_candidates", label: "Entrevistar Candidatos", icon: Users, description: "Realizar entrevistas" },
-      { key: "hire_candidates", label: "Contratar Candidatos", icon: UserPlus, description: "Aprovar contratações" },
-    ]
-  },
-  "Sistema": {
+  "Administração": {
     icon: Settings,
     color: "text-orange-600",
     bgColor: "bg-orange-50 dark:bg-orange-950",
     permissions: [
-      { key: "view_reports", label: "Visualizar Relatórios", icon: BarChart3, description: "Acessar dashboards e relatórios" },
-      { key: "export_data", label: "Exportar Dados", icon: Download, description: "Baixar dados do sistema" },
-      { key: "manage_users", label: "Gerenciar Usuários", icon: UserCog, description: "Administrar usuários" },
-      { key: "manage_permissions", label: "Gerenciar Permissões", icon: Lock, description: "Configurar permissões" },
+      { key: "access_permissions", label: "Permissões", icon: Lock, description: "Configurar permissões por função" },
+      { key: "access_workflow", label: "Workflow", icon: Workflow, description: "Gerenciar workflows de aprovação" },
+      { key: "access_settings", label: "Configurações", icon: Settings, description: "Acessar configurações do sistema" },
+    ]
+  },
+  "Relatórios": {
+    icon: BarChart3,
+    color: "text-green-600",
+    bgColor: "bg-green-50 dark:bg-green-950",
+    permissions: [
+      { key: "access_reports", label: "Relatórios", icon: FileText, description: "Visualizar relatórios do sistema" },
+      { key: "export_data", label: "Exportar Dados", icon: Download, description: "Exportar dados em diversos formatos" },
     ]
   }
 };
