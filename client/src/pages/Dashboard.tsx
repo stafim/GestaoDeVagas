@@ -1060,7 +1060,7 @@ export default function Dashboard() {
                       {jobsByCompany?.slice(0, 5).map((item, index: number) => (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={item.companyColor || ['#3B82F6', '#60A5FA', '#2563EB', '#1D4ED8', '#93C5FD'][index % 5]} 
+                          fill={['#3B82F6', '#60A5FA', '#2563EB', '#1D4ED8', '#93C5FD'][index % 5]} 
                         />
                       )) || []}
                     </Pie>
