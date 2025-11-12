@@ -48,11 +48,11 @@ export const db = drizzle(pool, { schema });
 
 ## 📁 Arquivos Criados
 
-1. **`database_dump_clean_20251112_013043.sql`** (774 KB)
+1. **`database_dump_final_20251112_013415.sql`** (774 KB)
    - Dump completo do banco de dados PostgreSQL
    - **Sem referências ao Neon** (--no-owner --no-acl)
    - Pronto para restauração em qualquer PostgreSQL
-   - Inclui estrutura + dados
+   - Inclui estrutura + dados completos
 
 2. **`VM_DEPLOYMENT.md`**
    - Guia completo de deployment
@@ -77,7 +77,7 @@ export const db = drizzle(pool, { schema });
 
 2. **Deploy:**
    - Seguir instruções em `VM_DEPLOYMENT.md`
-   - Restaurar dump: `database_dump_clean_20251112_013043.sql`
+   - Restaurar dump: `database_dump_final_20251112_013415.sql`
    - Configurar variáveis de ambiente
    - Iniciar aplicação
 
@@ -120,7 +120,7 @@ export const db = drizzle(pool, { schema });
 ## 📞 Referências
 
 - Guia completo: `VM_DEPLOYMENT.md`
-- Dump do banco: `database_dump_clean_20251112_013043.sql`
+- Dump do banco: `database_dump_final_20251112_013415.sql`
 - Documentação: `replit.md`
 
 ## ✅ Verificação de Limpeza
