@@ -459,30 +459,54 @@ export default function Permissions() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {allAvailableRoles.map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setSelectedRole(role)}
-                  className={`p-4 rounded-lg border-2 transition-all hover-elevate text-left ${
-                    selectedRole === role 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border'
-                  }`}
-                  data-testid={`button-role-${role}`}
-                >
-                  <Badge 
-                    variant={getRoleColor(role) as any}
-                    className="mb-2"
+              {allAvailableRoles.map((role) => {
+                const isCustomRole = role.startsWith('custom_');
+                return (
+                  <div
+                    key={role}
+                    className="relative"
                   >
-                    {getRoleLabel(role)}
-                  </Badge>
-                  <div className="text-xs text-muted-foreground mt-2">
-                    {permissionStats.total > 0 && selectedRole === role && (
-                      <span>{permissionStats.active}/{permissionStats.total} permissões</span>
+                    <button
+                      onClick={() => setSelectedRole(role)}
+                      className={`w-full p-4 rounded-lg border-2 transition-all hover-elevate text-left ${
+                        selectedRole === role 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border'
+                      }`}
+                      data-testid={`button-role-${role}`}
+                    >
+                      <Badge 
+                        variant={getRoleColor(role) as any}
+                        className="mb-2"
+                      >
+                        {getRoleLabel(role)}
+                      </Badge>
+                      <div className="text-xs text-muted-foreground mt-2">
+                        {permissionStats.total > 0 && selectedRole === role && (
+                          <span>{permissionStats.active}/{permissionStats.total} permissões</span>
+                        )}
+                      </div>
+                    </button>
+                    {isCustomRole && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="absolute top-2 right-2 h-6 w-6 text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const customRoleId = role.replace('custom_', '');
+                          if (window.confirm(`Tem certeza que deseja excluir a função "${getRoleLabel(role)}"?`)) {
+                            deleteCustomRoleMutation.mutate(customRoleId);
+                          }
+                        }}
+                        data-testid={`button-delete-role-${role}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     )}
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
