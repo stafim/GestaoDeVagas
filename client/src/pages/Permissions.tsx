@@ -226,15 +226,21 @@ export default function Permissions() {
   // Delete custom role mutation
   const deleteCustomRoleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("DELETE", `/api/custom-roles/${id}`, {});
-      return response.json();
+      await apiRequest("DELETE", `/api/custom-roles/${id}`, {});
+      // DELETE returns 204 No Content, so no need to parse JSON
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/permissions/roles/permissions"] });
       toast({
         title: "Sucesso",
         description: "Função excluída com sucesso!",
       });
+      // Reset to first available role if deleted role was selected
+      if (selectedRole.startsWith('custom_')) {
+        setSelectedRole(availableRoles[0]);
+      }
     },
     onError: (error: any) => {
       toast({
