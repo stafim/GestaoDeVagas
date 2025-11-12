@@ -23,6 +23,7 @@ import { BlacklistManager } from "@/components/BlacklistManager";
 import { SeniorIntegrationSettings } from "@/components/SeniorIntegrationSettings";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Profession } from "@shared/schema";
 
 const workScaleFormSchema = z.object({
@@ -40,6 +41,7 @@ const jobStatusFormSchema = z.object({
   color: z.string().optional(),
   description: z.string().optional(),
   displayOrder: z.number().min(0).optional(),
+  isFinal: z.boolean().optional(),
 });
 
 const kanbanBoardFormSchema = z.object({
@@ -194,6 +196,7 @@ export default function Settings() {
       color: "",
       description: "",
       displayOrder: 0,
+      isFinal: false,
     },
   });
 
@@ -650,6 +653,7 @@ export default function Settings() {
       color: jobStatus.color || "",
       description: jobStatus.description || "",
       displayOrder: jobStatus.displayOrder || 0,
+      isFinal: jobStatus.isFinal || false,
     });
     setIsJobStatusModalOpen(true);
   };
@@ -1223,6 +1227,30 @@ export default function Settings() {
 
                   <FormField
                     control={jobStatusForm.control}
+                    name="isFinal"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-job-status-is-final"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Etapa de Conclusão
+                          </FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Vagas com este status não aparecerão no grid principal de vagas
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={jobStatusForm.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem>
@@ -1280,6 +1308,7 @@ export default function Settings() {
                   <TableHead>Variante</TableHead>
                   <TableHead>Ordem</TableHead>
                   <TableHead>Descrição</TableHead>
+                  <TableHead>Etapa Final</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -1310,6 +1339,15 @@ export default function Settings() {
                     </TableCell>
                     <TableCell data-testid={`text-job-status-description-${jobStatus.id}`}>
                       {jobStatus.description || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {jobStatus.isFinal ? (
+                        <Badge variant="destructive" data-testid={`badge-job-status-is-final-${jobStatus.id}`}>
+                          Sim
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">Não</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge

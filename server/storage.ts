@@ -1256,6 +1256,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(sql`users as creator_users`, eq(jobs.createdBy, sql`creator_users.id`))
       .leftJoin(applications, eq(jobs.id, applications.jobId))
       .leftJoin(kanbanStages, eq(applications.kanbanStageId, kanbanStages.id))
+      .leftJoin(jobStatuses, eq(jobs.status, jobStatuses.key))
       .groupBy(
         jobs.id, 
         professions.id, 
@@ -1271,6 +1272,14 @@ export class DatabaseStorage implements IStorage {
       );
 
     const whereConditions = [];
+
+    // Filter out jobs with final status (completed jobs)
+    whereConditions.push(
+      or(
+        eq(jobStatuses.isFinal, false),
+        sql`${jobStatuses.isFinal} IS NULL`
+      )
+    );
 
     // Filter by organization if specified (via companies.organizationId)
     if (organizationId !== undefined) {

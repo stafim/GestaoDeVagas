@@ -412,6 +412,7 @@ export const jobStatuses = pgTable("job_statuses", {
   description: text("description"), // Optional description
   displayOrder: integer("display_order").default(0), // Order for display in lists
   isDefault: boolean("is_default").default(false), // Indicates if this is the default status for new jobs
+  isFinal: boolean("is_final").default(false), // Indicates if this is a completion status (job should not appear in grid)
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
