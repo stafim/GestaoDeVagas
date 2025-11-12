@@ -551,10 +551,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
       });
       onClose();
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro",
-        description: "Erro ao criar vaga. Tente novamente.",
+        description: error.message || "Erro ao criar vaga. Tente novamente.",
         variant: "destructive",
       });
     },
@@ -619,10 +619,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
       });
       onClose();
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro",
-        description: "Erro ao atualizar vaga. Tente novamente.",
+        description: error.message || "Erro ao atualizar vaga. Tente novamente.",
         variant: "destructive",
       });
     },
@@ -650,10 +650,10 @@ export default function JobModal({ isOpen, onClose, jobId, initialClientId }: Jo
       setShowDeleteDialog(false);
       onClose();
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Erro",
-        description: "Erro ao excluir vaga. Tente novamente.",
+        description: error.message || "Erro ao excluir vaga. Tente novamente.",
         variant: "destructive",
       });
     },
