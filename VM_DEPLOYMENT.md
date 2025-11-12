@@ -350,4 +350,4 @@ Para dúvidas ou problemas, consulte a documentação completa em `replit.md`.
 
 **Data da última atualização**: 12/11/2025
 **Versão do sistema**: 1.0.0
-**Banco de dados**: PostgreSQL puro (sem Neon serverless)
+**Banco de dados**: PostgreSQL puro
