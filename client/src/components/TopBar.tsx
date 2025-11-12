@@ -55,7 +55,7 @@ export default function TopBar({
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
       // Redirect to login page
-      setLocation("/login-demo");
+      setLocation("/");
     } catch (error: any) {
       toast({
         title: "Erro no logout",

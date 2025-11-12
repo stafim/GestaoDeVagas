@@ -157,7 +157,7 @@ export default function Sidebar() {
       });
       
       // Redirect to login page
-      setLocation("/login-demo");
+      setLocation("/");
     } catch (error) {
       toast({
         title: "Erro ao fazer logout",
