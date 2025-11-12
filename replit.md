@@ -28,7 +28,15 @@ Preferred communication style: Simple, everyday language.
   - All major list endpoints (companies, jobs, clients, cost centers) filter data by user's `organizationId`
   - Organizations only see their own data (companies, jobs, clients, cost centers)
   - Jobs filtered indirectly through `companies.organizationId` join (no direct organizationId on jobs table)
-- **Role-Based Permissions**: Granular permissions across 8 predefined roles, including super admin, and organization-specific data access via `organizationId`.
+- **Role-Based Permissions**: Granular permissions across 7 user roles with automatic menu permission creation.
+  - Roles: admin, hr_manager, recruiter, interviewer, viewer, approver, manager
+  - Admin users automatically have full access to all menus (ignores permission table)
+  - Regular users receive 19 default menu permissions upon creation (all enabled)
+  - Security-first: users without permissions see no menus (except admin/super_admin)
+- **Menu Permission System**: 
+  - `user_menu_permissions` table tracks per-user menu access
+  - `getUserAccessibleMenus()` returns null for admins (= full access), empty array for unpermissioned users (= no access), or specific menu list
+  - Auto-creation of permissions on user creation (except for admin role)
 - **Super Admin Role**: System-wide administrator with restricted access to only Organizations, Plans, and Financial modules. Identified by `role="super_admin"` and `organizationId=null`. Super admins do not see client-specific menus (Dashboard, Jobs, Kanban, etc.). Has unrestricted backend data access for system administration.
 
 ## Core Features & Implementations

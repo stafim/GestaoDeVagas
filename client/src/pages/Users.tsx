@@ -36,9 +36,8 @@ import { Plus, User, Mail, Shield, Pencil, Trash2, UserCircle } from "lucide-rea
 import { z } from "zod";
 
 const roleLabels: Record<string, string> = {
-  super_admin: "Super Administrador",
   admin: "Administrador",
-  hr_manager: "Gestor de RH",
+  hr_manager: "Gerente RH",
   recruiter: "Recrutador",
   interviewer: "Entrevistador",
   viewer: "Visualizador",
@@ -47,7 +46,6 @@ const roleLabels: Record<string, string> = {
 };
 
 const roleColors: Record<string, string> = {
-  super_admin: "bg-purple-100 text-purple-800",
   admin: "bg-red-100 text-red-800",
   hr_manager: "bg-blue-100 text-blue-800",
   recruiter: "bg-green-100 text-green-800",
